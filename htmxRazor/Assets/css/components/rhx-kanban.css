@@ -1,0 +1,151 @@
+/* ================================================================
+   htmxRazor Kanban Board Component
+   BEM: rhx-kanban / rhx-kanban-column / rhx-kanban-card
+   ================================================================ */
+
+@layer rhx.components {
+
+/* ══════════════════════════════════════════════════════════════
+   BOARD CONTAINER
+   ══════════════════════════════════════════════════════════════ */
+
+.rhx-kanban {
+  display: flex;
+  gap: var(--rhx-space-lg);
+  overflow-x: auto;
+  padding: var(--rhx-space-sm);
+  min-height: 20rem;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COLUMN
+   ══════════════════════════════════════════════════════════════ */
+
+.rhx-kanban-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 18rem;
+  max-width: 22rem;
+  flex-shrink: 0;
+  background: var(--rhx-color-surface);
+  border: var(--rhx-border-width) solid var(--rhx-color-border);
+  border-radius: var(--rhx-radius-lg);
+}
+
+/* ── Column Header ── */
+.rhx-kanban-column__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--rhx-space-sm) var(--rhx-space-md);
+  border-bottom: var(--rhx-border-width) solid var(--rhx-color-border-muted);
+}
+
+.rhx-kanban-column__title {
+  font-family: var(--rhx-font-family);
+  font-size: var(--rhx-font-size-sm);
+  font-weight: var(--rhx-font-weight-semibold);
+  color: var(--rhx-color-text);
+}
+
+/* ── Column Body (Drop Zone) ── */
+.rhx-kanban-column__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rhx-space-sm);
+  padding: var(--rhx-space-sm);
+  flex: 1;
+  min-height: 4rem;
+}
+
+/* ── Drag-over state ── */
+.rhx-kanban-column--drag-over > .rhx-kanban-column__body {
+  background: var(--rhx-color-brand-subtle);
+  border-radius: 0 0 calc(var(--rhx-radius-lg) - 1px) calc(var(--rhx-radius-lg) - 1px);
+}
+
+/* ── WIP limit exceeded ── */
+.rhx-kanban-column--wip-exceeded {
+  border-color: var(--rhx-color-danger-300);
+}
+
+.rhx-kanban-column--wip-exceeded > .rhx-kanban-column__header {
+  background: var(--rhx-color-danger-subtle);
+  border-bottom-color: var(--rhx-color-danger-subtle-border);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CARD
+   ══════════════════════════════════════════════════════════════ */
+
+.rhx-kanban-card {
+  background: var(--rhx-color-surface-raised);
+  border: var(--rhx-border-width) solid var(--rhx-color-border-muted);
+  border-radius: var(--rhx-radius-md);
+  padding: var(--rhx-space-sm) var(--rhx-space-md);
+  font-family: var(--rhx-font-family);
+  font-size: var(--rhx-font-size-sm);
+  color: var(--rhx-color-text);
+  cursor: grab;
+  transition: box-shadow var(--rhx-transition-fast), opacity var(--rhx-transition-fast);
+  user-select: none;
+}
+
+.rhx-kanban-card:hover {
+  box-shadow: var(--rhx-shadow-md);
+}
+
+.rhx-kanban-card:focus-visible {
+  outline: 2px solid var(--rhx-color-focus-ring);
+  outline-offset: 1px;
+}
+
+/* ── Dragging state ── */
+.rhx-kanban-card--dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+/* ── Card variants ── */
+.rhx-kanban-card--brand {
+  border-left: 3px solid var(--rhx-color-brand-500);
+}
+
+.rhx-kanban-card--success {
+  border-left: 3px solid var(--rhx-color-success-500);
+}
+
+.rhx-kanban-card--warning {
+  border-left: 3px solid var(--rhx-color-warning-500);
+}
+
+.rhx-kanban-card--danger {
+  border-left: 3px solid var(--rhx-color-danger-500);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .rhx-kanban {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .rhx-kanban-column {
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .rhx-kanban-card {
+    transition-duration: 0.01ms;
+  }
+}
+}

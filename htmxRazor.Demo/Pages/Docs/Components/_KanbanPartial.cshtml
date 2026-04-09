@@ -1,0 +1,69 @@
+@model List<htmxRazor.Demo.Pages.Docs.Components.KanbanTask>
+@{
+    var columns = new[] {
+        ("todo", "To Do", (int?)null),
+        ("doing", "In Progress", (int?)3),
+        ("done", "Done", (int?)null)
+    };
+}
+
+<rhx-kanban id="demo-board">
+    @foreach (var (colId, colTitle, maxCards) in columns)
+    {
+        var colTasks = Model.Where(t => t.Column == colId).OrderBy(t => t.Position);
+        if (maxCards.HasValue)
+        {
+            <rhx-kanban-column rhx-column-id="@colId" rhx-title="@colTitle" rhx-max-cards="@maxCards.Value">
+                @foreach (var task in colTasks)
+                {
+                    if (!string.IsNullOrEmpty(task.Variant))
+                    {
+                        <rhx-kanban-card rhx-card-id="@task.Id"
+                                         rhx-variant="@task.Variant"
+                                         hx-post="/Docs/Components/Kanban?handler=Move"
+                                         hx-target="#kanban-demo-container"
+                                         hx-swap="innerHTML">
+                            @task.Title
+                        </rhx-kanban-card>
+                    }
+                    else
+                    {
+                        <rhx-kanban-card rhx-card-id="@task.Id"
+                                         hx-post="/Docs/Components/Kanban?handler=Move"
+                                         hx-target="#kanban-demo-container"
+                                         hx-swap="innerHTML">
+                            @task.Title
+                        </rhx-kanban-card>
+                    }
+                }
+            </rhx-kanban-column>
+        }
+        else
+        {
+            <rhx-kanban-column rhx-column-id="@colId" rhx-title="@colTitle">
+                @foreach (var task in colTasks)
+                {
+                    if (!string.IsNullOrEmpty(task.Variant))
+                    {
+                        <rhx-kanban-card rhx-card-id="@task.Id"
+                                         rhx-variant="@task.Variant"
+                                         hx-post="/Docs/Components/Kanban?handler=Move"
+                                         hx-target="#kanban-demo-container"
+                                         hx-swap="innerHTML">
+                            @task.Title
+                        </rhx-kanban-card>
+                    }
+                    else
+                    {
+                        <rhx-kanban-card rhx-card-id="@task.Id"
+                                         hx-post="/Docs/Components/Kanban?handler=Move"
+                                         hx-target="#kanban-demo-container"
+                                         hx-swap="innerHTML">
+                            @task.Title
+                        </rhx-kanban-card>
+                    }
+                }
+            </rhx-kanban-column>
+        }
+    }
+</rhx-kanban>

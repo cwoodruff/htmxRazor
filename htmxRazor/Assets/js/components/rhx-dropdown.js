@@ -64,8 +64,21 @@
         isOpen() ? close() : open();
       }
 
-      // Viewport flip detection
+      var useCssAnchoring = window.RHX && window.RHX.supportsAnchorPositioning;
+
+      // Apply per-instance CSS Anchor Positioning
+      if (useCssAnchoring && window.RHX.applyCssAnchorPositioning) {
+        var placement = dropdown.getAttribute("data-rhx-placement") || "bottom-start";
+        window.RHX.applyCssAnchorPositioning(dropdown, menu, {
+          placement: placement,
+          distance: 4
+        });
+      }
+
+      // Viewport flip detection (skipped when CSS Anchor Positioning handles it)
       function checkViewportFlip() {
+        if (useCssAnchoring) return; // CSS position-try-fallbacks handles flip
+
         var placement = dropdown.getAttribute("data-rhx-placement") || "bottom-start";
         var rect = menu.getBoundingClientRect();
         var viewportHeight = window.innerHeight;

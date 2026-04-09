@@ -60,9 +60,22 @@
     currentTarget = null;
   }
 
+  var useCssAnchoring = window.RHX && window.RHX.supportsAnchorPositioning;
+
   function positionTooltip(target, placement) {
     // Get the first child element for positioning (since wrapper uses display: contents)
     var posTarget = target.firstElementChild || target;
+
+    // Use CSS Anchor Positioning when supported
+    if (useCssAnchoring) {
+      window.RHX.applyCssAnchorPositioning(posTarget, tooltipEl, {
+        placement: placement,
+        distance: GAP
+      });
+      return;
+    }
+
+    // Fallback: JS positioning
     var rect = posTarget.getBoundingClientRect();
     var tipRect = tooltipEl.getBoundingClientRect();
     var top, left;

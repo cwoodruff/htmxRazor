@@ -30,7 +30,7 @@
     <div class="docs-feature-card">
         <rhx-icon rhx-name="grid" rhx-size="32" />
         <h3>Tag Helper Components</h3>
-        <p>80+ server-rendered components across 11 categories. Buttons, forms, data tables, navigation, overlays, feedback, and more.</p>
+        <p>85+ server-rendered components across 11 categories. Buttons, forms, data tables, kanban boards, navigation, overlays, feedback, and more.</p>
     </div>
     <div class="docs-feature-card">
         <rhx-icon rhx-name="refresh" rhx-size="32" />
@@ -46,51 +46,43 @@
 
 <rhx-divider />
 
-<!-- What's New in v1.4 -->
+<!-- What's New in v2.0 -->
 <section style="max-width: 900px; margin: 0 auto; padding: var(--rhx-space-2xl) var(--rhx-space-xl);">
     <h2 style="text-align: center; font-size: var(--rhx-font-size-2xl); font-weight: var(--rhx-font-weight-bold); margin-bottom: var(--rhx-space-lg); color: var(--rhx-color-text);">
-        What's New in v1.4
+        What's New in v2.0
     </h2>
     <p style="text-align: center; color: var(--rhx-color-text-muted); margin-bottom: var(--rhx-space-xl);">
-        Real-time streaming, multi-step wizards, and optimistic UI patterns.
+        Platform tools, real-time connectivity, modern CSS, and a drag-and-drop Kanban board.
     </p>
 
     <div class="docs-features">
         <div class="docs-feature-card">
-            <rhx-icon rhx-name="cast" rhx-size="28" />
-            <h3>SSE Stream</h3>
-            <p>Declarative Server-Sent Events via <code>&lt;rhx-sse-stream&gt;</code>. Companion server-side helpers format <code>IAsyncEnumerable&lt;string&gt;</code> as <code>text/event-stream</code>.</p>
-            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/SseStream">View docs</rhx-button>
+            <h3>Theme Builder</h3>
+            <p>Interactive page with color pickers for every <code>--rhx-*</code> token. Real-time preview, smart palette generation from a single color, and downloadable CSS override file.</p>
+            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/ThemeBuilder">Try it</rhx-button>
         </div>
         <div class="docs-feature-card">
-            <rhx-icon rhx-name="list" rhx-size="28" />
-            <h3>Multi-step Wizard</h3>
-            <p>Visual stepper indicator with <code>&lt;rhx-wizard&gt;</code> and <code>&lt;rhx-wizard-step&gt;</code>. Auto-generated navigation buttons and server-side state tracking.</p>
-            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/Wizard">View docs</rhx-button>
+            <h3>Component Playground</h3>
+            <p>Property toggle panels on demo pages. Change variant, size, and state props; the server re-renders via htmx. Shareable URL state and generated Razor markup.</p>
+            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/Button">See Button example</rhx-button>
         </div>
         <div class="docs-feature-card">
-            <rhx-icon rhx-name="edit" rhx-size="28" />
-            <h3>Response-Aware Form</h3>
-            <p><code>&lt;rhx-htmx-form&gt;</code> auto-configures <code>hx-target-422</code> and <code>hx-target-5xx</code>. Built-in error container and submit-disable behavior.</p>
-            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/HtmxForm">View docs</rhx-button>
+            <h3>SignalR Hub Connector</h3>
+            <p>Declarative <code>&lt;rhx-signalr&gt;</code> Tag Helper for real-time SignalR connections. Swaps received HTML fragments, with auto-reconnect, group support, and connection state indicator.</p>
+            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/SignalR">View docs</rhx-button>
         </div>
         <div class="docs-feature-card">
-            <rhx-icon rhx-name="git-commit" rhx-size="28" />
-            <h3>Timeline</h3>
-            <p>Vertical, horizontal, and alternating timelines with <code>&lt;rhx-timeline&gt;</code>. Variant-colored connectors, labels, and icon slots for audit logs and activity feeds.</p>
-            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/Timeline">View docs</rhx-button>
+            <h3>Kanban Board</h3>
+            <p>Drag-and-drop <code>&lt;rhx-kanban&gt;</code> with columns, cards, WIP limits, and keyboard navigation. Card drops fire <code>hx-post</code> for server persistence.</p>
+            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/Kanban">View docs</rhx-button>
         </div>
         <div class="docs-feature-card">
-            <rhx-icon rhx-name="zap" rhx-size="28" />
-            <h3>Optimistic UI</h3>
-            <p>Add <code>rhx-optimistic</code> to switches, ratings, and buttons. Visual state updates instantly on click; reverts automatically on server error.</p>
-            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/Optimistic">View docs</rhx-button>
+            <h3>CSS Anchor Positioning</h3>
+            <p>Tooltip, popover, popup, and dropdown now use the CSS Anchor Positioning API in modern browsers, with automatic JS fallback. Less JavaScript, better viewport handling.</p>
         </div>
         <div class="docs-feature-card">
-            <rhx-icon rhx-name="plus-circle" rhx-size="28" />
-            <h3>Load More</h3>
-            <p>Button-triggered pagination with <code>&lt;rhx-load-more&gt;</code>. A simpler alternative to infinite scroll for content feeds and lists.</p>
-            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/LoadMore">View docs</rhx-button>
+            <h3>VS Code Snippets</h3>
+            <p>97 code snippets for every <code>&lt;rhx-*&gt;</code> tag with smart tabstops, choice lists, htmx variants, and multi-component composition snippets.</p>
         </div>
     </div>
 </section>

@@ -1,0 +1,101 @@
+@page
+@model KanbanModel
+@{
+    Layout = "_ComponentPage";
+    ViewData["Title"] = "Kanban";
+    ViewData["ComponentName"] = "Kanban Board";
+    ViewData["ComponentTag"] = "rhx-kanban";
+    ViewData["ComponentDescription"] = "Drag-and-drop Kanban board with native HTML Drag and Drop, keyboard navigation, and htmx server persistence.";
+}
+
+<section class="docs-component-section">
+    <h2>Examples</h2>
+
+    <!-- Interactive Demo -->
+    <div class="docs-example">
+        <h3>Interactive Board</h3>
+        <p>Drag cards between columns. The "In Progress" column has a WIP limit of 3. Each drop sends a POST to the server with the card ID, source and target columns, and position.</p>
+        <rhx-tab-group>
+            <rhx-tab rhx-panel="demo-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="demo-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="demo-preview" rhx-active="true">
+                <div class="docs-preview" style="overflow-x: auto;">
+                    <div style="margin-bottom: var(--rhx-space-sm);">
+                        <rhx-button rhx-variant="neutral" rhx-appearance="outlined" rhx-size="small"
+                                    hx-post="/Docs/Components/Kanban?handler=Reset"
+                                    hx-target="#kanban-demo-container"
+                                    hx-swap="innerHTML">Reset Board</rhx-button>
+                    </div>
+                    <div id="kanban-demo-container">
+                        @await Html.PartialAsync("_KanbanPartial", Model.Tasks)
+                    </div>
+                </div>
+            </rhx-tab-panel>
+            <rhx-tab-panel rhx-name="demo-code">
+                <div class="docs-code">
+                    <pre><code>@Model.BasicCode</code></pre>
+                </div>
+            </rhx-tab-panel>
+        </rhx-tab-group>
+    </div>
+
+    <!-- Card Variants -->
+    <div class="docs-example">
+        <h3>Card Variants</h3>
+        <p>Use <code>rhx-variant</code> to color-code cards by category, priority, or type.</p>
+        <div class="docs-preview" style="display: flex; gap: var(--rhx-space-sm); flex-wrap: wrap;">
+            <rhx-kanban-card rhx-card-id="v1" rhx-draggable="false">Default</rhx-kanban-card>
+            <rhx-kanban-card rhx-card-id="v2" rhx-variant="brand" rhx-draggable="false">Brand</rhx-kanban-card>
+            <rhx-kanban-card rhx-card-id="v3" rhx-variant="success" rhx-draggable="false">Success</rhx-kanban-card>
+            <rhx-kanban-card rhx-card-id="v4" rhx-variant="warning" rhx-draggable="false">Warning</rhx-kanban-card>
+            <rhx-kanban-card rhx-card-id="v5" rhx-variant="danger" rhx-draggable="false">Danger</rhx-kanban-card>
+        </div>
+    </div>
+
+    <!-- WIP Limits -->
+    <div class="docs-example">
+        <h3>WIP Limits</h3>
+        <p>Set <code>rhx-max-cards</code> on a column. When the card count reaches the limit, the column header turns red as a visual warning.</p>
+        <rhx-tab-group>
+            <rhx-tab rhx-panel="wip-code" rhx-active="true">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="wip-code" rhx-active="true">
+                <div class="docs-code">
+                    <pre><code>@Model.WipCode</code></pre>
+                </div>
+            </rhx-tab-panel>
+        </rhx-tab-group>
+    </div>
+
+    <!-- Server Handler -->
+    <div class="docs-example">
+        <h3>Server Handler</h3>
+        <p>The card's <code>hx-post</code> sends <code>cardId</code>, <code>sourceColumn</code>, <code>targetColumn</code>, and <code>position</code> as form values. Return a partial to re-render the board.</p>
+        <div class="docs-code">
+            <pre><code>@Model.ServerCode</code></pre>
+        </div>
+    </div>
+</section>
+
+@await Html.PartialAsync("_PropertyTable", Model.Properties)
+
+<section class="docs-component-section">
+    <h2>Keyboard Navigation</h2>
+    <ul class="docs-a11y-list">
+        <li><strong>Tab</strong> to focus a card.</li>
+        <li><strong>Enter / Space</strong> to grab the focused card.</li>
+        <li><strong>Arrow Left / Right</strong> moves the grabbed card to the previous or next column.</li>
+        <li><strong>Arrow Up / Down</strong> reorders the grabbed card within its column.</li>
+        <li><strong>Enter / Space</strong> again to drop and persist the move to the server.</li>
+        <li><strong>Escape</strong> cancels the grab without persisting.</li>
+    </ul>
+</section>
+
+<section class="docs-component-section">
+    <h2>Accessibility</h2>
+    <ul class="docs-a11y-list">
+        <li>Cards are focusable with <code>tabindex="0"</code> and set <code>aria-grabbed</code> when grabbed.</li>
+        <li>The board container uses <code>role="group"</code> for semantic grouping.</li>
+        <li>WIP limit exceeded state uses a distinct danger border color.</li>
+        <li>Reduced motion preferences disable card transition animations.</li>
+    </ul>
+</section>

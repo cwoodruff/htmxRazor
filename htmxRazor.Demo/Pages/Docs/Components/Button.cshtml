@@ -8,7 +8,26 @@
     ViewData["ComponentDescription"] = "A styled button with full htmx integration, ARIA support, and multiple visual variants.";
 }
 
-<!-- Variants -->
+<!-- Interactive Playground -->
+@{
+    ViewData["PlaygroundUrl"] = "/Docs/Components/Button?handler=Playground";
+    ViewData["PlaygroundTargetId"] = "playground-preview";
+}
+<section class="docs-component-section">
+    <h2>Playground</h2>
+    <p>Change properties on the right to see the button update in real time. The generated markup is shown below the preview.</p>
+    <div class="playground">
+        <div class="playground__header">Interactive Preview</div>
+        <div class="playground__body">
+            <div id="playground-preview">
+                @await Html.PartialAsync("_ButtonPlayground")
+            </div>
+            @await Html.PartialAsync("_PlaygroundPanel", Model.PlaygroundProperties)
+        </div>
+    </div>
+</section>
+
+<!-- Examples -->
 <section class="docs-component-section">
     <h2>Examples</h2>
 

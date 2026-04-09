@@ -16,7 +16,7 @@ htmxRazor is a complete UI component library implemented as Razor Tag Helpers. E
 
 - **Server-rendered** — No JavaScript framework. Components are Tag Helpers that render HTML on the server.
 - **htmx-native** — Every component supports `hx-get`, `hx-post`, `hx-target`, `hx-swap`, and all htmx attributes directly.
-- **80+ components** — Buttons, forms, data tables, dialogs, command palette, tabs, trees, carousels, toasts, pagination, and more across 11 categories.
+- **85+ components** — Buttons, forms, data tables, dialogs, command palette, kanban board, tabs, trees, carousels, toasts, pagination, and more across 11 categories.
 - **Design tokens** — Light/dark themes via CSS custom properties. Toggle with `data-rhx-theme` or `RHX.toggleTheme()`.
 - **Accessible** — Semantic HTML, ARIA attributes, keyboard navigation, and screen reader support built in.
 - **Model binding** — Form components integrate with ASP.NET Core model binding, validation, and `ModelExpression`.
@@ -211,6 +211,43 @@ Some components with interactive behavior also need their JavaScript file:
 </style>
 ```
 
+### Real-time SignalR
+
+```html
+<!-- Connect to a SignalR hub and swap received HTML -->
+<rhx-signalr hub-url="/chatHub" rhx-method="ReceiveMessage"
+             rhx-swap="beforeend" rhx-target="#messages"
+             rhx-connection-state="true" rhx-groups="room1">
+    <rhx-spinner />
+</rhx-signalr>
+```
+
+```csharp
+// Server: send HTML fragments from any hub or controller
+await hubContext.SendHtmlAsync("ReceiveMessage",
+    "<div class='message'>Hello!</div>");
+
+// Or to a specific group
+await hubContext.SendHtmlToGroupAsync("room1",
+    "ReceiveMessage", "<div>Group message</div>");
+```
+
+### Kanban Board
+
+```html
+<rhx-kanban>
+    <rhx-kanban-column rhx-column-id="todo" rhx-title="To Do" rhx-max-cards="5">
+        <rhx-kanban-card rhx-card-id="1" rhx-variant="brand"
+                         hx-post="/Board?handler=Move"
+                         hx-target="#board" hx-swap="outerHTML">
+            Design homepage
+        </rhx-kanban-card>
+    </rhx-kanban-column>
+    <rhx-kanban-column rhx-column-id="doing" rhx-title="In Progress" />
+    <rhx-kanban-column rhx-column-id="done" rhx-title="Done" />
+</rhx-kanban>
+```
+
 ### Real-time SSE Streaming
 
 ```html
@@ -292,13 +329,13 @@ public async Task<IActionResult> OnGetStatusStream(CancellationToken ct)
 | **Forms** | Input, Textarea, Select, Combobox, Checkbox, Switch, Radio, Slider, Rating, Color Picker, File Input, Number Input, htmx Form |
 | **Feedback** | Callout, Badge, Tag, Spinner, Skeleton, Progress Bar, Progress Ring, Tooltip, Toast, Toast Container |
 | **Navigation** | Tabs, Breadcrumb, Tree, Carousel, Pagination, Skip Nav, Landmark, Wizard |
-| **Organization** | Card, Divider, Split Panel, Scroller, Timeline |
+| **Organization** | Card, Divider, Split Panel, Scroller, Timeline, Kanban Board |
 | **Overlays** | Dialog, Drawer, Details, Command Palette |
 | **Data Display** | Data Table, Sparkline |
 | **Imagery** | Icon (48 built-in), Avatar, Animated Image, Comparison, Zoomable Frame |
 | **Formatting** | Format Bytes, Format Date, Format Number, Relative Time |
 | **Utilities** | Copy Button, QR Code, Animation, Popup, Popover, Live Region |
-| **Patterns** | Active Search, Infinite Scroll, Lazy Load, Poll, Load More, SSE Stream, Optimistic UI |
+| **Patterns** | Active Search, Infinite Scroll, Lazy Load, Poll, Load More, SSE Stream, SignalR Connector, Optimistic UI |
 
 ## How It Compares
 
@@ -317,7 +354,7 @@ public async Task<IActionResult> OnGetStatusStream(CancellationToken ct)
 |---------|-------------|
 | `htmxRazor` | Core Tag Helper library with embedded CSS/JS assets |
 | `htmxRazor.Demo` | Documentation site showcasing all components |
-| `htmxRazor.Tests` | 1,802 unit tests for Tag Helper rendering |
+| `htmxRazor.Tests` | 1,838 unit tests for Tag Helper rendering |
 
 ## Development
 
@@ -359,7 +396,7 @@ It's a fully self-contained design system built specifically for this component 
 
 ## Roadmap
 
-Features ranked by **user impact** and **implementation effort**. The library is at v1.4.0 with 80+ components; the roadmap below covers what comes next.
+Features ranked by **user impact** and **implementation effort**. The library is at v2.0.0 with 85+ components; the roadmap below covers what comes next.
 
 ### v1.2 — Notifications, Pagination & Quick Wins (Shipped)
 
@@ -387,16 +424,14 @@ Features ranked by **user impact** and **implementation effort**. The library is
 - **Optimistic UI** — `rhx-optimistic` attribute on `<rhx-switch>`, `<rhx-rating>`, and `<rhx-button>`. Immediately reflects visual state on click before the server responds; reverts automatically on error via `htmx:responseError` with a brief flash animation. Respects `prefers-reduced-motion`.
 - **Load More Pattern** — `<rhx-load-more>` button-triggered pagination. Renders a styled button with `hx-get`, loading spinner, and auto-removal after fetch. Configurable variant, target, swap strategy, and loading text.
 
-### v2.0 — Platform & DX
+### v2.0 — Platform & DX (Shipped)
 
-| Feature | Description | Impact | Effort |
-|---------|-------------|--------|--------|
-| **Theme Builder** | Interactive page in the demo site with sliders and color pickers for all `--rhx-*` tokens. Generates a downloadable `rhx-theme-overrides.css` file. | High | High |
-| **Interactive Component Playground** | Property toggle panel on each demo page. Users change variant, size, and state props; the server re-renders the component with updated markup via htmx. | High | High |
-| **SignalR Hub Connector** | `<rhx-signalr>` Tag Helper wrapping SignalR hub connections with `hub-url`, `method`, `target`, and `swap` attributes. Server-side `HtmxSignalRExtensions` for sending HTML fragments from hubs. | Medium | High |
-| **CSS Anchor Positioning** | Replace JavaScript positioning in `<rhx-tooltip>` and `<rhx-popover>` with CSS Anchor Positioning API (with JS fallback). Reduces JS footprint and improves edge-of-viewport correctness. | Medium | Medium |
-| **VS Code Snippet Extension** | `.code-snippets` file with expansions for every `<rhx-*>` tag and common attribute combinations. Distributed alongside the NuGet package. | Medium | Low |
-| **Kanban Board** | `<rhx-kanban>`, `<rhx-kanban-column>`, `<rhx-kanban-card>` with native HTML Drag and Drop. Card drop events fire `hx-post` to update position server-side. | Medium | High |
+- **Theme Builder** — Interactive page at `/ThemeBuilder` with color pickers for all `--rhx-*` tokens. Real-time preview, smart HSL palette generation, and downloadable `rhx-theme-overrides.css` export.
+- **Interactive Component Playground** — Property toggle panel on demo pages. Change variant, size, and state via dropdowns and checkboxes; server re-renders via htmx. URL-driven state for shareable configurations. Generated Razor markup displayed below preview.
+- **SignalR Hub Connector** — `<rhx-signalr>` Tag Helper with `hub-url`, `rhx-method`, `rhx-swap`, `rhx-target`, `rhx-reconnect`, `rhx-transport`, `rhx-groups`, and `rhx-connection-state`. Server-side `HtmxSignalRExtensions` for `SendHtmlAsync()`, `SendHtmlToGroupAsync()`, `SendHtmlToConnectionAsync()`.
+- **CSS Anchor Positioning** — Tooltip, popover, popup, and dropdown use the CSS Anchor Positioning API when supported, with automatic JS fallback. Reduces JS footprint and improves viewport correctness.
+- **VS Code Snippet Extension** — 97 snippets in `vscode-extension/` for all `<rhx-*>` tags with curated tabstops, htmx variants, and composition snippets.
+- **Kanban Board** — `<rhx-kanban>`, `<rhx-kanban-column>`, `<rhx-kanban-card>` with native Drag and Drop, keyboard navigation, WIP limits, card variants, and htmx server persistence.
 
 ### Infrastructure Cleanup (ongoing)
 

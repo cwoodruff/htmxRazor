@@ -1,0 +1,57 @@
+/* ================================================================
+   htmxRazor SignalR Connector Component
+   BEM: rhx-signalr / rhx-signalr--connected / rhx-signalr--disconnected
+        rhx-signalr--reconnecting / rhx-signalr--has-state
+   ================================================================ */
+
+@layer rhx.components {
+.rhx-signalr {
+  position: relative;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONNECTION STATE INDICATOR
+   Only visible when rhx-connection-state="true" is set.
+   ══════════════════════════════════════════════════════════════ */
+
+.rhx-signalr--has-state::before {
+  content: "";
+  position: absolute;
+  top: var(--rhx-space-xs);
+  right: var(--rhx-space-xs);
+  width: 8px;
+  height: 8px;
+  border-radius: var(--rhx-radius-full);
+  background: var(--rhx-color-neutral-400);
+  transition: background var(--rhx-transition-fast);
+  z-index: 1;
+}
+
+.rhx-signalr--has-state.rhx-signalr--connected::before {
+  background: var(--rhx-color-success-500);
+}
+
+.rhx-signalr--has-state.rhx-signalr--disconnected::before {
+  background: var(--rhx-color-danger-500);
+}
+
+.rhx-signalr--has-state.rhx-signalr--reconnecting::before {
+  background: var(--rhx-color-warning-500);
+  animation: rhx-signalr-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes rhx-signalr-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .rhx-signalr--has-state.rhx-signalr--reconnecting::before {
+    animation: none;
+  }
+}
+}

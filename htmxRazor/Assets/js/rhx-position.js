@@ -9,6 +9,65 @@
   var RHX = window.RHX || {};
 
   /**
+   * Whether the browser supports CSS Anchor Positioning.
+   * When true, components can skip JS positioning and rely on CSS.
+   */
+  RHX.supportsAnchorPositioning = typeof CSS !== "undefined" && CSS.supports && CSS.supports("anchor-name", "--x");
+
+  /**
+   * Map a placement string (e.g. "bottom-start") to a CSS position-area value.
+   * @param {string} placement
+   * @returns {string}
+   */
+  RHX.placementToPositionArea = function (placement) {
+    var map = {
+      "top": "top center",
+      "top-start": "top left",
+      "top-end": "top right",
+      "bottom": "bottom center",
+      "bottom-start": "bottom left",
+      "bottom-end": "bottom right",
+      "left": "left center",
+      "left-start": "top left",
+      "left-end": "bottom left",
+      "right": "right center",
+      "right-start": "top right",
+      "right-end": "bottom right"
+    };
+    return map[placement] || "bottom center";
+  };
+
+  /**
+   * Apply CSS Anchor Positioning styles to an anchor + floating element pair.
+   * Call this once during init when RHX.supportsAnchorPositioning is true.
+   *
+   * @param {Element} anchor   - The trigger/reference element
+   * @param {Element} floating - The positioned element
+   * @param {Object}  options
+   * @param {string}  options.placement - e.g. "bottom-start"
+   * @param {number}  options.distance  - Gap in pixels (applied as margin)
+   */
+  RHX.applyCssAnchorPositioning = function (anchor, floating, options) {
+    options = options || {};
+    var placement = options.placement || "bottom";
+    var distance = options.distance != null ? options.distance : 4;
+
+    // Generate a unique anchor name
+    var anchorName = anchor.getAttribute("data-rhx-anchor-name");
+    if (!anchorName) {
+      anchorName = "--rhx-anchor-" + Math.random().toString(36).substr(2, 8);
+      anchor.setAttribute("data-rhx-anchor-name", anchorName);
+    }
+
+    anchor.style.anchorName = anchorName;
+    floating.style.positionAnchor = anchorName;
+    floating.style.position = "fixed";
+    floating.style.positionArea = RHX.placementToPositionArea(placement);
+    floating.style.margin = distance + "px";
+    floating.style.positionTryFallbacks = "flip-block, flip-inline";
+  };
+
+  /**
    * Compute the position of a floating element relative to an anchor.
    *
    * @param {Element} anchor   - The reference element

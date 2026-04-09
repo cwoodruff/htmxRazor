@@ -1,0 +1,93 @@
+@page
+@model ThemeBuilderModel
+@{
+    Layout = "_DocsLayout";
+    ViewData["Title"] = "Theme Builder";
+    ViewData["HideSidebar"] = false;
+}
+
+<div class="theme-builder">
+    <div class="theme-builder__header">
+        <h1>Theme Builder</h1>
+        <p>Customize htmxRazor design tokens and preview changes in real time. Download the result as a CSS override file you can drop into your project.</p>
+        <div class="theme-builder__actions">
+            <rhx-button rhx-variant="neutral" rhx-appearance="outlined" onclick="resetTokens()">Reset to Defaults</rhx-button>
+            <form method="post" asp-page-handler="Download" id="download-form">
+                <rhx-button type="submit" rhx-variant="brand">Download CSS <span id="change-count"></span></rhx-button>
+            </form>
+        </div>
+    </div>
+
+    <rhx-callout rhx-variant="neutral">
+        <strong>How it works:</strong> Change any token on the left and the preview panel updates instantly.
+        For color palettes, pick a <strong>500 shade</strong> and click "Generate palette" to auto-fill all 11 shades.
+        Semantic colors (Background, Surface, Text, Border) are independent from palettes
+        and must be set separately.
+        When you're done, click <strong>Download CSS</strong> to get a file containing only the tokens you changed.
+    </rhx-callout>
+
+    <div class="theme-builder__body">
+        <!-- Token Controls -->
+        <div class="theme-builder__controls">
+            @foreach (var category in Model.TokensByCategory)
+            {
+                var isSemanticOrBrand = category.Key is "Semantic Colors" or "Color Palette: Brand";
+                <rhx-details rhx-summary="@category.Key" rhx-open="@isSemanticOrBrand">
+                    @if (category.Key.StartsWith("Color Palette:"))
+                    {
+                        var paletteName = category.Key.Replace("Color Palette: ", "").ToLowerInvariant();
+                        <div style="margin-bottom: var(--rhx-space-sm);">
+                            <rhx-button rhx-variant="neutral" rhx-appearance="outlined" rhx-size="small"
+                                        onclick="autoGeneratePalette('@paletteName')">
+                                Generate palette from 500 shade
+                            </rhx-button>
+                        </div>
+                    }
+                    <div class="theme-builder__token-grid">
+                        @foreach (var token in category.Value)
+                        {
+                            <div class="theme-builder__token">
+                                <label class="theme-builder__token-label" for="token-@token.CssProperty">
+                                    <code>@token.Label</code>
+                                </label>
+                                @if (token.InputType == "color")
+                                {
+                                    <div class="theme-builder__color-control">
+                                        <input type="color" id="token-@token.CssProperty"
+                                               name="@token.CssProperty"
+                                               value="@token.DefaultLight"
+                                               data-rhx-token="@token.CssProperty"
+                                               data-rhx-default="@token.DefaultLight"
+                                               oninput="applyToken(this)" />
+                                        <input type="text" class="theme-builder__hex-input"
+                                               value="@token.DefaultLight"
+                                               data-rhx-hex-for="@token.CssProperty"
+                                               oninput="applyHexToken(this)" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <input type="text" id="token-@token.CssProperty"
+                                           name="@token.CssProperty"
+                                           value="@token.DefaultLight"
+                                           data-rhx-token="@token.CssProperty"
+                                           data-rhx-default="@token.DefaultLight"
+                                           class="theme-builder__text-input"
+                                           oninput="applyToken(this)" />
+                                }
+                            </div>
+                        }
+                    </div>
+                </rhx-details>
+            }
+        </div>
+
+        <!-- Live Preview -->
+        <div class="theme-builder__preview" id="theme-preview">
+            @await Html.PartialAsync("_ThemePreview")
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="/css/theme-builder.css" />
+<script src="/js/theme-builder.js" defer></script>

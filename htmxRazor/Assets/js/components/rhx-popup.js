@@ -16,14 +16,33 @@
     if (!anchor) return;
 
     var arrowEl = popup.querySelector("[data-rhx-popup-arrow]");
+    var useCssAnchoring = window.RHX && window.RHX.supportsAnchorPositioning;
+    var cssAnchoringApplied = false;
 
     function reposition() {
       if (popup.hidden) return;
+
+      var placement = popup.getAttribute("data-rhx-placement") || "bottom-start";
+      var distance = parseInt(popup.getAttribute("data-rhx-distance") || "4", 10);
+
+      // Use CSS Anchor Positioning when supported
+      if (useCssAnchoring && !cssAnchoringApplied) {
+        window.RHX.applyCssAnchorPositioning(anchor, popup, {
+          placement: placement,
+          distance: distance
+        });
+        cssAnchoringApplied = true;
+        return;
+      }
+
+      if (useCssAnchoring) return; // CSS handles repositioning automatically
+
+      // Fallback: JS positioning
       if (!window.RHX || !window.RHX.positionElement) return;
 
       window.RHX.positionElement(anchor, popup, {
-        placement: popup.getAttribute("data-rhx-placement") || "bottom-start",
-        distance: parseInt(popup.getAttribute("data-rhx-distance") || "4", 10),
+        placement: placement,
+        distance: distance,
         skidding: parseInt(popup.getAttribute("data-rhx-skidding") || "0", 10),
         strategy: popup.getAttribute("data-rhx-strategy") || "absolute",
         flip: !popup.hasAttribute("data-rhx-no-flip"),

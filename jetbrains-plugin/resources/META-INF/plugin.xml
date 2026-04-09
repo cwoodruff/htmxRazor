@@ -1,0 +1,39 @@
+<idea-plugin>
+    <id>com.htmxrazor.livetemplates</id>
+    <name>htmxRazor Live Templates</name>
+    <version>2.0.0</version>
+    <vendor url="https://github.com/cwoodruff/htmxRazor">htmxRazor</vendor>
+
+    <description><![CDATA[
+    Live templates (code snippets) for all <b>htmxRazor</b> Tag Helper components in ASP.NET Core Razor views.<br/><br/>
+
+    Type <code>rhx-</code> in any <code>.cshtml</code> or HTML file to see the available templates.
+    Each template expands the full tag with commonly used attributes as interactive variables.<br/><br/>
+
+    <b>97 templates</b> covering:<br/>
+    <ul>
+        <li>All 85+ htmxRazor components</li>
+        <li>htmx-integrated variants (button, input, combobox)</li>
+        <li>Multi-component composition (card with header/footer, tab group with panels)</li>
+    </ul>
+
+    Requires the <a href="https://www.nuget.org/packages/htmxRazor">htmxRazor NuGet package</a>.
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <b>2.0.0</b><br/>
+    <ul>
+        <li>Initial release with 97 live templates</li>
+        <li>Matches VS Code snippet extension feature-for-feature</li>
+        <li>Covers all htmxRazor v2.0 components including SignalR and Kanban</li>
+    </ul>
+    ]]></change-notes>
+
+    <idea-version since-build="232" />
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <defaultLiveTemplates file="/liveTemplates/htmxRazor.xml" />
+    </extensions>
+</idea-plugin>

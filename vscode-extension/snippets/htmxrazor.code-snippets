@@ -1,0 +1,862 @@
+{
+  // ─── Actions ───────────────────────────────────────────────────────
+
+  "rhx-button": {
+    "prefix": "rhx-button",
+    "body": [
+      "<rhx-button rhx-variant=\"${1|neutral,brand,success,warning,danger|}\" rhx-appearance=\"${2|filled,outlined,plain|}\">${3:Label}</rhx-button>"
+    ],
+    "description": "htmxRazor button with variant and appearance"
+  },
+  "rhx-button-htmx": {
+    "prefix": "rhx-button-htmx",
+    "body": [
+      "<rhx-button rhx-variant=\"${1|neutral,brand,success,warning,danger|}\"",
+      "            hx-${2|get,post,put,patch,delete|}=\"${3:/endpoint}\"",
+      "            hx-target=\"${4:#target}\" hx-swap=\"${5|innerHTML,outerHTML,beforeend,afterend|}\">${6:Label}</rhx-button>"
+    ],
+    "description": "htmxRazor button with htmx attributes"
+  },
+  "rhx-button-loading": {
+    "prefix": "rhx-button-loading",
+    "body": [
+      "<rhx-button rhx-variant=\"${1|neutral,brand,success,warning,danger|}\" rhx-loading=\"true\">${2:Loading...}</rhx-button>"
+    ],
+    "description": "htmxRazor button in loading state"
+  },
+  "rhx-button-link": {
+    "prefix": "rhx-button-link",
+    "body": [
+      "<rhx-button rhx-variant=\"${1|neutral,brand,success,warning,danger|}\" rhx-href=\"${2:/path}\">${3:Link Text}</rhx-button>"
+    ],
+    "description": "htmxRazor button rendered as a link"
+  },
+  "rhx-button-group": {
+    "prefix": "rhx-button-group",
+    "body": [
+      "<rhx-button-group label=\"${1:Group label}\">",
+      "    <rhx-button rhx-variant=\"${2:neutral}\">${3:First}</rhx-button>",
+      "    <rhx-button rhx-variant=\"${2:neutral}\">${4:Second}</rhx-button>",
+      "</rhx-button-group>"
+    ],
+    "description": "htmxRazor button group"
+  },
+  "rhx-dropdown": {
+    "prefix": "rhx-dropdown",
+    "body": [
+      "<rhx-dropdown rhx-placement=\"${1|bottom-start,bottom-end,top-start,top-end|}\">",
+      "    <rhx-dropdown-trigger>",
+      "        <rhx-button rhx-variant=\"neutral\">${2:Menu}</rhx-button>",
+      "    </rhx-dropdown-trigger>",
+      "    <rhx-dropdown-item>${3:Item 1}</rhx-dropdown-item>",
+      "    <rhx-dropdown-item>${4:Item 2}</rhx-dropdown-item>",
+      "</rhx-dropdown>"
+    ],
+    "description": "htmxRazor dropdown menu"
+  },
+  "rhx-dropdown-item": {
+    "prefix": "rhx-dropdown-item",
+    "body": [
+      "<rhx-dropdown-item>${1:Item}</rhx-dropdown-item>"
+    ],
+    "description": "htmxRazor dropdown menu item"
+  },
+  "rhx-dropdown-divider": {
+    "prefix": "rhx-dropdown-divider",
+    "body": [
+      "<rhx-dropdown-divider />"
+    ],
+    "description": "htmxRazor dropdown divider"
+  },
+
+  // ─── Forms ─────────────────────────────────────────────────────────
+
+  "rhx-input": {
+    "prefix": "rhx-input",
+    "body": [
+      "<rhx-input rhx-for=\"${1:Model.Property}\" rhx-type=\"${2|text,email,password,url,tel,search,number|}\" rhx-placeholder=\"${3:Enter value}\" />"
+    ],
+    "description": "htmxRazor text input with model binding"
+  },
+  "rhx-input-htmx": {
+    "prefix": "rhx-input-htmx",
+    "body": [
+      "<rhx-input rhx-for=\"${1:Model.Property}\" rhx-type=\"${2|text,email,password,url,tel,search|}\"",
+      "           hx-${3|get,post|}=\"${4:/endpoint}\" hx-target=\"${5:#target}\"",
+      "           hx-trigger=\"${6|input changed delay:300ms,change,keyup changed delay:500ms|}\" />"
+    ],
+    "description": "htmxRazor input with htmx live validation or search"
+  },
+  "rhx-textarea": {
+    "prefix": "rhx-textarea",
+    "body": [
+      "<rhx-textarea rhx-for=\"${1:Model.Property}\" rhx-rows=\"${2:4}\" rhx-placeholder=\"${3:Enter text}\" />"
+    ],
+    "description": "htmxRazor textarea"
+  },
+  "rhx-select": {
+    "prefix": "rhx-select",
+    "body": [
+      "<rhx-select rhx-for=\"${1:Model.Property}\" rhx-placeholder=\"${2:Choose...}\">",
+      "    <rhx-option value=\"${3:value1}\">${4:Option 1}</rhx-option>",
+      "    <rhx-option value=\"${5:value2}\">${6:Option 2}</rhx-option>",
+      "</rhx-select>"
+    ],
+    "description": "htmxRazor select dropdown"
+  },
+  "rhx-option": {
+    "prefix": "rhx-option",
+    "body": [
+      "<rhx-option value=\"${1:value}\">${2:Label}</rhx-option>"
+    ],
+    "description": "htmxRazor select option"
+  },
+  "rhx-checkbox": {
+    "prefix": "rhx-checkbox",
+    "body": [
+      "<rhx-checkbox rhx-for=\"${1:Model.Property}\" />"
+    ],
+    "description": "htmxRazor checkbox"
+  },
+  "rhx-switch": {
+    "prefix": "rhx-switch",
+    "body": [
+      "<rhx-switch rhx-for=\"${1:Model.Property}\" />"
+    ],
+    "description": "htmxRazor toggle switch"
+  },
+  "rhx-radio-group": {
+    "prefix": "rhx-radio-group",
+    "body": [
+      "<rhx-radio-group rhx-for=\"${1:Model.Property}\">",
+      "    <rhx-radio value=\"${2:option1}\" rhx-label=\"${3:Option 1}\" />",
+      "    <rhx-radio value=\"${4:option2}\" rhx-label=\"${5:Option 2}\" />",
+      "</rhx-radio-group>"
+    ],
+    "description": "htmxRazor radio button group"
+  },
+  "rhx-radio": {
+    "prefix": "rhx-radio",
+    "body": [
+      "<rhx-radio value=\"${1:value}\" rhx-label=\"${2:Label}\" />"
+    ],
+    "description": "htmxRazor radio button"
+  },
+  "rhx-slider": {
+    "prefix": "rhx-slider",
+    "body": [
+      "<rhx-slider rhx-for=\"${1:Model.Property}\" rhx-min=\"${2:0}\" rhx-max=\"${3:100}\" rhx-step=\"${4:1}\" />"
+    ],
+    "description": "htmxRazor range slider"
+  },
+  "rhx-number-input": {
+    "prefix": "rhx-number-input",
+    "body": [
+      "<rhx-number-input rhx-for=\"${1:Model.Property}\" rhx-min=\"${2:0}\" rhx-max=\"${3:100}\" rhx-step=\"${4:1}\" />"
+    ],
+    "description": "htmxRazor number input with steppers"
+  },
+  "rhx-rating": {
+    "prefix": "rhx-rating",
+    "body": [
+      "<rhx-rating rhx-for=\"${1:Model.Property}\" rhx-max=\"${2:5}\" />"
+    ],
+    "description": "htmxRazor star rating"
+  },
+  "rhx-color-picker": {
+    "prefix": "rhx-color-picker",
+    "body": [
+      "<rhx-color-picker rhx-for=\"${1:Model.Property}\" rhx-format=\"${2|hex,rgb,hsl|}\" />"
+    ],
+    "description": "htmxRazor color picker"
+  },
+  "rhx-file-input": {
+    "prefix": "rhx-file-input",
+    "body": [
+      "<rhx-file-input rhx-for=\"${1:Model.Property}\" rhx-accept=\"${2:.jpg,.png,.pdf}\" />"
+    ],
+    "description": "htmxRazor file upload input"
+  },
+  "rhx-combobox": {
+    "prefix": "rhx-combobox",
+    "body": [
+      "<rhx-combobox rhx-for=\"${1:Model.Property}\" rhx-placeholder=\"${2:Search...}\"",
+      "              rhx-items=\"${3:Model.Items}\" />"
+    ],
+    "description": "htmxRazor combobox with autocomplete"
+  },
+  "rhx-combobox-server": {
+    "prefix": "rhx-combobox-server",
+    "body": [
+      "<rhx-combobox rhx-for=\"${1:Model.Property}\" rhx-placeholder=\"${2:Search...}\"",
+      "              rhx-server-filter=\"true\" rhx-search-param=\"${3:q}\"",
+      "              hx-get=\"${4:/endpoint}\" hx-target=\"${5:#results}\" />"
+    ],
+    "description": "htmxRazor combobox with server-side filtering via htmx"
+  },
+  "rhx-htmx-form": {
+    "prefix": "rhx-htmx-form",
+    "body": [
+      "<rhx-htmx-form page=\"${1:/Page}\" page-handler=\"${2:Submit}\"",
+      "               rhx-method=\"${3|post,put,patch,delete|}\"",
+      "               rhx-target-422=\"${4:#form-errors}\">",
+      "    ${5:<!-- form controls -->}",
+      "    <rhx-button type=\"submit\" rhx-variant=\"brand\">Submit</rhx-button>",
+      "</rhx-htmx-form>"
+    ],
+    "description": "htmxRazor form with htmx submission and validation"
+  },
+  "rhx-validation-message": {
+    "prefix": "rhx-validation-message",
+    "body": [
+      "<rhx-validation-message rhx-for=\"${1:Model.Property}\" />"
+    ],
+    "description": "htmxRazor validation message"
+  },
+  "rhx-validation-summary": {
+    "prefix": "rhx-validation-summary",
+    "body": [
+      "<rhx-validation-summary rhx-variant=\"${1|danger,warning|}\" />"
+    ],
+    "description": "htmxRazor validation summary"
+  },
+
+  // ─── Feedback ──────────────────────────────────────────────────────
+
+  "rhx-badge": {
+    "prefix": "rhx-badge",
+    "body": [
+      "<rhx-badge rhx-variant=\"${1|neutral,brand,success,warning,danger|}\">${2:Label}</rhx-badge>"
+    ],
+    "description": "htmxRazor badge"
+  },
+  "rhx-callout": {
+    "prefix": "rhx-callout",
+    "body": [
+      "<rhx-callout rhx-variant=\"${1|neutral,brand,success,warning,danger|}\" rhx-closable=\"${2|false,true|}\">",
+      "    ${3:Callout message}",
+      "</rhx-callout>"
+    ],
+    "description": "htmxRazor callout/alert"
+  },
+  "rhx-progress-bar": {
+    "prefix": "rhx-progress-bar",
+    "body": [
+      "<rhx-progress-bar rhx-value=\"${1:50}\" rhx-label=\"${2:Loading...}\" />"
+    ],
+    "description": "htmxRazor progress bar"
+  },
+  "rhx-progress-ring": {
+    "prefix": "rhx-progress-ring",
+    "body": [
+      "<rhx-progress-ring rhx-value=\"${1:50}\" rhx-label=\"${2:Loading...}\" />"
+    ],
+    "description": "htmxRazor circular progress ring"
+  },
+  "rhx-skeleton": {
+    "prefix": "rhx-skeleton",
+    "body": [
+      "<rhx-skeleton rhx-effect=\"${1|sheen,pulse,none|}\" rhx-shape=\"${2|rectangle,circle|}\" rhx-height=\"${3:1rem}\" />"
+    ],
+    "description": "htmxRazor skeleton loading placeholder"
+  },
+  "rhx-spinner": {
+    "prefix": "rhx-spinner",
+    "body": [
+      "<rhx-spinner rhx-size=\"${1|small,medium,large|}\" rhx-label=\"${2:Loading}\" />"
+    ],
+    "description": "htmxRazor loading spinner"
+  },
+  "rhx-tag": {
+    "prefix": "rhx-tag",
+    "body": [
+      "<rhx-tag rhx-variant=\"${1|neutral,brand,success,warning,danger|}\" rhx-size=\"${2|small,medium,large|}\">${3:Tag}</rhx-tag>"
+    ],
+    "description": "htmxRazor tag/chip"
+  },
+  "rhx-toast": {
+    "prefix": "rhx-toast",
+    "body": [
+      "<rhx-toast rhx-variant=\"${1|neutral,brand,success,warning,danger|}\" rhx-duration=\"${2:5000}\" rhx-closable=\"true\">",
+      "    ${3:Toast message}",
+      "</rhx-toast>"
+    ],
+    "description": "htmxRazor toast notification"
+  },
+  "rhx-toast-container": {
+    "prefix": "rhx-toast-container",
+    "body": [
+      "<rhx-toast-container rhx-position=\"${1|top-end,top-start,bottom-end,bottom-start|}\" />"
+    ],
+    "description": "htmxRazor toast container for positioning"
+  },
+  "rhx-tooltip": {
+    "prefix": "rhx-tooltip",
+    "body": [
+      "<rhx-tooltip rhx-content=\"${1:Tooltip text}\" rhx-placement=\"${2|top,bottom,left,right|}\">",
+      "    ${3:Hover target}",
+      "</rhx-tooltip>"
+    ],
+    "description": "htmxRazor tooltip"
+  },
+
+  // ─── Navigation ────────────────────────────────────────────────────
+
+  "rhx-breadcrumb": {
+    "prefix": "rhx-breadcrumb",
+    "body": [
+      "<rhx-breadcrumb rhx-items=\"${1:Model.Breadcrumbs}\" />"
+    ],
+    "description": "htmxRazor breadcrumb navigation"
+  },
+  "rhx-breadcrumb-manual": {
+    "prefix": "rhx-breadcrumb-manual",
+    "body": [
+      "<rhx-breadcrumb>",
+      "    <rhx-breadcrumb-item href=\"${1:/}\">Home</rhx-breadcrumb-item>",
+      "    <rhx-breadcrumb-item href=\"${2:/section}\">${3:Section}</rhx-breadcrumb-item>",
+      "    <rhx-breadcrumb-item>${4:Current}</rhx-breadcrumb-item>",
+      "</rhx-breadcrumb>"
+    ],
+    "description": "htmxRazor breadcrumb with manual items"
+  },
+  "rhx-tab-group": {
+    "prefix": "rhx-tab-group",
+    "body": [
+      "<rhx-tab-group>",
+      "    <rhx-tab rhx-panel=\"${1:panel1}\" rhx-active=\"true\">${2:Tab 1}</rhx-tab>",
+      "    <rhx-tab rhx-panel=\"${3:panel2}\">${4:Tab 2}</rhx-tab>",
+      "</rhx-tab-group>",
+      "",
+      "<rhx-tab-panel rhx-name=\"${1:panel1}\" rhx-active=\"true\">",
+      "    ${5:Panel 1 content}",
+      "</rhx-tab-panel>",
+      "<rhx-tab-panel rhx-name=\"${3:panel2}\">",
+      "    ${6:Panel 2 content}",
+      "</rhx-tab-panel>"
+    ],
+    "description": "htmxRazor tab group with panels"
+  },
+  "rhx-tab": {
+    "prefix": "rhx-tab",
+    "body": [
+      "<rhx-tab rhx-panel=\"${1:panel-id}\">${2:Tab Label}</rhx-tab>"
+    ],
+    "description": "htmxRazor tab"
+  },
+  "rhx-tab-panel": {
+    "prefix": "rhx-tab-panel",
+    "body": [
+      "<rhx-tab-panel rhx-name=\"${1:panel-id}\">",
+      "    ${2:Content}",
+      "</rhx-tab-panel>"
+    ],
+    "description": "htmxRazor tab panel"
+  },
+  "rhx-carousel": {
+    "prefix": "rhx-carousel",
+    "body": [
+      "<rhx-carousel rhx-navigation=\"true\" rhx-pagination=\"true\">",
+      "    <rhx-carousel-item>${1:Slide 1}</rhx-carousel-item>",
+      "    <rhx-carousel-item>${2:Slide 2}</rhx-carousel-item>",
+      "    <rhx-carousel-item>${3:Slide 3}</rhx-carousel-item>",
+      "</rhx-carousel>"
+    ],
+    "description": "htmxRazor image/content carousel"
+  },
+  "rhx-carousel-item": {
+    "prefix": "rhx-carousel-item",
+    "body": [
+      "<rhx-carousel-item>${1:Slide content}</rhx-carousel-item>"
+    ],
+    "description": "htmxRazor carousel slide"
+  },
+  "rhx-pagination": {
+    "prefix": "rhx-pagination",
+    "body": [
+      "<rhx-pagination rhx-current-page=\"${1:Model.CurrentPage}\"",
+      "                rhx-total-items=\"${2:Model.TotalItems}\"",
+      "                rhx-page-size=\"${3:10}\"",
+      "                hx-get=\"${4:/endpoint}\" hx-target=\"${5:#results}\" />"
+    ],
+    "description": "htmxRazor pagination with htmx"
+  },
+  "rhx-tree": {
+    "prefix": "rhx-tree",
+    "body": [
+      "<rhx-tree rhx-selection=\"${1|single,multiple,leaf|}\">",
+      "    <rhx-tree-item rhx-label=\"${2:Root}\">",
+      "        <rhx-tree-item rhx-label=\"${3:Child 1}\" />",
+      "        <rhx-tree-item rhx-label=\"${4:Child 2}\" />",
+      "    </rhx-tree-item>",
+      "</rhx-tree>"
+    ],
+    "description": "htmxRazor tree view"
+  },
+  "rhx-tree-item": {
+    "prefix": "rhx-tree-item",
+    "body": [
+      "<rhx-tree-item rhx-label=\"${1:Item}\" />"
+    ],
+    "description": "htmxRazor tree item"
+  },
+  "rhx-wizard": {
+    "prefix": "rhx-wizard",
+    "body": [
+      "<rhx-wizard page=\"${1:/Page}\" page-handler-step=\"${2:Step}\"",
+      "            rhx-current-step=\"${3:1}\" rhx-total-steps=\"${4:3}\">",
+      "    <rhx-wizard-step rhx-title=\"${5:Step 1}\">",
+      "        ${6:Step 1 content}",
+      "    </rhx-wizard-step>",
+      "</rhx-wizard>"
+    ],
+    "description": "htmxRazor multi-step wizard"
+  },
+  "rhx-wizard-step": {
+    "prefix": "rhx-wizard-step",
+    "body": [
+      "<rhx-wizard-step rhx-title=\"${1:Step Title}\">",
+      "    ${2:Step content}",
+      "</rhx-wizard-step>"
+    ],
+    "description": "htmxRazor wizard step"
+  },
+  "rhx-skip-nav": {
+    "prefix": "rhx-skip-nav",
+    "body": [
+      "<rhx-skip-nav rhx-target=\"${1:#main-content}\" rhx-label=\"${2:Skip to main content}\" />"
+    ],
+    "description": "htmxRazor skip navigation link (a11y)"
+  },
+  "rhx-landmark": {
+    "prefix": "rhx-landmark",
+    "body": [
+      "<rhx-landmark rhx-role=\"${1|main,navigation,complementary,banner,contentinfo,search|}\" rhx-label=\"${2:Section label}\">",
+      "    ${3:Content}",
+      "</rhx-landmark>"
+    ],
+    "description": "htmxRazor ARIA landmark region"
+  },
+
+  // ─── Organization ──────────────────────────────────────────────────
+
+  "rhx-card": {
+    "prefix": "rhx-card",
+    "body": [
+      "<rhx-card>",
+      "    ${1:Card content}",
+      "</rhx-card>"
+    ],
+    "description": "htmxRazor card"
+  },
+  "rhx-card-full": {
+    "prefix": "rhx-card-full",
+    "body": [
+      "<rhx-card>",
+      "    <rhx-card-header>${1:Card Title}</rhx-card-header>",
+      "    ${2:Card body content}",
+      "    <rhx-card-footer>",
+      "        <rhx-button rhx-variant=\"brand\">${3:Action}</rhx-button>",
+      "    </rhx-card-footer>",
+      "</rhx-card>"
+    ],
+    "description": "htmxRazor card with header, body, and footer"
+  },
+  "rhx-card-image": {
+    "prefix": "rhx-card-image",
+    "body": [
+      "<rhx-card>",
+      "    <rhx-card-image rhx-src=\"${1:/images/photo.jpg}\" rhx-alt=\"${2:Description}\" />",
+      "    <rhx-card-header>${3:Title}</rhx-card-header>",
+      "    ${4:Description}",
+      "</rhx-card>"
+    ],
+    "description": "htmxRazor card with image"
+  },
+  "rhx-card-header": {
+    "prefix": "rhx-card-header",
+    "body": [
+      "<rhx-card-header>${1:Header}</rhx-card-header>"
+    ],
+    "description": "htmxRazor card header"
+  },
+  "rhx-card-footer": {
+    "prefix": "rhx-card-footer",
+    "body": [
+      "<rhx-card-footer>${1:Footer}</rhx-card-footer>"
+    ],
+    "description": "htmxRazor card footer"
+  },
+  "rhx-divider": {
+    "prefix": "rhx-divider",
+    "body": [
+      "<rhx-divider />"
+    ],
+    "description": "htmxRazor horizontal divider"
+  },
+  "rhx-divider-vertical": {
+    "prefix": "rhx-divider-vertical",
+    "body": [
+      "<rhx-divider rhx-vertical=\"true\" />"
+    ],
+    "description": "htmxRazor vertical divider"
+  },
+  "rhx-scroller": {
+    "prefix": "rhx-scroller",
+    "body": [
+      "<rhx-scroller rhx-orientation=\"${1|horizontal,vertical|}\">",
+      "    ${2:Scrollable content}",
+      "</rhx-scroller>"
+    ],
+    "description": "htmxRazor scroll container"
+  },
+  "rhx-split-panel": {
+    "prefix": "rhx-split-panel",
+    "body": [
+      "<rhx-split-panel rhx-position=\"${1:50}\">",
+      "    <rhx-split-start>${2:Left panel}</rhx-split-start>",
+      "    <rhx-split-end>${3:Right panel}</rhx-split-end>",
+      "</rhx-split-panel>"
+    ],
+    "description": "htmxRazor resizable split panel"
+  },
+  "rhx-timeline": {
+    "prefix": "rhx-timeline",
+    "body": [
+      "<rhx-timeline>",
+      "    <rhx-timeline-item rhx-label=\"${1:Date}\" rhx-variant=\"${2|neutral,brand,success,warning,danger|}\">",
+      "        ${3:Event description}",
+      "    </rhx-timeline-item>",
+      "    <rhx-timeline-item rhx-label=\"${4:Date}\">",
+      "        ${5:Event description}",
+      "    </rhx-timeline-item>",
+      "</rhx-timeline>"
+    ],
+    "description": "htmxRazor timeline"
+  },
+  "rhx-timeline-item": {
+    "prefix": "rhx-timeline-item",
+    "body": [
+      "<rhx-timeline-item rhx-label=\"${1:Label}\" rhx-variant=\"${2|neutral,brand,success,warning,danger|}\">",
+      "    ${3:Content}",
+      "</rhx-timeline-item>"
+    ],
+    "description": "htmxRazor timeline event"
+  },
+
+  // ─── Overlays ──────────────────────────────────────────────────────
+
+  "rhx-dialog": {
+    "prefix": "rhx-dialog",
+    "body": [
+      "<rhx-dialog rhx-label=\"${1:Dialog Title}\" rhx-open=\"${2|false,true|}\" rhx-size=\"${3|small,medium,large,full|}\">",
+      "    ${4:Dialog content}",
+      "    <rhx-dialog-footer>",
+      "        <rhx-button rhx-variant=\"neutral\" rhx-appearance=\"outlined\">Cancel</rhx-button>",
+      "        <rhx-button rhx-variant=\"brand\">Confirm</rhx-button>",
+      "    </rhx-dialog-footer>",
+      "</rhx-dialog>"
+    ],
+    "description": "htmxRazor modal dialog"
+  },
+  "rhx-dialog-footer": {
+    "prefix": "rhx-dialog-footer",
+    "body": [
+      "<rhx-dialog-footer>",
+      "    ${1:Footer actions}",
+      "</rhx-dialog-footer>"
+    ],
+    "description": "htmxRazor dialog footer"
+  },
+  "rhx-drawer": {
+    "prefix": "rhx-drawer",
+    "body": [
+      "<rhx-drawer rhx-label=\"${1:Drawer Title}\" rhx-placement=\"${2|end,start,top,bottom|}\" rhx-open=\"${3|false,true|}\">",
+      "    ${4:Drawer content}",
+      "    <rhx-drawer-footer>",
+      "        <rhx-button rhx-variant=\"brand\">${5:Action}</rhx-button>",
+      "    </rhx-drawer-footer>",
+      "</rhx-drawer>"
+    ],
+    "description": "htmxRazor slide-out drawer"
+  },
+  "rhx-drawer-footer": {
+    "prefix": "rhx-drawer-footer",
+    "body": [
+      "<rhx-drawer-footer>",
+      "    ${1:Footer actions}",
+      "</rhx-drawer-footer>"
+    ],
+    "description": "htmxRazor drawer footer"
+  },
+  "rhx-details": {
+    "prefix": "rhx-details",
+    "body": [
+      "<rhx-details rhx-summary=\"${1:Summary text}\" rhx-open=\"${2|false,true|}\">",
+      "    ${3:Expandable content}",
+      "</rhx-details>"
+    ],
+    "description": "htmxRazor expandable details/accordion"
+  },
+  "rhx-command-palette": {
+    "prefix": "rhx-command-palette",
+    "body": [
+      "<rhx-command-palette rhx-placeholder=\"${1:Search commands...}\" rhx-shortcut=\"${2:ctrl+k}\"",
+      "                     hx-get=\"${3:/endpoint}\" hx-target=\"${4:#results}\">",
+      "    <rhx-command-group rhx-heading=\"${5:Commands}\">",
+      "        <rhx-command-item rhx-value=\"${6:action}\">${7:Action Name}</rhx-command-item>",
+      "    </rhx-command-group>",
+      "</rhx-command-palette>"
+    ],
+    "description": "htmxRazor command palette (Ctrl+K)"
+  },
+  "rhx-command-group": {
+    "prefix": "rhx-command-group",
+    "body": [
+      "<rhx-command-group rhx-heading=\"${1:Group}\">",
+      "    <rhx-command-item rhx-value=\"${2:action}\">${3:Item}</rhx-command-item>",
+      "</rhx-command-group>"
+    ],
+    "description": "htmxRazor command palette group"
+  },
+  "rhx-command-item": {
+    "prefix": "rhx-command-item",
+    "body": [
+      "<rhx-command-item rhx-value=\"${1:action}\" rhx-icon=\"${2:icon-name}\">${3:Label}</rhx-command-item>"
+    ],
+    "description": "htmxRazor command palette item"
+  },
+
+  // ─── Imagery ───────────────────────────────────────────────────────
+
+  "rhx-icon": {
+    "prefix": "rhx-icon",
+    "body": [
+      "<rhx-icon rhx-name=\"${1:icon-name}\" rhx-size=\"${2|small,medium,large|}\" />"
+    ],
+    "description": "htmxRazor icon"
+  },
+  "rhx-avatar": {
+    "prefix": "rhx-avatar",
+    "body": [
+      "<rhx-avatar rhx-image=\"${1:/images/user.jpg}\" rhx-label=\"${2:User name}\" rhx-size=\"${3|small,medium,large|}\" />"
+    ],
+    "description": "htmxRazor user avatar"
+  },
+  "rhx-avatar-initials": {
+    "prefix": "rhx-avatar-initials",
+    "body": [
+      "<rhx-avatar rhx-initials=\"${1:JD}\" rhx-label=\"${2:John Doe}\" rhx-shape=\"${3|circle,square|}\" />"
+    ],
+    "description": "htmxRazor avatar with initials"
+  },
+  "rhx-animated-image": {
+    "prefix": "rhx-animated-image",
+    "body": [
+      "<rhx-animated-image rhx-src=\"${1:/images/animation.gif}\" rhx-alt=\"${2:Description}\" />"
+    ],
+    "description": "htmxRazor animated image (GIF) with play/pause"
+  },
+  "rhx-comparison": {
+    "prefix": "rhx-comparison",
+    "body": [
+      "<rhx-comparison rhx-before=\"${1:/images/before.jpg}\" rhx-before-alt=\"${2:Before}\"",
+      "                rhx-after=\"${3:/images/after.jpg}\" rhx-after-alt=\"${4:After}\" />"
+    ],
+    "description": "htmxRazor before/after image comparison slider"
+  },
+  "rhx-zoomable-frame": {
+    "prefix": "rhx-zoomable-frame",
+    "body": [
+      "<rhx-zoomable-frame rhx-src=\"${1:/images/photo.jpg}\" rhx-alt=\"${2:Zoomable image}\" />"
+    ],
+    "description": "htmxRazor zoomable image frame"
+  },
+
+  // ─── Formatting ────────────────────────────────────────────────────
+
+  "rhx-format-date": {
+    "prefix": "rhx-format-date",
+    "body": [
+      "<rhx-format-date rhx-date=\"${1:Model.DateValue}\" rhx-format=\"${2|short,medium,long,full|}\" />"
+    ],
+    "description": "htmxRazor localized date formatter"
+  },
+  "rhx-format-number": {
+    "prefix": "rhx-format-number",
+    "body": [
+      "<rhx-format-number rhx-value=\"${1:1234.56}\" rhx-type=\"${2|decimal,currency,percent|}\" />"
+    ],
+    "description": "htmxRazor localized number formatter"
+  },
+  "rhx-format-bytes": {
+    "prefix": "rhx-format-bytes",
+    "body": [
+      "<rhx-format-bytes rhx-value=\"${1:1048576}\" />"
+    ],
+    "description": "htmxRazor byte size formatter"
+  },
+  "rhx-relative-time": {
+    "prefix": "rhx-relative-time",
+    "body": [
+      "<rhx-relative-time rhx-date=\"${1:Model.DateValue}\" />"
+    ],
+    "description": "htmxRazor relative time display (e.g. '2 hours ago')"
+  },
+
+  // ─── Data Display ──────────────────────────────────────────────────
+
+  "rhx-data-table": {
+    "prefix": "rhx-data-table",
+    "body": [
+      "<rhx-data-table rhx-striped=\"true\" rhx-hoverable=\"true\"",
+      "                rhx-sort-url=\"${1:/endpoint}\" rhx-hx-target=\"${2:#table-container}\">",
+      "    <rhx-column rhx-header=\"${3:Name}\" rhx-field=\"${4:Name}\" rhx-sortable=\"true\" />",
+      "    <rhx-column rhx-header=\"${5:Email}\" rhx-field=\"${6:Email}\" />",
+      "</rhx-data-table>"
+    ],
+    "description": "htmxRazor data table with sortable columns"
+  },
+  "rhx-column": {
+    "prefix": "rhx-column",
+    "body": [
+      "<rhx-column rhx-header=\"${1:Header}\" rhx-field=\"${2:FieldName}\" rhx-sortable=\"${3|false,true|}\" />"
+    ],
+    "description": "htmxRazor data table column"
+  },
+  "rhx-data-table-pagination": {
+    "prefix": "rhx-data-table-pagination",
+    "body": [
+      "<rhx-data-table-pagination rhx-page=\"${1:Model.Page}\" rhx-page-size=\"${2:10}\"",
+      "                           rhx-total-items=\"${3:Model.TotalItems}\"",
+      "                           rhx-url=\"${4:/endpoint}\" rhx-target=\"${5:#table-container}\" />"
+    ],
+    "description": "htmxRazor data table pagination"
+  },
+  "rhx-sparkline": {
+    "prefix": "rhx-sparkline",
+    "body": [
+      "<rhx-sparkline rhx-values=\"${1:Model.Values}\" rhx-type=\"${2|line,bar,area|}\"",
+      "               rhx-width=\"${3:200}\" rhx-height=\"${4:40}\" />"
+    ],
+    "description": "htmxRazor inline sparkline chart"
+  },
+
+  // ─── Utilities ─────────────────────────────────────────────────────
+
+  "rhx-copy-button": {
+    "prefix": "rhx-copy-button",
+    "body": [
+      "<rhx-copy-button rhx-value=\"${1:Text to copy}\" />"
+    ],
+    "description": "htmxRazor copy-to-clipboard button"
+  },
+  "rhx-copy-button-from": {
+    "prefix": "rhx-copy-button-from",
+    "body": [
+      "<rhx-copy-button rhx-from=\"${1:#source-element}\" />"
+    ],
+    "description": "htmxRazor copy button targeting another element"
+  },
+  "rhx-qr-code": {
+    "prefix": "rhx-qr-code",
+    "body": [
+      "<rhx-qr-code rhx-value=\"${1:https://example.com}\" rhx-size=\"${2:200}\" />"
+    ],
+    "description": "htmxRazor QR code generator"
+  },
+  "rhx-animation": {
+    "prefix": "rhx-animation",
+    "body": [
+      "<rhx-animation rhx-name=\"${1|fadeIn,slideInUp,slideInDown,slideInLeft,slideInRight,zoomIn,bounceIn|}\"",
+      "               rhx-duration=\"${2:250ms}\" rhx-play=\"true\">",
+      "    ${3:Animated content}",
+      "</rhx-animation>"
+    ],
+    "description": "htmxRazor CSS animation wrapper"
+  },
+  "rhx-popover": {
+    "prefix": "rhx-popover",
+    "body": [
+      "<rhx-popover rhx-trigger=\"${1:#trigger-id}\" rhx-placement=\"${2|bottom,top,left,right|}\"",
+      "             rhx-trigger-event=\"${3|click,hover,focus|}\">",
+      "    ${4:Popover content}",
+      "</rhx-popover>"
+    ],
+    "description": "htmxRazor popover"
+  },
+  "rhx-popup": {
+    "prefix": "rhx-popup",
+    "body": [
+      "<rhx-popup rhx-anchor=\"${1:#anchor-id}\" rhx-placement=\"${2|bottom-start,bottom-end,top-start,top-end|}\"",
+      "           rhx-active=\"${3|false,true|}\">",
+      "    ${4:Popup content}",
+      "</rhx-popup>"
+    ],
+    "description": "htmxRazor positioned popup primitive"
+  },
+  "rhx-live-region": {
+    "prefix": "rhx-live-region",
+    "body": [
+      "<rhx-live-region rhx-politeness=\"${1|polite,assertive|}\">${2:Dynamic content}</rhx-live-region>"
+    ],
+    "description": "htmxRazor ARIA live region for screen reader announcements"
+  },
+
+  // ─── Patterns ──────────────────────────────────────────────────────
+
+  "rhx-lazy-load": {
+    "prefix": "rhx-lazy-load",
+    "body": [
+      "<rhx-lazy-load page=\"${1:/Page}\" page-handler=\"${2:LoadContent}\"",
+      "               target=\"${3:#container}\" swap=\"${4|innerHTML,outerHTML|}\">",
+      "    <rhx-spinner />",
+      "</rhx-lazy-load>"
+    ],
+    "description": "htmxRazor lazy-loaded content"
+  },
+  "rhx-infinite-scroll": {
+    "prefix": "rhx-infinite-scroll",
+    "body": [
+      "<rhx-infinite-scroll page=\"${1:/Page}\" page-handler=\"${2:LoadMore}\"",
+      "                     target=\"${3:#items}\" swap=\"beforeend\" />"
+    ],
+    "description": "htmxRazor infinite scroll trigger"
+  },
+  "rhx-load-more": {
+    "prefix": "rhx-load-more",
+    "body": [
+      "<rhx-load-more page=\"${1:/Page}\" page-handler=\"${2:LoadMore}\"",
+      "               target=\"${3:#items}\" swap=\"beforeend\"",
+      "               rhx-variant=\"${4|neutral,brand|}\" />"
+    ],
+    "description": "htmxRazor load-more button"
+  },
+  "rhx-poll": {
+    "prefix": "rhx-poll",
+    "body": [
+      "<rhx-poll page=\"${1:/Page}\" page-handler=\"${2:Status}\"",
+      "          interval=\"${3:5s}\" target=\"${4:#status}\" swap=\"innerHTML\" />"
+    ],
+    "description": "htmxRazor polling container"
+  },
+  "rhx-sse-stream": {
+    "prefix": "rhx-sse-stream",
+    "body": [
+      "<rhx-sse-stream page=\"${1:/Page}\" page-handler=\"${2:Stream}\"",
+      "                rhx-event=\"${3:message}\" rhx-swap=\"${4|innerHTML,beforeend|}\">",
+      "    <rhx-spinner />",
+      "</rhx-sse-stream>"
+    ],
+    "description": "htmxRazor Server-Sent Events stream"
+  },
+  "rhx-active-search": {
+    "prefix": "rhx-active-search",
+    "body": [
+      "<rhx-active-search page=\"${1:/Page}\" page-handler=\"${2:Search}\"",
+      "                   name=\"${3:q}\" target=\"${4:#results}\"",
+      "                   placeholder=\"${5:Search...}\" debounce=\"${6:300}\" />"
+    ],
+    "description": "htmxRazor live search input with debounce"
+  }
+}

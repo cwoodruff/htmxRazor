@@ -73,7 +73,10 @@
     <link rel="stylesheet" href="/_rhx/css/components/rhx-toast.css" />
     <link rel="stylesheet" href="/_rhx/css/components/rhx-pagination.css" />
     <link rel="stylesheet" href="/_rhx/css/components/rhx-live-region.css" />
+    <link rel="stylesheet" href="/_rhx/css/components/rhx-signalr.css" />
+    <link rel="stylesheet" href="/_rhx/css/components/rhx-kanban.css" />
     <link rel="stylesheet" href="/css/docs.css" />
+    <link rel="stylesheet" href="/css/playground.css" />
 </head>
 <body class="docs-layout @(showSidebar ? "" : "docs-layout--no-sidebar")">
 
@@ -155,6 +158,9 @@
     <script src="/_rhx/js/components/rhx-wizard.js" defer></script>
     <script src="/_rhx/js/components/rhx-htmx-form.js" defer></script>
     <script src="/_rhx/js/components/rhx-optimistic.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js" defer></script>
+    <script src="/_rhx/js/components/rhx-signalr.js" defer></script>
+    <script src="/_rhx/js/components/rhx-kanban.js" defer></script>
     <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js" defer></script>
     <script src="https://unpkg.com/htmx-ext-response-targets@2.0.2/response-targets.js" defer></script>
     @await RenderSectionAsync("Scripts", required: false)

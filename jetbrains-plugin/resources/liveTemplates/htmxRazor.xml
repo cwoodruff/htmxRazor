@@ -1,0 +1,597 @@
+<templateSet group="htmxRazor">
+
+    <!-- ═══ Actions ═══════════════════════════════════════════════════ -->
+
+    <template name="rhx-button" value="&lt;rhx-button rhx-variant=&quot;$VARIANT$&quot; rhx-appearance=&quot;$APPEARANCE$&quot;&gt;$LABEL$&lt;/rhx-button&gt;" description="htmxRazor button with variant and appearance" toReformat="true" toShortenFQNames="false">
+        <variable name="VARIANT" expression="enum(&quot;neutral&quot;,&quot;brand&quot;,&quot;success&quot;,&quot;warning&quot;,&quot;danger&quot;)" defaultValue="&quot;neutral&quot;" alwaysStopAt="true" />
+        <variable name="APPEARANCE" expression="enum(&quot;filled&quot;,&quot;outlined&quot;,&quot;plain&quot;)" defaultValue="&quot;filled&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Label&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-button-htmx" value="&lt;rhx-button rhx-variant=&quot;$VARIANT$&quot;&#10;            hx-$VERB$=&quot;$URL$&quot;&#10;            hx-target=&quot;$TARGET$&quot; hx-swap=&quot;$SWAP$&quot;&gt;$LABEL$&lt;/rhx-button&gt;" description="htmxRazor button with htmx attributes" toReformat="true" toShortenFQNames="false">
+        <variable name="VARIANT" expression="enum(&quot;neutral&quot;,&quot;brand&quot;,&quot;success&quot;,&quot;warning&quot;,&quot;danger&quot;)" defaultValue="&quot;brand&quot;" alwaysStopAt="true" />
+        <variable name="VERB" expression="enum(&quot;get&quot;,&quot;post&quot;,&quot;put&quot;,&quot;patch&quot;,&quot;delete&quot;)" defaultValue="&quot;get&quot;" alwaysStopAt="true" />
+        <variable name="URL" expression="" defaultValue="&quot;/endpoint&quot;" alwaysStopAt="true" />
+        <variable name="TARGET" expression="" defaultValue="&quot;#target&quot;" alwaysStopAt="true" />
+        <variable name="SWAP" expression="enum(&quot;innerHTML&quot;,&quot;outerHTML&quot;,&quot;beforeend&quot;,&quot;afterend&quot;)" defaultValue="&quot;innerHTML&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Label&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-button-loading" value="&lt;rhx-button rhx-variant=&quot;$VARIANT$&quot; rhx-loading=&quot;true&quot;&gt;$LABEL$&lt;/rhx-button&gt;" description="htmxRazor button in loading state" toReformat="true" toShortenFQNames="false">
+        <variable name="VARIANT" expression="enum(&quot;neutral&quot;,&quot;brand&quot;,&quot;success&quot;,&quot;warning&quot;,&quot;danger&quot;)" defaultValue="&quot;brand&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Loading...&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-button-link" value="&lt;rhx-button rhx-variant=&quot;$VARIANT$&quot; rhx-href=&quot;$HREF$&quot;&gt;$LABEL$&lt;/rhx-button&gt;" description="htmxRazor button rendered as a link" toReformat="true" toShortenFQNames="false">
+        <variable name="VARIANT" expression="enum(&quot;neutral&quot;,&quot;brand&quot;,&quot;success&quot;,&quot;warning&quot;,&quot;danger&quot;)" defaultValue="&quot;brand&quot;" alwaysStopAt="true" />
+        <variable name="HREF" expression="" defaultValue="&quot;/path&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Link Text&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-button-group" value="&lt;rhx-button-group label=&quot;$LABEL$&quot;&gt;&#10;    &lt;rhx-button rhx-variant=&quot;$VARIANT$&quot;&gt;$FIRST$&lt;/rhx-button&gt;&#10;    &lt;rhx-button rhx-variant=&quot;$VARIANT$&quot;&gt;$SECOND$&lt;/rhx-button&gt;&#10;&lt;/rhx-button-group&gt;" description="htmxRazor button group" toReformat="true" toShortenFQNames="false">
+        <variable name="LABEL" expression="" defaultValue="&quot;Group label&quot;" alwaysStopAt="true" />
+        <variable name="VARIANT" expression="" defaultValue="&quot;neutral&quot;" alwaysStopAt="true" />
+        <variable name="FIRST" expression="" defaultValue="&quot;First&quot;" alwaysStopAt="true" />
+        <variable name="SECOND" expression="" defaultValue="&quot;Second&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-dropdown" value="&lt;rhx-dropdown rhx-placement=&quot;$PLACEMENT$&quot;&gt;&#10;    &lt;rhx-dropdown-trigger&gt;&#10;        &lt;rhx-button rhx-variant=&quot;neutral&quot;&gt;$TRIGGER$&lt;/rhx-button&gt;&#10;    &lt;/rhx-dropdown-trigger&gt;&#10;    &lt;rhx-dropdown-item&gt;$ITEM1$&lt;/rhx-dropdown-item&gt;&#10;    &lt;rhx-dropdown-item&gt;$ITEM2$&lt;/rhx-dropdown-item&gt;&#10;&lt;/rhx-dropdown&gt;" description="htmxRazor dropdown menu" toReformat="true" toShortenFQNames="false">
+        <variable name="PLACEMENT" expression="enum(&quot;bottom-start&quot;,&quot;bottom-end&quot;,&quot;top-start&quot;,&quot;top-end&quot;)" defaultValue="&quot;bottom-start&quot;" alwaysStopAt="true" />
+        <variable name="TRIGGER" expression="" defaultValue="&quot;Menu&quot;" alwaysStopAt="true" />
+        <variable name="ITEM1" expression="" defaultValue="&quot;Item 1&quot;" alwaysStopAt="true" />
+        <variable name="ITEM2" expression="" defaultValue="&quot;Item 2&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-dropdown-item" value="&lt;rhx-dropdown-item&gt;$ITEM$&lt;/rhx-dropdown-item&gt;" description="htmxRazor dropdown menu item" toReformat="true" toShortenFQNames="false">
+        <variable name="ITEM" expression="" defaultValue="&quot;Item&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-dropdown-divider" value="&lt;rhx-dropdown-divider /&gt;" description="htmxRazor dropdown divider" toReformat="true" toShortenFQNames="false">
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <!-- ═══ Forms ═════════════════════════════════════════════════════ -->
+
+    <template name="rhx-input" value="&lt;rhx-input rhx-for=&quot;$FOR$&quot; rhx-type=&quot;$TYPE$&quot; rhx-placeholder=&quot;$PLACEHOLDER$&quot; /&gt;" description="htmxRazor text input with model binding" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="TYPE" expression="enum(&quot;text&quot;,&quot;email&quot;,&quot;password&quot;,&quot;url&quot;,&quot;tel&quot;,&quot;search&quot;,&quot;number&quot;)" defaultValue="&quot;text&quot;" alwaysStopAt="true" />
+        <variable name="PLACEHOLDER" expression="" defaultValue="&quot;Enter value&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-input-htmx" value="&lt;rhx-input rhx-for=&quot;$FOR$&quot; rhx-type=&quot;$TYPE$&quot;&#10;           hx-$VERB$=&quot;$URL$&quot; hx-target=&quot;$TARGET$&quot;&#10;           hx-trigger=&quot;$TRIGGER$&quot; /&gt;" description="htmxRazor input with htmx live validation or search" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="TYPE" expression="enum(&quot;text&quot;,&quot;email&quot;,&quot;password&quot;,&quot;url&quot;,&quot;tel&quot;,&quot;search&quot;)" defaultValue="&quot;text&quot;" alwaysStopAt="true" />
+        <variable name="VERB" expression="enum(&quot;get&quot;,&quot;post&quot;)" defaultValue="&quot;get&quot;" alwaysStopAt="true" />
+        <variable name="URL" expression="" defaultValue="&quot;/endpoint&quot;" alwaysStopAt="true" />
+        <variable name="TARGET" expression="" defaultValue="&quot;#target&quot;" alwaysStopAt="true" />
+        <variable name="TRIGGER" expression="enum(&quot;input changed delay:300ms&quot;,&quot;change&quot;,&quot;keyup changed delay:500ms&quot;)" defaultValue="&quot;input changed delay:300ms&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-textarea" value="&lt;rhx-textarea rhx-for=&quot;$FOR$&quot; rhx-rows=&quot;$ROWS$&quot; rhx-placeholder=&quot;$PLACEHOLDER$&quot; /&gt;" description="htmxRazor textarea" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="ROWS" expression="" defaultValue="&quot;4&quot;" alwaysStopAt="true" />
+        <variable name="PLACEHOLDER" expression="" defaultValue="&quot;Enter text&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-select" value="&lt;rhx-select rhx-for=&quot;$FOR$&quot; rhx-placeholder=&quot;$PLACEHOLDER$&quot;&gt;&#10;    &lt;rhx-option value=&quot;$VAL1$&quot;&gt;$OPT1$&lt;/rhx-option&gt;&#10;    &lt;rhx-option value=&quot;$VAL2$&quot;&gt;$OPT2$&lt;/rhx-option&gt;&#10;&lt;/rhx-select&gt;" description="htmxRazor select dropdown" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="PLACEHOLDER" expression="" defaultValue="&quot;Choose...&quot;" alwaysStopAt="true" />
+        <variable name="VAL1" expression="" defaultValue="&quot;value1&quot;" alwaysStopAt="true" />
+        <variable name="OPT1" expression="" defaultValue="&quot;Option 1&quot;" alwaysStopAt="true" />
+        <variable name="VAL2" expression="" defaultValue="&quot;value2&quot;" alwaysStopAt="true" />
+        <variable name="OPT2" expression="" defaultValue="&quot;Option 2&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-option" value="&lt;rhx-option value=&quot;$VALUE$&quot;&gt;$LABEL$&lt;/rhx-option&gt;" description="htmxRazor select option" toReformat="true" toShortenFQNames="false">
+        <variable name="VALUE" expression="" defaultValue="&quot;value&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Label&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-checkbox" value="&lt;rhx-checkbox rhx-for=&quot;$FOR$&quot; /&gt;" description="htmxRazor checkbox" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-switch" value="&lt;rhx-switch rhx-for=&quot;$FOR$&quot; /&gt;" description="htmxRazor toggle switch" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-radio-group" value="&lt;rhx-radio-group rhx-for=&quot;$FOR$&quot;&gt;&#10;    &lt;rhx-radio value=&quot;$VAL1$&quot; rhx-label=&quot;$LBL1$&quot; /&gt;&#10;    &lt;rhx-radio value=&quot;$VAL2$&quot; rhx-label=&quot;$LBL2$&quot; /&gt;&#10;&lt;/rhx-radio-group&gt;" description="htmxRazor radio button group" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="VAL1" expression="" defaultValue="&quot;option1&quot;" alwaysStopAt="true" />
+        <variable name="LBL1" expression="" defaultValue="&quot;Option 1&quot;" alwaysStopAt="true" />
+        <variable name="VAL2" expression="" defaultValue="&quot;option2&quot;" alwaysStopAt="true" />
+        <variable name="LBL2" expression="" defaultValue="&quot;Option 2&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-radio" value="&lt;rhx-radio value=&quot;$VALUE$&quot; rhx-label=&quot;$LABEL$&quot; /&gt;" description="htmxRazor radio button" toReformat="true" toShortenFQNames="false">
+        <variable name="VALUE" expression="" defaultValue="&quot;value&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Label&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-slider" value="&lt;rhx-slider rhx-for=&quot;$FOR$&quot; rhx-min=&quot;$MIN$&quot; rhx-max=&quot;$MAX$&quot; rhx-step=&quot;$STEP$&quot; /&gt;" description="htmxRazor range slider" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="MIN" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+        <variable name="MAX" expression="" defaultValue="&quot;100&quot;" alwaysStopAt="true" />
+        <variable name="STEP" expression="" defaultValue="&quot;1&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-number-input" value="&lt;rhx-number-input rhx-for=&quot;$FOR$&quot; rhx-min=&quot;$MIN$&quot; rhx-max=&quot;$MAX$&quot; rhx-step=&quot;$STEP$&quot; /&gt;" description="htmxRazor number input with steppers" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="MIN" expression="" defaultValue="&quot;0&quot;" alwaysStopAt="true" />
+        <variable name="MAX" expression="" defaultValue="&quot;100&quot;" alwaysStopAt="true" />
+        <variable name="STEP" expression="" defaultValue="&quot;1&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-rating" value="&lt;rhx-rating rhx-for=&quot;$FOR$&quot; rhx-max=&quot;$MAX$&quot; /&gt;" description="htmxRazor star rating" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="MAX" expression="" defaultValue="&quot;5&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-color-picker" value="&lt;rhx-color-picker rhx-for=&quot;$FOR$&quot; rhx-format=&quot;$FORMAT$&quot; /&gt;" description="htmxRazor color picker" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="FORMAT" expression="enum(&quot;hex&quot;,&quot;rgb&quot;,&quot;hsl&quot;)" defaultValue="&quot;hex&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-file-input" value="&lt;rhx-file-input rhx-for=&quot;$FOR$&quot; rhx-accept=&quot;$ACCEPT$&quot; /&gt;" description="htmxRazor file upload input" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="ACCEPT" expression="" defaultValue="&quot;.jpg,.png,.pdf&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-combobox" value="&lt;rhx-combobox rhx-for=&quot;$FOR$&quot; rhx-placeholder=&quot;$PLACEHOLDER$&quot;&#10;              rhx-items=&quot;$ITEMS$&quot; /&gt;" description="htmxRazor combobox with autocomplete" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="PLACEHOLDER" expression="" defaultValue="&quot;Search...&quot;" alwaysStopAt="true" />
+        <variable name="ITEMS" expression="" defaultValue="&quot;Model.Items&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-combobox-server" value="&lt;rhx-combobox rhx-for=&quot;$FOR$&quot; rhx-placeholder=&quot;$PLACEHOLDER$&quot;&#10;              rhx-server-filter=&quot;true&quot; rhx-search-param=&quot;$PARAM$&quot;&#10;              hx-get=&quot;$URL$&quot; hx-target=&quot;$TARGET$&quot; /&gt;" description="htmxRazor combobox with server-side filtering" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <variable name="PLACEHOLDER" expression="" defaultValue="&quot;Search...&quot;" alwaysStopAt="true" />
+        <variable name="PARAM" expression="" defaultValue="&quot;q&quot;" alwaysStopAt="true" />
+        <variable name="URL" expression="" defaultValue="&quot;/endpoint&quot;" alwaysStopAt="true" />
+        <variable name="TARGET" expression="" defaultValue="&quot;#results&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-htmx-form" value="&lt;rhx-htmx-form page=&quot;$PAGE$&quot; page-handler=&quot;$HANDLER$&quot;&#10;               rhx-method=&quot;$METHOD$&quot;&#10;               rhx-target-422=&quot;$TARGET422$&quot;&gt;&#10;    $CONTENT$&#10;    &lt;rhx-button type=&quot;submit&quot; rhx-variant=&quot;brand&quot;&gt;Submit&lt;/rhx-button&gt;&#10;&lt;/rhx-htmx-form&gt;" description="htmxRazor form with htmx submission and validation" toReformat="true" toShortenFQNames="false">
+        <variable name="PAGE" expression="" defaultValue="&quot;/Page&quot;" alwaysStopAt="true" />
+        <variable name="HANDLER" expression="" defaultValue="&quot;Submit&quot;" alwaysStopAt="true" />
+        <variable name="METHOD" expression="enum(&quot;post&quot;,&quot;put&quot;,&quot;patch&quot;,&quot;delete&quot;)" defaultValue="&quot;post&quot;" alwaysStopAt="true" />
+        <variable name="TARGET422" expression="" defaultValue="&quot;#form-errors&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-validation-message" value="&lt;rhx-validation-message rhx-for=&quot;$FOR$&quot; /&gt;" description="htmxRazor validation message" toReformat="true" toShortenFQNames="false">
+        <variable name="FOR" expression="" defaultValue="&quot;Model.Property&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-validation-summary" value="&lt;rhx-validation-summary rhx-variant=&quot;$VARIANT$&quot; /&gt;" description="htmxRazor validation summary" toReformat="true" toShortenFQNames="false">
+        <variable name="VARIANT" expression="enum(&quot;danger&quot;,&quot;warning&quot;)" defaultValue="&quot;danger&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <!-- ═══ Feedback ══════════════════════════════════════════════════ -->
+
+    <template name="rhx-badge" value="&lt;rhx-badge rhx-variant=&quot;$VARIANT$&quot;&gt;$LABEL$&lt;/rhx-badge&gt;" description="htmxRazor badge" toReformat="true" toShortenFQNames="false">
+        <variable name="VARIANT" expression="enum(&quot;neutral&quot;,&quot;brand&quot;,&quot;success&quot;,&quot;warning&quot;,&quot;danger&quot;)" defaultValue="&quot;neutral&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Label&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-callout" value="&lt;rhx-callout rhx-variant=&quot;$VARIANT$&quot; rhx-closable=&quot;$CLOSABLE$&quot;&gt;&#10;    $CONTENT$&#10;&lt;/rhx-callout&gt;" description="htmxRazor callout/alert" toReformat="true" toShortenFQNames="false">
+        <variable name="VARIANT" expression="enum(&quot;neutral&quot;,&quot;brand&quot;,&quot;success&quot;,&quot;warning&quot;,&quot;danger&quot;)" defaultValue="&quot;brand&quot;" alwaysStopAt="true" />
+        <variable name="CLOSABLE" expression="enum(&quot;false&quot;,&quot;true&quot;)" defaultValue="&quot;false&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Callout message&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-progress-bar" value="&lt;rhx-progress-bar rhx-value=&quot;$VALUE$&quot; rhx-label=&quot;$LABEL$&quot; /&gt;" description="htmxRazor progress bar" toReformat="true" toShortenFQNames="false">
+        <variable name="VALUE" expression="" defaultValue="&quot;50&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Loading...&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-progress-ring" value="&lt;rhx-progress-ring rhx-value=&quot;$VALUE$&quot; rhx-label=&quot;$LABEL$&quot; /&gt;" description="htmxRazor circular progress ring" toReformat="true" toShortenFQNames="false">
+        <variable name="VALUE" expression="" defaultValue="&quot;50&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Loading...&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-skeleton" value="&lt;rhx-skeleton rhx-effect=&quot;$EFFECT$&quot; rhx-shape=&quot;$SHAPE$&quot; rhx-height=&quot;$HEIGHT$&quot; /&gt;" description="htmxRazor skeleton loading placeholder" toReformat="true" toShortenFQNames="false">
+        <variable name="EFFECT" expression="enum(&quot;sheen&quot;,&quot;pulse&quot;,&quot;none&quot;)" defaultValue="&quot;sheen&quot;" alwaysStopAt="true" />
+        <variable name="SHAPE" expression="enum(&quot;rectangle&quot;,&quot;circle&quot;)" defaultValue="&quot;rectangle&quot;" alwaysStopAt="true" />
+        <variable name="HEIGHT" expression="" defaultValue="&quot;1rem&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-spinner" value="&lt;rhx-spinner rhx-size=&quot;$SIZE$&quot; rhx-label=&quot;$LABEL$&quot; /&gt;" description="htmxRazor loading spinner" toReformat="true" toShortenFQNames="false">
+        <variable name="SIZE" expression="enum(&quot;small&quot;,&quot;medium&quot;,&quot;large&quot;)" defaultValue="&quot;medium&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Loading&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-tag" value="&lt;rhx-tag rhx-variant=&quot;$VARIANT$&quot; rhx-size=&quot;$SIZE$&quot;&gt;$LABEL$&lt;/rhx-tag&gt;" description="htmxRazor tag/chip" toReformat="true" toShortenFQNames="false">
+        <variable name="VARIANT" expression="enum(&quot;neutral&quot;,&quot;brand&quot;,&quot;success&quot;,&quot;warning&quot;,&quot;danger&quot;)" defaultValue="&quot;neutral&quot;" alwaysStopAt="true" />
+        <variable name="SIZE" expression="enum(&quot;small&quot;,&quot;medium&quot;,&quot;large&quot;)" defaultValue="&quot;medium&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Tag&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-toast" value="&lt;rhx-toast rhx-variant=&quot;$VARIANT$&quot; rhx-duration=&quot;$DURATION$&quot; rhx-closable=&quot;true&quot;&gt;&#10;    $CONTENT$&#10;&lt;/rhx-toast&gt;" description="htmxRazor toast notification" toReformat="true" toShortenFQNames="false">
+        <variable name="VARIANT" expression="enum(&quot;neutral&quot;,&quot;brand&quot;,&quot;success&quot;,&quot;warning&quot;,&quot;danger&quot;)" defaultValue="&quot;success&quot;" alwaysStopAt="true" />
+        <variable name="DURATION" expression="" defaultValue="&quot;5000&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Toast message&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-toast-container" value="&lt;rhx-toast-container rhx-position=&quot;$POSITION$&quot; /&gt;" description="htmxRazor toast container" toReformat="true" toShortenFQNames="false">
+        <variable name="POSITION" expression="enum(&quot;top-end&quot;,&quot;top-start&quot;,&quot;bottom-end&quot;,&quot;bottom-start&quot;)" defaultValue="&quot;top-end&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-tooltip" value="&lt;rhx-tooltip rhx-content=&quot;$CONTENT$&quot; rhx-placement=&quot;$PLACEMENT$&quot;&gt;&#10;    $CHILD$&#10;&lt;/rhx-tooltip&gt;" description="htmxRazor tooltip" toReformat="true" toShortenFQNames="false">
+        <variable name="CONTENT" expression="" defaultValue="&quot;Tooltip text&quot;" alwaysStopAt="true" />
+        <variable name="PLACEMENT" expression="enum(&quot;top&quot;,&quot;bottom&quot;,&quot;left&quot;,&quot;right&quot;)" defaultValue="&quot;top&quot;" alwaysStopAt="true" />
+        <variable name="CHILD" expression="" defaultValue="&quot;Hover target&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <!-- ═══ Navigation ════════════════════════════════════════════════ -->
+
+    <template name="rhx-breadcrumb" value="&lt;rhx-breadcrumb rhx-items=&quot;$ITEMS$&quot; /&gt;" description="htmxRazor breadcrumb navigation" toReformat="true" toShortenFQNames="false">
+        <variable name="ITEMS" expression="" defaultValue="&quot;Model.Breadcrumbs&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-breadcrumb-manual" value="&lt;rhx-breadcrumb&gt;&#10;    &lt;rhx-breadcrumb-item href=&quot;$HREF1$&quot;&gt;Home&lt;/rhx-breadcrumb-item&gt;&#10;    &lt;rhx-breadcrumb-item href=&quot;$HREF2$&quot;&gt;$SECTION$&lt;/rhx-breadcrumb-item&gt;&#10;    &lt;rhx-breadcrumb-item&gt;$CURRENT$&lt;/rhx-breadcrumb-item&gt;&#10;&lt;/rhx-breadcrumb&gt;" description="htmxRazor breadcrumb with manual items" toReformat="true" toShortenFQNames="false">
+        <variable name="HREF1" expression="" defaultValue="&quot;/&quot;" alwaysStopAt="true" />
+        <variable name="HREF2" expression="" defaultValue="&quot;/section&quot;" alwaysStopAt="true" />
+        <variable name="SECTION" expression="" defaultValue="&quot;Section&quot;" alwaysStopAt="true" />
+        <variable name="CURRENT" expression="" defaultValue="&quot;Current&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-tab-group" value="&lt;rhx-tab-group&gt;&#10;    &lt;rhx-tab rhx-panel=&quot;$PANEL1$&quot; rhx-active=&quot;true&quot;&gt;$TAB1$&lt;/rhx-tab&gt;&#10;    &lt;rhx-tab rhx-panel=&quot;$PANEL2$&quot;&gt;$TAB2$&lt;/rhx-tab&gt;&#10;&lt;/rhx-tab-group&gt;&#10;&#10;&lt;rhx-tab-panel rhx-name=&quot;$PANEL1$&quot; rhx-active=&quot;true&quot;&gt;&#10;    $CONTENT1$&#10;&lt;/rhx-tab-panel&gt;&#10;&lt;rhx-tab-panel rhx-name=&quot;$PANEL2$&quot;&gt;&#10;    $CONTENT2$&#10;&lt;/rhx-tab-panel&gt;" description="htmxRazor tab group with panels" toReformat="true" toShortenFQNames="false">
+        <variable name="PANEL1" expression="" defaultValue="&quot;panel1&quot;" alwaysStopAt="true" />
+        <variable name="TAB1" expression="" defaultValue="&quot;Tab 1&quot;" alwaysStopAt="true" />
+        <variable name="PANEL2" expression="" defaultValue="&quot;panel2&quot;" alwaysStopAt="true" />
+        <variable name="TAB2" expression="" defaultValue="&quot;Tab 2&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT1" expression="" defaultValue="&quot;Panel 1 content&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT2" expression="" defaultValue="&quot;Panel 2 content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-tab" value="&lt;rhx-tab rhx-panel=&quot;$PANEL$&quot;&gt;$LABEL$&lt;/rhx-tab&gt;" description="htmxRazor tab" toReformat="true" toShortenFQNames="false">
+        <variable name="PANEL" expression="" defaultValue="&quot;panel-id&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Tab Label&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-tab-panel" value="&lt;rhx-tab-panel rhx-name=&quot;$NAME$&quot;&gt;&#10;    $CONTENT$&#10;&lt;/rhx-tab-panel&gt;" description="htmxRazor tab panel" toReformat="true" toShortenFQNames="false">
+        <variable name="NAME" expression="" defaultValue="&quot;panel-id&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-carousel" value="&lt;rhx-carousel rhx-navigation=&quot;true&quot; rhx-pagination=&quot;true&quot;&gt;&#10;    &lt;rhx-carousel-item&gt;$SLIDE1$&lt;/rhx-carousel-item&gt;&#10;    &lt;rhx-carousel-item&gt;$SLIDE2$&lt;/rhx-carousel-item&gt;&#10;    &lt;rhx-carousel-item&gt;$SLIDE3$&lt;/rhx-carousel-item&gt;&#10;&lt;/rhx-carousel&gt;" description="htmxRazor carousel" toReformat="true" toShortenFQNames="false">
+        <variable name="SLIDE1" expression="" defaultValue="&quot;Slide 1&quot;" alwaysStopAt="true" />
+        <variable name="SLIDE2" expression="" defaultValue="&quot;Slide 2&quot;" alwaysStopAt="true" />
+        <variable name="SLIDE3" expression="" defaultValue="&quot;Slide 3&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-pagination" value="&lt;rhx-pagination rhx-current-page=&quot;$PAGE$&quot;&#10;                rhx-total-items=&quot;$TOTAL$&quot;&#10;                rhx-page-size=&quot;$SIZE$&quot;&#10;                hx-get=&quot;$URL$&quot; hx-target=&quot;$TARGET$&quot; /&gt;" description="htmxRazor pagination with htmx" toReformat="true" toShortenFQNames="false">
+        <variable name="PAGE" expression="" defaultValue="&quot;Model.CurrentPage&quot;" alwaysStopAt="true" />
+        <variable name="TOTAL" expression="" defaultValue="&quot;Model.TotalItems&quot;" alwaysStopAt="true" />
+        <variable name="SIZE" expression="" defaultValue="&quot;10&quot;" alwaysStopAt="true" />
+        <variable name="URL" expression="" defaultValue="&quot;/endpoint&quot;" alwaysStopAt="true" />
+        <variable name="TARGET" expression="" defaultValue="&quot;#results&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-tree" value="&lt;rhx-tree rhx-selection=&quot;$SELECTION$&quot;&gt;&#10;    &lt;rhx-tree-item rhx-label=&quot;$ROOT$&quot;&gt;&#10;        &lt;rhx-tree-item rhx-label=&quot;$CHILD1$&quot; /&gt;&#10;        &lt;rhx-tree-item rhx-label=&quot;$CHILD2$&quot; /&gt;&#10;    &lt;/rhx-tree-item&gt;&#10;&lt;/rhx-tree&gt;" description="htmxRazor tree view" toReformat="true" toShortenFQNames="false">
+        <variable name="SELECTION" expression="enum(&quot;single&quot;,&quot;multiple&quot;,&quot;leaf&quot;)" defaultValue="&quot;single&quot;" alwaysStopAt="true" />
+        <variable name="ROOT" expression="" defaultValue="&quot;Root&quot;" alwaysStopAt="true" />
+        <variable name="CHILD1" expression="" defaultValue="&quot;Child 1&quot;" alwaysStopAt="true" />
+        <variable name="CHILD2" expression="" defaultValue="&quot;Child 2&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-tree-item" value="&lt;rhx-tree-item rhx-label=&quot;$LABEL$&quot; /&gt;" description="htmxRazor tree item" toReformat="true" toShortenFQNames="false">
+        <variable name="LABEL" expression="" defaultValue="&quot;Item&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-wizard" value="&lt;rhx-wizard page=&quot;$PAGE$&quot; page-handler-step=&quot;$HANDLER$&quot;&#10;            rhx-current-step=&quot;$STEP$&quot; rhx-total-steps=&quot;$TOTAL$&quot;&gt;&#10;    &lt;rhx-wizard-step rhx-title=&quot;$TITLE$&quot;&gt;&#10;        $CONTENT$&#10;    &lt;/rhx-wizard-step&gt;&#10;&lt;/rhx-wizard&gt;" description="htmxRazor multi-step wizard" toReformat="true" toShortenFQNames="false">
+        <variable name="PAGE" expression="" defaultValue="&quot;/Page&quot;" alwaysStopAt="true" />
+        <variable name="HANDLER" expression="" defaultValue="&quot;Step&quot;" alwaysStopAt="true" />
+        <variable name="STEP" expression="" defaultValue="&quot;1&quot;" alwaysStopAt="true" />
+        <variable name="TOTAL" expression="" defaultValue="&quot;3&quot;" alwaysStopAt="true" />
+        <variable name="TITLE" expression="" defaultValue="&quot;Step 1&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Step 1 content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-skip-nav" value="&lt;rhx-skip-nav rhx-target=&quot;$TARGET$&quot; rhx-label=&quot;$LABEL$&quot; /&gt;" description="htmxRazor skip navigation link (a11y)" toReformat="true" toShortenFQNames="false">
+        <variable name="TARGET" expression="" defaultValue="&quot;#main-content&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Skip to main content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-landmark" value="&lt;rhx-landmark rhx-role=&quot;$ROLE$&quot; rhx-label=&quot;$LABEL$&quot;&gt;&#10;    $CONTENT$&#10;&lt;/rhx-landmark&gt;" description="htmxRazor ARIA landmark region" toReformat="true" toShortenFQNames="false">
+        <variable name="ROLE" expression="enum(&quot;main&quot;,&quot;navigation&quot;,&quot;complementary&quot;,&quot;banner&quot;,&quot;contentinfo&quot;,&quot;search&quot;)" defaultValue="&quot;main&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Section label&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <!-- ═══ Organization ══════════════════════════════════════════════ -->
+
+    <template name="rhx-card" value="&lt;rhx-card&gt;&#10;    $CONTENT$&#10;&lt;/rhx-card&gt;" description="htmxRazor card" toReformat="true" toShortenFQNames="false">
+        <variable name="CONTENT" expression="" defaultValue="&quot;Card content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-card-full" value="&lt;rhx-card&gt;&#10;    &lt;rhx-card-header&gt;$TITLE$&lt;/rhx-card-header&gt;&#10;    $BODY$&#10;    &lt;rhx-card-footer&gt;&#10;        &lt;rhx-button rhx-variant=&quot;brand&quot;&gt;$ACTION$&lt;/rhx-button&gt;&#10;    &lt;/rhx-card-footer&gt;&#10;&lt;/rhx-card&gt;" description="htmxRazor card with header, body, and footer" toReformat="true" toShortenFQNames="false">
+        <variable name="TITLE" expression="" defaultValue="&quot;Card Title&quot;" alwaysStopAt="true" />
+        <variable name="BODY" expression="" defaultValue="&quot;Card body content&quot;" alwaysStopAt="true" />
+        <variable name="ACTION" expression="" defaultValue="&quot;Action&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-card-image" value="&lt;rhx-card&gt;&#10;    &lt;rhx-card-image rhx-src=&quot;$SRC$&quot; rhx-alt=&quot;$ALT$&quot; /&gt;&#10;    &lt;rhx-card-header&gt;$TITLE$&lt;/rhx-card-header&gt;&#10;    $BODY$&#10;&lt;/rhx-card&gt;" description="htmxRazor card with image" toReformat="true" toShortenFQNames="false">
+        <variable name="SRC" expression="" defaultValue="&quot;/images/photo.jpg&quot;" alwaysStopAt="true" />
+        <variable name="ALT" expression="" defaultValue="&quot;Description&quot;" alwaysStopAt="true" />
+        <variable name="TITLE" expression="" defaultValue="&quot;Title&quot;" alwaysStopAt="true" />
+        <variable name="BODY" expression="" defaultValue="&quot;Description&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-divider" value="&lt;rhx-divider /&gt;" description="htmxRazor horizontal divider" toReformat="true" toShortenFQNames="false">
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-split-panel" value="&lt;rhx-split-panel rhx-position=&quot;$POSITION$&quot;&gt;&#10;    &lt;rhx-split-start&gt;$LEFT$&lt;/rhx-split-start&gt;&#10;    &lt;rhx-split-end&gt;$RIGHT$&lt;/rhx-split-end&gt;&#10;&lt;/rhx-split-panel&gt;" description="htmxRazor resizable split panel" toReformat="true" toShortenFQNames="false">
+        <variable name="POSITION" expression="" defaultValue="&quot;50&quot;" alwaysStopAt="true" />
+        <variable name="LEFT" expression="" defaultValue="&quot;Left panel&quot;" alwaysStopAt="true" />
+        <variable name="RIGHT" expression="" defaultValue="&quot;Right panel&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-timeline" value="&lt;rhx-timeline&gt;&#10;    &lt;rhx-timeline-item rhx-label=&quot;$DATE1$&quot; rhx-variant=&quot;$VARIANT$&quot;&gt;&#10;        $EVENT1$&#10;    &lt;/rhx-timeline-item&gt;&#10;    &lt;rhx-timeline-item rhx-label=&quot;$DATE2$&quot;&gt;&#10;        $EVENT2$&#10;    &lt;/rhx-timeline-item&gt;&#10;&lt;/rhx-timeline&gt;" description="htmxRazor timeline" toReformat="true" toShortenFQNames="false">
+        <variable name="DATE1" expression="" defaultValue="&quot;Date&quot;" alwaysStopAt="true" />
+        <variable name="VARIANT" expression="enum(&quot;neutral&quot;,&quot;brand&quot;,&quot;success&quot;,&quot;warning&quot;,&quot;danger&quot;)" defaultValue="&quot;brand&quot;" alwaysStopAt="true" />
+        <variable name="EVENT1" expression="" defaultValue="&quot;Event description&quot;" alwaysStopAt="true" />
+        <variable name="DATE2" expression="" defaultValue="&quot;Date&quot;" alwaysStopAt="true" />
+        <variable name="EVENT2" expression="" defaultValue="&quot;Event description&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <!-- ═══ Overlays ══════════════════════════════════════════════════ -->
+
+    <template name="rhx-dialog" value="&lt;rhx-dialog rhx-label=&quot;$TITLE$&quot; rhx-open=&quot;$OPEN$&quot; rhx-size=&quot;$SIZE$&quot;&gt;&#10;    $CONTENT$&#10;    &lt;rhx-dialog-footer&gt;&#10;        &lt;rhx-button rhx-variant=&quot;neutral&quot; rhx-appearance=&quot;outlined&quot;&gt;Cancel&lt;/rhx-button&gt;&#10;        &lt;rhx-button rhx-variant=&quot;brand&quot;&gt;Confirm&lt;/rhx-button&gt;&#10;    &lt;/rhx-dialog-footer&gt;&#10;&lt;/rhx-dialog&gt;" description="htmxRazor modal dialog" toReformat="true" toShortenFQNames="false">
+        <variable name="TITLE" expression="" defaultValue="&quot;Dialog Title&quot;" alwaysStopAt="true" />
+        <variable name="OPEN" expression="enum(&quot;false&quot;,&quot;true&quot;)" defaultValue="&quot;false&quot;" alwaysStopAt="true" />
+        <variable name="SIZE" expression="enum(&quot;small&quot;,&quot;medium&quot;,&quot;large&quot;,&quot;full&quot;)" defaultValue="&quot;medium&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Dialog content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-drawer" value="&lt;rhx-drawer rhx-label=&quot;$TITLE$&quot; rhx-placement=&quot;$PLACEMENT$&quot; rhx-open=&quot;$OPEN$&quot;&gt;&#10;    $CONTENT$&#10;    &lt;rhx-drawer-footer&gt;&#10;        &lt;rhx-button rhx-variant=&quot;brand&quot;&gt;$ACTION$&lt;/rhx-button&gt;&#10;    &lt;/rhx-drawer-footer&gt;&#10;&lt;/rhx-drawer&gt;" description="htmxRazor slide-out drawer" toReformat="true" toShortenFQNames="false">
+        <variable name="TITLE" expression="" defaultValue="&quot;Drawer Title&quot;" alwaysStopAt="true" />
+        <variable name="PLACEMENT" expression="enum(&quot;end&quot;,&quot;start&quot;,&quot;top&quot;,&quot;bottom&quot;)" defaultValue="&quot;end&quot;" alwaysStopAt="true" />
+        <variable name="OPEN" expression="enum(&quot;false&quot;,&quot;true&quot;)" defaultValue="&quot;false&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Drawer content&quot;" alwaysStopAt="true" />
+        <variable name="ACTION" expression="" defaultValue="&quot;Action&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-details" value="&lt;rhx-details rhx-summary=&quot;$SUMMARY$&quot; rhx-open=&quot;$OPEN$&quot;&gt;&#10;    $CONTENT$&#10;&lt;/rhx-details&gt;" description="htmxRazor expandable details/accordion" toReformat="true" toShortenFQNames="false">
+        <variable name="SUMMARY" expression="" defaultValue="&quot;Summary text&quot;" alwaysStopAt="true" />
+        <variable name="OPEN" expression="enum(&quot;false&quot;,&quot;true&quot;)" defaultValue="&quot;false&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Expandable content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-command-palette" value="&lt;rhx-command-palette rhx-placeholder=&quot;$PLACEHOLDER$&quot; rhx-shortcut=&quot;$SHORTCUT$&quot;&#10;                     hx-get=&quot;$URL$&quot; hx-target=&quot;$TARGET$&quot;&gt;&#10;    &lt;rhx-command-group rhx-heading=&quot;$HEADING$&quot;&gt;&#10;        &lt;rhx-command-item rhx-value=&quot;$VALUE$&quot;&gt;$LABEL$&lt;/rhx-command-item&gt;&#10;    &lt;/rhx-command-group&gt;&#10;&lt;/rhx-command-palette&gt;" description="htmxRazor command palette (Ctrl+K)" toReformat="true" toShortenFQNames="false">
+        <variable name="PLACEHOLDER" expression="" defaultValue="&quot;Search commands...&quot;" alwaysStopAt="true" />
+        <variable name="SHORTCUT" expression="" defaultValue="&quot;ctrl+k&quot;" alwaysStopAt="true" />
+        <variable name="URL" expression="" defaultValue="&quot;/endpoint&quot;" alwaysStopAt="true" />
+        <variable name="TARGET" expression="" defaultValue="&quot;#results&quot;" alwaysStopAt="true" />
+        <variable name="HEADING" expression="" defaultValue="&quot;Commands&quot;" alwaysStopAt="true" />
+        <variable name="VALUE" expression="" defaultValue="&quot;action&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;Action Name&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <!-- ═══ Imagery ═══════════════════════════════════════════════════ -->
+
+    <template name="rhx-icon" value="&lt;rhx-icon rhx-name=&quot;$NAME$&quot; rhx-size=&quot;$SIZE$&quot; /&gt;" description="htmxRazor icon" toReformat="true" toShortenFQNames="false">
+        <variable name="NAME" expression="" defaultValue="&quot;icon-name&quot;" alwaysStopAt="true" />
+        <variable name="SIZE" expression="enum(&quot;small&quot;,&quot;medium&quot;,&quot;large&quot;)" defaultValue="&quot;medium&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-avatar" value="&lt;rhx-avatar rhx-image=&quot;$IMAGE$&quot; rhx-label=&quot;$LABEL$&quot; rhx-size=&quot;$SIZE$&quot; /&gt;" description="htmxRazor user avatar" toReformat="true" toShortenFQNames="false">
+        <variable name="IMAGE" expression="" defaultValue="&quot;/images/user.jpg&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;User name&quot;" alwaysStopAt="true" />
+        <variable name="SIZE" expression="enum(&quot;small&quot;,&quot;medium&quot;,&quot;large&quot;)" defaultValue="&quot;medium&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-avatar-initials" value="&lt;rhx-avatar rhx-initials=&quot;$INITIALS$&quot; rhx-label=&quot;$LABEL$&quot; rhx-shape=&quot;$SHAPE$&quot; /&gt;" description="htmxRazor avatar with initials" toReformat="true" toShortenFQNames="false">
+        <variable name="INITIALS" expression="" defaultValue="&quot;JD&quot;" alwaysStopAt="true" />
+        <variable name="LABEL" expression="" defaultValue="&quot;John Doe&quot;" alwaysStopAt="true" />
+        <variable name="SHAPE" expression="enum(&quot;circle&quot;,&quot;square&quot;)" defaultValue="&quot;circle&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-comparison" value="&lt;rhx-comparison rhx-before=&quot;$BEFORE$&quot; rhx-before-alt=&quot;$BALT$&quot;&#10;                rhx-after=&quot;$AFTER$&quot; rhx-after-alt=&quot;$AALT$&quot; /&gt;" description="htmxRazor before/after image comparison" toReformat="true" toShortenFQNames="false">
+        <variable name="BEFORE" expression="" defaultValue="&quot;/images/before.jpg&quot;" alwaysStopAt="true" />
+        <variable name="BALT" expression="" defaultValue="&quot;Before&quot;" alwaysStopAt="true" />
+        <variable name="AFTER" expression="" defaultValue="&quot;/images/after.jpg&quot;" alwaysStopAt="true" />
+        <variable name="AALT" expression="" defaultValue="&quot;After&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <!-- ═══ Formatting ════════════════════════════════════════════════ -->
+
+    <template name="rhx-format-date" value="&lt;rhx-format-date rhx-date=&quot;$DATE$&quot; rhx-format=&quot;$FORMAT$&quot; /&gt;" description="htmxRazor localized date formatter" toReformat="true" toShortenFQNames="false">
+        <variable name="DATE" expression="" defaultValue="&quot;Model.DateValue&quot;" alwaysStopAt="true" />
+        <variable name="FORMAT" expression="enum(&quot;short&quot;,&quot;medium&quot;,&quot;long&quot;,&quot;full&quot;)" defaultValue="&quot;medium&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-format-number" value="&lt;rhx-format-number rhx-value=&quot;$VALUE$&quot; rhx-type=&quot;$TYPE$&quot; /&gt;" description="htmxRazor localized number formatter" toReformat="true" toShortenFQNames="false">
+        <variable name="VALUE" expression="" defaultValue="&quot;1234.56&quot;" alwaysStopAt="true" />
+        <variable name="TYPE" expression="enum(&quot;decimal&quot;,&quot;currency&quot;,&quot;percent&quot;)" defaultValue="&quot;decimal&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-format-bytes" value="&lt;rhx-format-bytes rhx-value=&quot;$VALUE$&quot; /&gt;" description="htmxRazor byte size formatter" toReformat="true" toShortenFQNames="false">
+        <variable name="VALUE" expression="" defaultValue="&quot;1048576&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-relative-time" value="&lt;rhx-relative-time rhx-date=&quot;$DATE$&quot; /&gt;" description="htmxRazor relative time display" toReformat="true" toShortenFQNames="false">
+        <variable name="DATE" expression="" defaultValue="&quot;Model.DateValue&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <!-- ═══ Data Display ══════════════════════════════════════════════ -->
+
+    <template name="rhx-data-table" value="&lt;rhx-data-table rhx-striped=&quot;true&quot; rhx-hoverable=&quot;true&quot;&#10;                rhx-sort-url=&quot;$URL$&quot; rhx-hx-target=&quot;$TARGET$&quot;&gt;&#10;    &lt;rhx-column rhx-header=&quot;$COL1$&quot; rhx-field=&quot;$FIELD1$&quot; rhx-sortable=&quot;true&quot; /&gt;&#10;    &lt;rhx-column rhx-header=&quot;$COL2$&quot; rhx-field=&quot;$FIELD2$&quot; /&gt;&#10;&lt;/rhx-data-table&gt;" description="htmxRazor data table with sortable columns" toReformat="true" toShortenFQNames="false">
+        <variable name="URL" expression="" defaultValue="&quot;/endpoint&quot;" alwaysStopAt="true" />
+        <variable name="TARGET" expression="" defaultValue="&quot;#table-container&quot;" alwaysStopAt="true" />
+        <variable name="COL1" expression="" defaultValue="&quot;Name&quot;" alwaysStopAt="true" />
+        <variable name="FIELD1" expression="" defaultValue="&quot;Name&quot;" alwaysStopAt="true" />
+        <variable name="COL2" expression="" defaultValue="&quot;Email&quot;" alwaysStopAt="true" />
+        <variable name="FIELD2" expression="" defaultValue="&quot;Email&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-sparkline" value="&lt;rhx-sparkline rhx-values=&quot;$VALUES$&quot; rhx-type=&quot;$TYPE$&quot;&#10;               rhx-width=&quot;$WIDTH$&quot; rhx-height=&quot;$HEIGHT$&quot; /&gt;" description="htmxRazor inline sparkline chart" toReformat="true" toShortenFQNames="false">
+        <variable name="VALUES" expression="" defaultValue="&quot;Model.Values&quot;" alwaysStopAt="true" />
+        <variable name="TYPE" expression="enum(&quot;line&quot;,&quot;bar&quot;,&quot;area&quot;)" defaultValue="&quot;line&quot;" alwaysStopAt="true" />
+        <variable name="WIDTH" expression="" defaultValue="&quot;200&quot;" alwaysStopAt="true" />
+        <variable name="HEIGHT" expression="" defaultValue="&quot;40&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <!-- ═══ Utilities ═════════════════════════════════════════════════ -->
+
+    <template name="rhx-copy-button" value="&lt;rhx-copy-button rhx-value=&quot;$VALUE$&quot; /&gt;" description="htmxRazor copy-to-clipboard button" toReformat="true" toShortenFQNames="false">
+        <variable name="VALUE" expression="" defaultValue="&quot;Text to copy&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-qr-code" value="&lt;rhx-qr-code rhx-value=&quot;$VALUE$&quot; rhx-size=&quot;$SIZE$&quot; /&gt;" description="htmxRazor QR code generator" toReformat="true" toShortenFQNames="false">
+        <variable name="VALUE" expression="" defaultValue="&quot;https://example.com&quot;" alwaysStopAt="true" />
+        <variable name="SIZE" expression="" defaultValue="&quot;200&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-animation" value="&lt;rhx-animation rhx-name=&quot;$NAME$&quot;&#10;               rhx-duration=&quot;$DURATION$&quot; rhx-play=&quot;true&quot;&gt;&#10;    $CONTENT$&#10;&lt;/rhx-animation&gt;" description="htmxRazor CSS animation wrapper" toReformat="true" toShortenFQNames="false">
+        <variable name="NAME" expression="enum(&quot;fadeIn&quot;,&quot;slideInUp&quot;,&quot;slideInDown&quot;,&quot;slideInLeft&quot;,&quot;slideInRight&quot;,&quot;zoomIn&quot;,&quot;bounceIn&quot;)" defaultValue="&quot;fadeIn&quot;" alwaysStopAt="true" />
+        <variable name="DURATION" expression="" defaultValue="&quot;250ms&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Animated content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-popover" value="&lt;rhx-popover rhx-trigger=&quot;$TRIGGER$&quot; rhx-placement=&quot;$PLACEMENT$&quot;&#10;             rhx-trigger-event=&quot;$EVENT$&quot;&gt;&#10;    $CONTENT$&#10;&lt;/rhx-popover&gt;" description="htmxRazor popover" toReformat="true" toShortenFQNames="false">
+        <variable name="TRIGGER" expression="" defaultValue="&quot;#trigger-id&quot;" alwaysStopAt="true" />
+        <variable name="PLACEMENT" expression="enum(&quot;bottom&quot;,&quot;top&quot;,&quot;left&quot;,&quot;right&quot;)" defaultValue="&quot;bottom&quot;" alwaysStopAt="true" />
+        <variable name="EVENT" expression="enum(&quot;click&quot;,&quot;hover&quot;,&quot;focus&quot;)" defaultValue="&quot;click&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Popover content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-popup" value="&lt;rhx-popup rhx-anchor=&quot;$ANCHOR$&quot; rhx-placement=&quot;$PLACEMENT$&quot;&#10;           rhx-active=&quot;$ACTIVE$&quot;&gt;&#10;    $CONTENT$&#10;&lt;/rhx-popup&gt;" description="htmxRazor positioned popup primitive" toReformat="true" toShortenFQNames="false">
+        <variable name="ANCHOR" expression="" defaultValue="&quot;#anchor-id&quot;" alwaysStopAt="true" />
+        <variable name="PLACEMENT" expression="enum(&quot;bottom-start&quot;,&quot;bottom-end&quot;,&quot;top-start&quot;,&quot;top-end&quot;)" defaultValue="&quot;bottom-start&quot;" alwaysStopAt="true" />
+        <variable name="ACTIVE" expression="enum(&quot;false&quot;,&quot;true&quot;)" defaultValue="&quot;false&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Popup content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-live-region" value="&lt;rhx-live-region rhx-politeness=&quot;$POLITENESS$&quot;&gt;$CONTENT$&lt;/rhx-live-region&gt;" description="htmxRazor ARIA live region" toReformat="true" toShortenFQNames="false">
+        <variable name="POLITENESS" expression="enum(&quot;polite&quot;,&quot;assertive&quot;)" defaultValue="&quot;polite&quot;" alwaysStopAt="true" />
+        <variable name="CONTENT" expression="" defaultValue="&quot;Dynamic content&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <!-- ═══ Patterns ══════════════════════════════════════════════════ -->
+
+    <template name="rhx-lazy-load" value="&lt;rhx-lazy-load page=&quot;$PAGE$&quot; page-handler=&quot;$HANDLER$&quot;&#10;               target=&quot;$TARGET$&quot; swap=&quot;$SWAP$&quot;&gt;&#10;    &lt;rhx-spinner /&gt;&#10;&lt;/rhx-lazy-load&gt;" description="htmxRazor lazy-loaded content" toReformat="true" toShortenFQNames="false">
+        <variable name="PAGE" expression="" defaultValue="&quot;/Page&quot;" alwaysStopAt="true" />
+        <variable name="HANDLER" expression="" defaultValue="&quot;LoadContent&quot;" alwaysStopAt="true" />
+        <variable name="TARGET" expression="" defaultValue="&quot;#container&quot;" alwaysStopAt="true" />
+        <variable name="SWAP" expression="enum(&quot;innerHTML&quot;,&quot;outerHTML&quot;)" defaultValue="&quot;innerHTML&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-infinite-scroll" value="&lt;rhx-infinite-scroll page=&quot;$PAGE$&quot; page-handler=&quot;$HANDLER$&quot;&#10;                     target=&quot;$TARGET$&quot; swap=&quot;beforeend&quot; /&gt;" description="htmxRazor infinite scroll trigger" toReformat="true" toShortenFQNames="false">
+        <variable name="PAGE" expression="" defaultValue="&quot;/Page&quot;" alwaysStopAt="true" />
+        <variable name="HANDLER" expression="" defaultValue="&quot;LoadMore&quot;" alwaysStopAt="true" />
+        <variable name="TARGET" expression="" defaultValue="&quot;#items&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-load-more" value="&lt;rhx-load-more page=&quot;$PAGE$&quot; page-handler=&quot;$HANDLER$&quot;&#10;               target=&quot;$TARGET$&quot; swap=&quot;beforeend&quot;&#10;               rhx-variant=&quot;$VARIANT$&quot; /&gt;" description="htmxRazor load-more button" toReformat="true" toShortenFQNames="false">
+        <variable name="PAGE" expression="" defaultValue="&quot;/Page&quot;" alwaysStopAt="true" />
+        <variable name="HANDLER" expression="" defaultValue="&quot;LoadMore&quot;" alwaysStopAt="true" />
+        <variable name="TARGET" expression="" defaultValue="&quot;#items&quot;" alwaysStopAt="true" />
+        <variable name="VARIANT" expression="enum(&quot;neutral&quot;,&quot;brand&quot;)" defaultValue="&quot;brand&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-poll" value="&lt;rhx-poll page=&quot;$PAGE$&quot; page-handler=&quot;$HANDLER$&quot;&#10;          interval=&quot;$INTERVAL$&quot; target=&quot;$TARGET$&quot; swap=&quot;innerHTML&quot; /&gt;" description="htmxRazor polling container" toReformat="true" toShortenFQNames="false">
+        <variable name="PAGE" expression="" defaultValue="&quot;/Page&quot;" alwaysStopAt="true" />
+        <variable name="HANDLER" expression="" defaultValue="&quot;Status&quot;" alwaysStopAt="true" />
+        <variable name="INTERVAL" expression="" defaultValue="&quot;5s&quot;" alwaysStopAt="true" />
+        <variable name="TARGET" expression="" defaultValue="&quot;#status&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-sse-stream" value="&lt;rhx-sse-stream page=&quot;$PAGE$&quot; page-handler=&quot;$HANDLER$&quot;&#10;                rhx-event=&quot;$EVENT$&quot; rhx-swap=&quot;$SWAP$&quot;&gt;&#10;    &lt;rhx-spinner /&gt;&#10;&lt;/rhx-sse-stream&gt;" description="htmxRazor Server-Sent Events stream" toReformat="true" toShortenFQNames="false">
+        <variable name="PAGE" expression="" defaultValue="&quot;/Page&quot;" alwaysStopAt="true" />
+        <variable name="HANDLER" expression="" defaultValue="&quot;Stream&quot;" alwaysStopAt="true" />
+        <variable name="EVENT" expression="" defaultValue="&quot;message&quot;" alwaysStopAt="true" />
+        <variable name="SWAP" expression="enum(&quot;innerHTML&quot;,&quot;beforeend&quot;)" defaultValue="&quot;innerHTML&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+    <template name="rhx-active-search" value="&lt;rhx-active-search page=&quot;$PAGE$&quot; page-handler=&quot;$HANDLER$&quot;&#10;                   name=&quot;$NAME$&quot; target=&quot;$TARGET$&quot;&#10;                   placeholder=&quot;$PLACEHOLDER$&quot; debounce=&quot;$DEBOUNCE$&quot; /&gt;" description="htmxRazor live search input with debounce" toReformat="true" toShortenFQNames="false">
+        <variable name="PAGE" expression="" defaultValue="&quot;/Page&quot;" alwaysStopAt="true" />
+        <variable name="HANDLER" expression="" defaultValue="&quot;Search&quot;" alwaysStopAt="true" />
+        <variable name="NAME" expression="" defaultValue="&quot;q&quot;" alwaysStopAt="true" />
+        <variable name="TARGET" expression="" defaultValue="&quot;#results&quot;" alwaysStopAt="true" />
+        <variable name="PLACEHOLDER" expression="" defaultValue="&quot;Search...&quot;" alwaysStopAt="true" />
+        <variable name="DEBOUNCE" expression="" defaultValue="&quot;300&quot;" alwaysStopAt="true" />
+        <context><option name="HTML" value="true" /><option name="OTHER" value="true" /></context>
+    </template>
+
+</templateSet>

@@ -7,6 +7,18 @@ namespace htmxRazor.Demo.Pages.Docs.Components;
 
 public class ButtonModel : PageModel
 {
+    public List<PlaygroundProperty> PlaygroundProperties { get; } = new()
+    {
+        new("rhx-variant", "select", "neutral", "Color variant", new[] { "neutral", "brand", "success", "warning", "danger" }),
+        new("rhx-appearance", "select", "filled", "Visual style", new[] { "filled", "outlined", "plain" }),
+        new("rhx-size", "select", "medium", "Button size", new[] { "small", "medium", "large" }),
+        new("rhx-disabled", "bool", "false", "Disabled state"),
+        new("rhx-loading", "bool", "false", "Loading spinner"),
+        new("rhx-pill", "bool", "false", "Pill shape"),
+        new("rhx-circle", "bool", "false", "Circle shape"),
+        new("content", "string", "Button", "Inner text content"),
+    };
+
     public List<ComponentProperty> Properties { get; } = new()
     {
         new("rhx-variant", "string", "neutral", "Color variant: neutral, brand, success, warning, danger"),
@@ -73,6 +85,11 @@ public class ButtonModel : PageModel
             new("Components", "/Docs/Components/Button"),
             new("Button")
         };
+    }
+
+    public IActionResult OnGetPlayground()
+    {
+        return Partial("_ButtonPlayground");
     }
 
     public IActionResult OnGetGreeting()

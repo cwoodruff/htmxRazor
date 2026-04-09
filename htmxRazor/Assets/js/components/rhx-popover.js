@@ -77,12 +77,48 @@
         return popover.hasAttribute("data-rhx-visible");
       }
 
+      var useCssAnchoring = window.RHX && window.RHX.supportsAnchorPositioning;
+      var cssAnchoringApplied = false;
+
       function reposition() {
+        var placement = popover.getAttribute("data-rhx-placement") || "bottom";
+        var distance = parseInt(popover.getAttribute("data-rhx-distance") || "8", 10);
+
+        // Use CSS Anchor Positioning when supported (apply once, CSS handles the rest)
+        if (useCssAnchoring && !cssAnchoringApplied) {
+          window.RHX.applyCssAnchorPositioning(trigger, popover, {
+            placement: placement,
+            distance: distance
+          });
+          cssAnchoringApplied = true;
+        }
+
+        // In CSS anchor mode, position the arrow after the browser lays out the popover
+        if (useCssAnchoring) {
+          if (arrowEl) {
+            // Use requestAnimationFrame to read geometry after CSS positions the popover
+            requestAnimationFrame(function () {
+              var anchorRect = trigger.getBoundingClientRect();
+              var popoverRect = popover.getBoundingClientRect();
+              var side = placement.split("-")[0];
+              if (side === "top" || side === "bottom") {
+                var cx = anchorRect.left + anchorRect.width / 2 - popoverRect.left - 5;
+                arrowEl.style.left = Math.max(8, Math.min(cx, popoverRect.width - 18)) + "px";
+              } else {
+                var cy = anchorRect.top + anchorRect.height / 2 - popoverRect.top - 5;
+                arrowEl.style.top = Math.max(8, Math.min(cy, popoverRect.height - 18)) + "px";
+              }
+            });
+          }
+          return;
+        }
+
+        // Fallback: JS positioning
         if (!window.RHX || !window.RHX.positionElement) return;
 
         window.RHX.positionElement(trigger, popover, {
-          placement: popover.getAttribute("data-rhx-placement") || "bottom",
-          distance: parseInt(popover.getAttribute("data-rhx-distance") || "8", 10),
+          placement: placement,
+          distance: distance,
           strategy: "absolute",
           flip: true,
           shift: true,

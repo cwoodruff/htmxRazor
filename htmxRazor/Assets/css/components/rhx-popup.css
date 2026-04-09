@@ -37,4 +37,16 @@
 .rhx-popup[data-rhx-strategy="fixed"] {
   position: fixed;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   CSS ANCHOR POSITIONING (modern browsers)
+   When supported, JS applies anchor-name and position-anchor
+   inline. These rules enable automatic flip behavior.
+   ══════════════════════════════════════════════════════════════ */
+
+@supports (anchor-name: --x) {
+  .rhx-popup {
+    position-try-fallbacks: flip-block, flip-inline;
+  }
+}
 }

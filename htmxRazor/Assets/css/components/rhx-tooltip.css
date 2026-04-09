@@ -81,6 +81,19 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
+   CSS ANCHOR POSITIONING (modern browsers)
+   When supported, the browser handles positioning natively.
+   JS sets anchor-name/position-anchor inline; these rules provide
+   the fallback flip behavior and proper display.
+   ══════════════════════════════════════════════════════════════ */
+
+@supports (anchor-name: --x) {
+  .rhx-tooltip {
+    position-try-fallbacks: flip-block, flip-inline;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
    REDUCED MOTION
    ══════════════════════════════════════════════════════════════ */
 

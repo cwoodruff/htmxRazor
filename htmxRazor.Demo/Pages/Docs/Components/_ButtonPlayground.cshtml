@@ -1,0 +1,35 @@
+@{
+    var query = ViewContext.HttpContext.Request.Query;
+    var variant = query.TryGetValue("variant", out var v) ? v.ToString() : "neutral";
+    var appearance = query.TryGetValue("appearance", out var a) ? a.ToString() : "filled";
+    var size = query.TryGetValue("size", out var s) ? s.ToString() : "medium";
+    var disabled = query.TryGetValue("disabled", out var d) && d == "true";
+    var loading = query.TryGetValue("loading", out var l) && l == "true";
+    var pill = query.TryGetValue("pill", out var p) && p == "true";
+    var circle = query.TryGetValue("circle", out var c) && c == "true";
+    var content = query.TryGetValue("content", out var ct) && !string.IsNullOrEmpty(ct.ToString()) ? ct.ToString() : "Button";
+
+    // Build the code snippet showing only non-default attributes
+    var attrs = new List<string> { $"rhx-variant=\"{variant}\"" };
+    if (appearance != "filled") attrs.Add($"rhx-appearance=\"{appearance}\"");
+    if (size != "medium") attrs.Add($"rhx-size=\"{size}\"");
+    if (disabled) attrs.Add("rhx-disabled=\"true\"");
+    if (loading) attrs.Add("rhx-loading=\"true\"");
+    if (pill) attrs.Add("rhx-pill=\"true\"");
+    if (circle) attrs.Add("rhx-circle=\"true\"");
+    var attrStr = string.Join(" ", attrs);
+}
+
+<div class="playground__preview">
+    <rhx-button rhx-variant="@variant"
+                rhx-appearance="@appearance"
+                rhx-size="@size"
+                rhx-disabled="@disabled"
+                rhx-loading="@loading"
+                rhx-pill="@pill"
+                rhx-circle="@circle">@content</rhx-button>
+</div>
+
+<div class="playground__code">
+    <pre><code>&lt;rhx-button @attrStr&gt;@content&lt;/rhx-button&gt;</code></pre>
+</div>

@@ -100,6 +100,22 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
+   CSS ANCHOR POSITIONING (modern browsers)
+   When supported, the browser handles flip/overflow automatically,
+   replacing the JS-based flip detection.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── CSS Anchor Positioning (modern browsers) ──
+   JS assigns per-instance anchor-name and position-anchor
+   inline styles. These rules provide flip fallback behavior. */
+
+@supports (anchor-name: --x) {
+  .rhx-dropdown__panel {
+    position-try-fallbacks: flip-block;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
    ITEMS
    ══════════════════════════════════════════════════════════════ */
 

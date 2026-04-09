@@ -1,0 +1,42 @@
+{
+  "name": "htmxrazor-snippets",
+  "displayName": "htmxRazor Snippets",
+  "description": "Code snippets for htmxRazor Tag Helper components in ASP.NET Core Razor views",
+  "version": "2.0.0",
+  "publisher": "htmxrazor",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cwoodruff/htmxRazor"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Snippets"
+  ],
+  "keywords": [
+    "htmx",
+    "razor",
+    "aspnetcore",
+    "tag-helpers",
+    "ui-components",
+    "cshtml"
+  ],
+  "contributes": {
+    "snippets": [
+      {
+        "language": "html",
+        "path": "./snippets/htmxrazor.code-snippets"
+      },
+      {
+        "language": "razor",
+        "path": "./snippets/htmxrazor.code-snippets"
+      },
+      {
+        "language": "aspnetcorerazor",
+        "path": "./snippets/htmxrazor.code-snippets"
+      }
+    ]
+  }
+}

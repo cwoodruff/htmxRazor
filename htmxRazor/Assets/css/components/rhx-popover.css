@@ -79,6 +79,18 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
+   CSS ANCHOR POSITIONING (modern browsers)
+   When supported, JS applies anchor-name and position-anchor
+   inline. These rules enable automatic flip behavior.
+   ══════════════════════════════════════════════════════════════ */
+
+@supports (anchor-name: --x) {
+  .rhx-popover {
+    position-try-fallbacks: flip-block, flip-inline;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
    REDUCED MOTION
    ══════════════════════════════════════════════════════════════ */
 

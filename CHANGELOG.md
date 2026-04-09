@@ -7,9 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] — Platform & DX
+
 ### Added
+- **Theme Builder** — Interactive page at `/ThemeBuilder` in the demo site with color pickers and text inputs for all `--rhx-*` design tokens. Real-time preview panel shows curated sample components updating as you change values. Smart HSL palette generation from a single color pick. Download a `rhx-theme-overrides.css` file containing only the tokens you changed.
+- **Interactive Component Playground** — Property toggle panel on component demo pages. Users change variant, size, and state props via dropdowns, checkboxes, and text inputs; the server re-renders the component preview with updated markup via htmx. URL-driven state makes playground configurations shareable. Generated Razor markup shown below the preview. Button implemented as reference; remaining components follow the same pattern.
+- **SignalR Hub Connector** — `<rhx-signalr>` Tag Helper wrapping SignalR hub connections. Attributes: `hub-url`, `rhx-method`, `rhx-swap`, `rhx-target`, `rhx-reconnect`, `rhx-transport` (websockets/sse/longpolling), `rhx-groups` (comma-separated group names), `rhx-connection-state` (visual indicator). Received HTML fragments are swapped using htmx's programmatic swap API. Connection state reflected via CSS classes (`rhx-signalr--connected`, `--disconnected`, `--reconnecting`) with optional pulse indicator. Server-side `HtmxSignalRExtensions` provides `SendHtmlAsync()`, `SendHtmlToGroupAsync()`, `SendHtmlToConnectionAsync()`, and `SendHtmlToOthersAsync()` on `IHubContext<THub>`.
+- **CSS Anchor Positioning** — Tooltip, popover, popup, and dropdown components now use the CSS Anchor Positioning API (`anchor-name`, `position-anchor`, `position-area`, `position-try-fallbacks`) when the browser supports it, with automatic fallback to the existing JavaScript positioning engine (`rhx-position.js`). Feature detection via `RHX.supportsAnchorPositioning` and `@supports (anchor-name: --x)`. Dropdown gains full CSS `position-area` placement mappings. Reduces JS footprint and improves edge-of-viewport correctness in modern browsers.
+- **VS Code Snippet Extension** — `vscode-extension/` directory with 97 snippets for all `<rhx-*>` tags, scoped to `html`, `razor`, and `aspnetcorerazor` languages. Each snippet includes curated tabstops with choice lists for common attribute values (e.g., variant, appearance, size). Includes htmx-specific variants (`rhx-button-htmx`, `rhx-input-htmx`) and multi-component composition snippets (`rhx-card-full`, `rhx-tab-group`).
+- **Kanban Board** — `<rhx-kanban>`, `<rhx-kanban-column>`, and `<rhx-kanban-card>` Tag Helpers. Native HTML Drag and Drop with optimistic DOM moves. Card drops fire `hx-post` with `cardId`, `sourceColumn`, `targetColumn`, and `position` values via `htmx.ajax()`. Column features: `rhx-title` header, `rhx-max-cards` WIP limit with visual indicator (`rhx-kanban-column--wip-exceeded`), `rhx-droppable` flag. Card features: `rhx-card-id`, `rhx-variant` color coding (brand/success/warning/danger), `rhx-draggable`. Full keyboard navigation (Enter/Space to grab, Arrow keys to move between columns or reorder, Escape to cancel). Responsive layout stacks columns vertically on narrow screens.
 - **Dialog Size Variants** — `rhx-size` attribute on `<rhx-dialog>` with preset sizes (`small` 24rem, `medium` 32rem, `large` 48rem, `full` 90vw) and custom CSS width support (e.g., `rhx-size="40rem"`). Dialog now expands to fit content up to 48rem by default (previously capped at 32rem).
 - **`palette` icon** — Added to `IconRegistry` for design/theming contexts.
+
+### Components Added
+- **Patterns**: SignalR Connector
+- **Organization**: Kanban, Kanban Column, Kanban Card
+
+### Tests
+- 1,838 total tests (36 new), all passing.
 
 ## [1.3.0] — Data Table, Accessibility & Modern CSS
 

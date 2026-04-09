@@ -1,0 +1,82 @@
+@using htmxRazor.Demo.Models
+@model List<PlaygroundProperty>
+
+@{
+    var handlerUrl = ViewData["PlaygroundUrl"]?.ToString() ?? "";
+    var targetId = ViewData["PlaygroundTargetId"]?.ToString() ?? "playground-preview";
+    var query = ViewContext.HttpContext.Request.Query;
+}
+
+<div class="playground-panel">
+    <div class="playground-controls">
+        @foreach (var prop in Model)
+        {
+            var currentValue = prop.GetCurrentValue(query);
+            <div class="playground-control">
+                <label class="playground-control__label" for="pg-@prop.QueryKey"
+                       title="@prop.Description">
+                    <code>@prop.Name</code>
+                </label>
+
+                @if (prop.Type == "select" && prop.Options is not null)
+                {
+                    <select id="pg-@prop.QueryKey" name="@prop.QueryKey"
+                            class="playground-control__select"
+                            hx-get="@handlerUrl" hx-target="#@targetId"
+                            hx-swap="innerHTML" hx-trigger="change"
+                            hx-include=".playground-controls">
+                        @foreach (var option in prop.Options)
+                        {
+                            var isSelected = option == currentValue;
+                            if (isSelected)
+                            {
+                                <option value="@option" selected>@option</option>
+                            }
+                            else
+                            {
+                                <option value="@option">@option</option>
+                            }
+                        }
+                    </select>
+                }
+                else if (prop.Type == "bool")
+                {
+                    var isTrueSelected = currentValue == "true";
+                    <select id="pg-@prop.QueryKey" name="@prop.QueryKey"
+                            class="playground-control__select"
+                            hx-get="@handlerUrl" hx-target="#@targetId"
+                            hx-swap="innerHTML" hx-trigger="change"
+                            hx-include=".playground-controls">
+                        @if (isTrueSelected)
+                        {
+                            <option value="false">false</option>
+                            <option value="true" selected>true</option>
+                        }
+                        else
+                        {
+                            <option value="false" selected>false</option>
+                            <option value="true">true</option>
+                        }
+                    </select>
+                }
+                else if (prop.Type == "string")
+                {
+                    <input id="pg-@prop.QueryKey" name="@prop.QueryKey" type="text"
+                           class="playground-control__input" value="@currentValue"
+                           placeholder="@prop.Default"
+                           hx-get="@handlerUrl" hx-target="#@targetId"
+                           hx-swap="innerHTML" hx-trigger="input changed delay:300ms"
+                           hx-include=".playground-controls" />
+                }
+                else if (prop.Type == "number")
+                {
+                    <input id="pg-@prop.QueryKey" name="@prop.QueryKey" type="number"
+                           class="playground-control__input" value="@currentValue"
+                           hx-get="@handlerUrl" hx-target="#@targetId"
+                           hx-swap="innerHTML" hx-trigger="input changed delay:300ms"
+                           hx-include=".playground-controls" />
+                }
+            </div>
+        }
+    </div>
+</div>
