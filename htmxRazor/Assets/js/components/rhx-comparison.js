@@ -106,18 +106,18 @@
     }
 
     // ── Registration ──
-    if (typeof RHX !== 'undefined' && RHX.register) {
-        RHX.register('comparison', init);
+    function initWithin(root) {
+        (root || document).querySelectorAll('[data-rhx-comparison]').forEach(init);
     }
 
-    function initAll() {
-        document.querySelectorAll('[data-rhx-comparison]').forEach(init);
+    if (typeof RHX !== 'undefined' && RHX.register) {
+        RHX.register('comparison', initWithin);
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAll);
+        document.addEventListener('DOMContentLoaded', function () { initWithin(document); });
     } else {
-        initAll();
+        initWithin(document);
     }
 
     document.addEventListener('htmx:afterSettle', function (e) {

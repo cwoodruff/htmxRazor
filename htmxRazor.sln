@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "htmxRazor.Templates", "templates\htmxRazor.Templates.csproj", "{88906BF0-4356-4295-BBB0-E9E05E07C75F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlaywrightTests", "PlaywrightTests\PlaywrightTests.csproj", "{78B9467E-CABC-440F-8D58-141884667180}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,6 +98,18 @@ Global
 		{88906BF0-4356-4295-BBB0-E9E05E07C75F}.Release|x64.Build.0 = Release|Any CPU
 		{88906BF0-4356-4295-BBB0-E9E05E07C75F}.Release|x86.ActiveCfg = Release|Any CPU
 		{88906BF0-4356-4295-BBB0-E9E05E07C75F}.Release|x86.Build.0 = Release|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Debug|x64.Build.0 = Debug|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Debug|x86.Build.0 = Debug|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Release|x64.ActiveCfg = Release|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Release|x64.Build.0 = Release|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Release|x86.ActiveCfg = Release|Any CPU
+		{78B9467E-CABC-440F-8D58-141884667180}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -28,3 +28,5 @@ app.MapRazorPages();
 app.MapHub<DemoHub>("/demoHub");
 
 app.Run();
+
+public partial class Program;
