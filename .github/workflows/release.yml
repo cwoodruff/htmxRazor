@@ -42,7 +42,7 @@ jobs:
         run: |
           dotnet restore
           dotnet build --no-restore --configuration Release -p:Version=${{ inputs.version }}
-          dotnet test --no-build --configuration Release --verbosity normal
+          dotnet test htmxRazor.Tests/htmxRazor.Tests.csproj --no-build --configuration Release --verbosity normal
           dotnet pack htmxRazor/htmxRazor.csproj --no-build --configuration Release -p:Version=${{ inputs.version }} --output ./artifacts
 
       - name: Verify NuGet API key is configured

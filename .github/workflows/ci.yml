@@ -33,7 +33,9 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+        # PlaywrightTests are excluded from CI — they require browser binaries
+        # and run for ~20 minutes. Run them locally before shipping.
+        run: dotnet test htmxRazor.Tests/htmxRazor.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
