@@ -17,6 +17,7 @@
   font-family: var(--rhx-font-family);
   font-size: var(--rhx-font-size-sm);
   color: var(--rhx-color-text);
+  overflow: visible;
 }
 
 .rhx-popover--open,

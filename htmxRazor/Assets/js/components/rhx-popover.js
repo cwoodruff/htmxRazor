@@ -102,11 +102,29 @@
               var popoverRect = popover.getBoundingClientRect();
               var side = placement.split("-")[0];
               if (side === "top" || side === "bottom") {
+                // Position arrow horizontally to align with trigger center
                 var cx = anchorRect.left + anchorRect.width / 2 - popoverRect.left - 5;
                 arrowEl.style.left = Math.max(8, Math.min(cx, popoverRect.width - 18)) + "px";
+                // Position arrow vertically outside the popover
+                if (side === "top") {
+                  // Popover above trigger, arrow at bottom pointing down
+                  arrowEl.style.top = (popoverRect.height - 5) + "px";
+                } else {
+                  // Popover below trigger, arrow at top pointing up
+                  arrowEl.style.top = "-5px";
+                }
               } else {
+                // Position arrow vertically to align with trigger center
                 var cy = anchorRect.top + anchorRect.height / 2 - popoverRect.top - 5;
                 arrowEl.style.top = Math.max(8, Math.min(cy, popoverRect.height - 18)) + "px";
+                // Position arrow horizontally outside the popover
+                if (side === "left") {
+                  // Popover left of trigger, arrow at right pointing right
+                  arrowEl.style.left = (popoverRect.width - 5) + "px";
+                } else {
+                  // Popover right of trigger, arrow at left pointing left
+                  arrowEl.style.left = "-5px";
+                }
               }
             });
           }
