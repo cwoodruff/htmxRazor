@@ -396,9 +396,37 @@ It's a fully self-contained design system built specifically for this component 
 
 ## Roadmap
 
-Features ranked by **user impact** and **implementation effort**. The library is at v2.0.0 with 85+ components; the roadmap below covers what comes next.
+Features ranked by **user impact** and **implementation effort**. The library is at v2.0.1 with 85+ components. The **Planned** releases below (2.1–2.4) are the next 2.X updates; the **Shipped** sections record what's already landed. Each planned release maps to a [GitHub milestone](https://github.com/cwoodruff/htmxRazor/milestones).
 
-### v1.2 — Notifications, Pagination & Quick Wins (Shipped)
+### Planned
+
+#### v2.1 — Advanced Inputs
+
+- **Radial Select** — `<rhx-radial-select>` + `<rhx-radial-option>`. A rectangular trigger button sits flush-left against a dropdown; clicking it opens a circular SVG **pie** of category wedges (each with a color + icon). Selecting a wedge fires `hx-get`, swaps the dropdown's option set to that category, echoes the category's color + icon onto the trigger, and auto-selects the first option. Wedge colors use named variant tokens (`brand`/`success`/`warning`/`danger`/`neutral`) with a deterministic cycle when omitted. Accessible as a menu (`menuitemradio`, arrow-key + type-ahead navigation).
+- **Date / Time Picker** — `<rhx-date-picker>` family (date, time, range). The most-requested missing input — the catalog has date *formatting* but no date *input*. Full model binding, validation, design tokens, and keyboard accessibility.
+- **Playwright E2E in CI** — re-enable and stabilize the end-to-end suite so PRs are gated on real browser regression tests.
+
+#### v2.2 — Playground & DX Completion
+
+- **Playground coverage for all components** — extend the 2.0 Component Playground (Button reference) to every Forms and Actions component: live property toggles, shareable URL state, generated Razor markup.
+- **JetBrains plugin parity** — bring the JetBrains plugin to feature parity with the 97-snippet VS Code extension.
+
+#### v2.3 — Data & Visualization
+
+- **SVG Charts** — server-rendered `bar`, `line`, and `area` chart components built on the design-token system (joining the existing Sparkline).
+- **Expandable / tree table rows** — detail rows and hierarchical rows for `<rhx-data-table>` with htmx-driven lazy expansion.
+- **Virtualized table body** — optional windowed rendering for large datasets, compatible with server-driven sort/filter/pagination.
+
+#### v2.4 — Accessibility & Internationalization
+
+- **WCAG 2.2 contrast audit** — verify every foreground/background token pair (light + dark) meets AA.
+- **RTL support** — logical CSS properties and mirrored directional affordances across components.
+- **Localizable strings** — externalize built-in UI text for ASP.NET Core localization.
+- **Infrastructure cleanup** — clear the backlog below (dead `EnableCssIsolation` / `IHtmxSupported`, `hx-replace-url` attribute, `HtmlRenderer` adoption).
+
+### Shipped
+
+#### v1.2 — Notifications, Pagination & Quick Wins
 
 - **Toast Notification System** — `<rhx-toast-container>` + `<rhx-toast>` with auto-dismiss, severity variants, stacking, and `aria-live` announcements.
 - **Pagination** — `<rhx-pagination>` with htmx-powered page navigation, ellipsis, first/last/prev/next buttons, and size variants.
@@ -406,7 +434,7 @@ Features ranked by **user impact** and **implementation effort**. The library is
 - **CSS Cascade Layers** — All component CSS wrapped in `@layer` for easy host app overrides without specificity wars.
 - **View Transition Support** — `rhx-transition` and `rhx-transition-name` attributes for the View Transitions API.
 
-### v1.3 — Data Table, Accessibility & Modern CSS (Shipped)
+#### v1.3 — Data Table, Accessibility & Modern CSS
 
 - **Data Table** — `<rhx-data-table>`, `<rhx-column>`, `<rhx-data-table-pagination>` with server-driven sort, filter, and pagination. Includes `DataTableRequest` model binder auto-registered via `AddhtmxRazor()`.
 - **Command Palette** — `<rhx-command-palette>` modal search overlay activated via Cmd+K / Ctrl+K with debounced `hx-get`, grouped results via `<rhx-command-group>` and `<rhx-command-item>`, and full keyboard navigation.
@@ -415,7 +443,7 @@ Features ranked by **user impact** and **implementation effort**. The library is
 - **Container Queries** — Card, dialog, split panel, and data table CSS use `@container` queries for container-responsive layouts.
 - **APG Keyboard Audit** — Tabs, tree, dropdown, and combobox audited against W3C ARIA Authoring Practices Guide. Added type-ahead, `*` expand siblings, `Alt+Arrow` patterns.
 
-### v1.4 — Real-time, Wizard & Patterns (Shipped)
+#### v1.4 — Real-time, Wizard & Patterns
 
 - **SSE Stream Container** — `<rhx-sse-stream>` wraps `hx-ext="sse"` + `sse-connect` into a declarative Tag Helper. Companion `HtmxSseExtensions` provides `PrepareSseResponse()`, `WriteSseEventAsync()`, and `WriteSseStreamAsync()` to format `IAsyncEnumerable<string>` as `text/event-stream`.
 - **Multi-step Wizard** — `<rhx-wizard>` and `<rhx-wizard-step>` with visual stepper indicator, auto-generated Previous/Next navigation buttons (`hx-get`/`hx-post`), step status tracking (incomplete, current, complete, error), horizontal/vertical layouts, and linear/non-linear navigation. Server-side `WizardState` and `WizardSessionExtensions` for TempData-based step tracking.
@@ -424,7 +452,7 @@ Features ranked by **user impact** and **implementation effort**. The library is
 - **Optimistic UI** — `rhx-optimistic` attribute on `<rhx-switch>`, `<rhx-rating>`, and `<rhx-button>`. Immediately reflects visual state on click before the server responds; reverts automatically on error via `htmx:responseError` with a brief flash animation. Respects `prefers-reduced-motion`.
 - **Load More Pattern** — `<rhx-load-more>` button-triggered pagination. Renders a styled button with `hx-get`, loading spinner, and auto-removal after fetch. Configurable variant, target, swap strategy, and loading text.
 
-### v2.0 — Platform & DX (Shipped)
+#### v2.0 — Platform & DX
 
 - **Theme Builder** — Interactive page at `/ThemeBuilder` with color pickers for all `--rhx-*` tokens. Real-time preview, smart HSL palette generation, and downloadable `rhx-theme-overrides.css` export.
 - **Interactive Component Playground** — Property toggle panel on demo pages. Change variant, size, and state via dropdowns and checkboxes; server re-renders via htmx. URL-driven state for shareable configurations. Generated Razor markup displayed below preview.
@@ -433,7 +461,7 @@ Features ranked by **user impact** and **implementation effort**. The library is
 - **VS Code Snippet Extension** — 97 snippets in `vscode-extension/` for all `<rhx-*>` tags with curated tabstops, htmx variants, and composition snippets.
 - **Kanban Board** — `<rhx-kanban>`, `<rhx-kanban-column>`, `<rhx-kanban-card>` with native Drag and Drop, keyboard navigation, WIP limits, card variants, and htmx server persistence.
 
-### Infrastructure Cleanup (ongoing)
+### Infrastructure Cleanup (backlog — targeted for v2.4)
 
 | Item | Description |
 |------|-------------|

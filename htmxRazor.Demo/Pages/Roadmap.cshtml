@@ -1,0 +1,96 @@
+@page
+@model RoadmapModel
+@{
+    Layout = "_DocsLayout";
+    ViewData["Title"] = "Roadmap";
+    ViewData["HideSidebar"] = true;
+}
+
+<!-- Hero -->
+<section class="docs-hero">
+    <h1 class="docs-hero__title">Roadmap</h1>
+    <p class="docs-hero__subtitle">
+        The next 2.X updates for htmxRazor. Planned releases map to GitHub milestones; shipped releases record what's already landed.
+    </p>
+    <div class="docs-hero__actions">
+        <rhx-button rhx-variant="brand" rhx-size="large"
+                    rhx-href="https://github.com/cwoodruff/htmxRazor/milestones" rhx-target="_blank">
+            View Milestones
+        </rhx-button>
+    </div>
+</section>
+
+<rhx-divider />
+
+<!-- Planned -->
+<section style="max-width: 960px; margin: 0 auto; padding: var(--rhx-space-2xl) var(--rhx-space-xl);">
+    <h2 style="font-size: var(--rhx-font-size-2xl); font-weight: var(--rhx-font-weight-bold); margin-bottom: var(--rhx-space-sm); color: var(--rhx-color-text);">
+        Planned
+    </h2>
+    <p style="color: var(--rhx-color-text-muted); margin-bottom: var(--rhx-space-xl);">
+        The next four minor releases. All additions are additive (minor bumps) and tracked as GitHub milestones.
+    </p>
+
+    @foreach (var rel in Model.Planned)
+    {
+        <rhx-card style="margin-bottom: var(--rhx-space-lg);">
+            <div style="display: flex; align-items: center; gap: var(--rhx-space-sm); margin-bottom: var(--rhx-space-md);">
+                <rhx-badge rhx-variant="brand">@rel.Version</rhx-badge>
+                <h3 style="font-size: var(--rhx-font-size-lg); margin: 0; color: var(--rhx-color-text);">@rel.Theme</h3>
+            </div>
+            <ul style="margin: 0 0 var(--rhx-space-md); padding-left: var(--rhx-space-lg); color: var(--rhx-color-text); line-height: 1.6;">
+                @foreach (var item in rel.Items)
+                {
+                    <li style="margin-bottom: var(--rhx-space-xs);">@item</li>
+                }
+            </ul>
+            @if (!string.IsNullOrEmpty(rel.MilestonePath))
+            {
+                <rhx-button rhx-variant="neutral" rhx-appearance="outlined" rhx-size="small"
+                            rhx-href="@($"https://github.com/cwoodruff/htmxRazor/{rel.MilestonePath}")" rhx-target="_blank">
+                    <rhx-icon rhx-name="external-link" rhx-size="16" />
+                    Milestone &amp; issues
+                </rhx-button>
+            }
+        </rhx-card>
+    }
+</section>
+
+<rhx-divider />
+
+<!-- Spotlight: Radial Select -->
+<section style="max-width: 760px; margin: 0 auto; padding: var(--rhx-space-2xl) var(--rhx-space-xl);">
+    <rhx-callout rhx-variant="brand" rhx-icon="palette">
+        <strong>Coming in 2.1 — Radial Select.</strong> A rectangular trigger sits flush-left against a dropdown.
+        Clicking it opens a circular pie of colored, icon-labeled category wedges. Pick a wedge and the dropdown
+        repopulates with that category's items via an htmx cascade — then auto-selects the first option.
+        <pre style="margin-top: var(--rhx-space-md); overflow-x: auto;"><code>&lt;rhx-radial-select name="FoodItem" rhx-category-name="Category"
+                   rhx-placeholder="Choose an item…" aria-label="Food category"&gt;
+    &lt;rhx-radial-option rhx-value="fruit" rhx-label="Fruit" rhx-icon="apple"
+                       rhx-color="danger" hx-get="/Menu?handler=Items&amp;cat=fruit" /&gt;
+    &lt;rhx-radial-option rhx-value="meat"  rhx-label="Meat"  rhx-icon="grid"
+                       rhx-color="success" hx-get="/Menu?handler=Items&amp;cat=meat" /&gt;
+&lt;/rhx-radial-select&gt;</code></pre>
+    </rhx-callout>
+</section>
+
+<rhx-divider />
+
+<!-- Shipped -->
+<section style="max-width: 960px; margin: 0 auto; padding: var(--rhx-space-2xl) var(--rhx-space-xl);">
+    <h2 style="font-size: var(--rhx-font-size-2xl); font-weight: var(--rhx-font-weight-bold); margin-bottom: var(--rhx-space-xl); color: var(--rhx-color-text);">
+        Shipped
+    </h2>
+
+    <rhx-timeline>
+        @foreach (var rel in Model.Shipped)
+        {
+            <rhx-timeline-item rhx-variant="success" rhx-label="@rel.Version">
+                <strong>@rel.Theme</strong>
+                <div style="color: var(--rhx-color-text-muted); margin-top: var(--rhx-space-xs);">
+                    @rel.Items[0]
+                </div>
+            </rhx-timeline-item>
+        }
+    </rhx-timeline>
+</section>
