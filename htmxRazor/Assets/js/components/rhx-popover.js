@@ -101,6 +101,7 @@
               var anchorRect = trigger.getBoundingClientRect();
               var popoverRect = popover.getBoundingClientRect();
               var side = placement.split("-")[0];
+              popover.setAttribute("data-rhx-current-placement", placement);
               if (side === "top" || side === "bottom") {
                 // Position arrow horizontally to align with trigger center
                 var cx = anchorRect.left + anchorRect.width / 2 - popoverRect.left - 5;
