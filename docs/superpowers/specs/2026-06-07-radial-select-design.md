@@ -91,18 +91,19 @@ internally (the dropdown is not separately addressable by the author).
 | `rhx-value` | string | **required** | Category identifier (submitted via `rhx-category-name`, sent to the server). |
 | `rhx-label` | string | **required** | Accessible name + tooltip/visible label for the wedge. |
 | `rhx-icon` | string | — | Icon name resolved through the existing `IconRegistry`. Rendered at the wedge centroid and echoed on the trigger when active. |
-| `rhx-color` | variant token | `neutral` | One of the named design-system variants: `brand`, `success`, `warning`, `danger`, `neutral`, `info`. Maps to `--rhx-*` tokens — theme- and dark-mode-correct. See §3.3. |
+| `rhx-color` | variant token | `neutral` | One of the named design-system variants: `brand`, `success`, `warning`, `danger`, `neutral`. Maps to `--rhx-color-<variant>-500` tokens — theme- and dark-mode-correct. See §3.3. |
 | `hx-get` (+ other `hx-*`) | string | — | Endpoint returning the dropdown's option fragment for this category. Any standard htmx attributes are honored; `hx-target`/`hx-swap` are supplied automatically by the component (see §5) but may be overridden. |
 | `rhx-disabled` | bool | `false` | Renders the wedge dimmed and non-selectable (`aria-disabled`). |
 
 ### 3.3 Color palette and wedge-count behavior (per "variant tokens only")
 
 - Allowed `rhx-color` values are the **named variants only**: `brand`, `success`,
-  `warning`, `danger`, `neutral`, `info`. No raw hex / custom CSS color is accepted —
-  this guarantees theming, dark-mode, and contrast correctness.
+  `warning`, `danger`, `neutral` (the five `--rhx-color-<variant>-500` families that exist
+  in the token set). No raw hex / custom CSS color is accepted — this guarantees theming,
+  dark-mode, and contrast correctness.
 - If `rhx-color` is omitted on a wedge, the component assigns one **deterministically** by
   wedge index, cycling through a fixed ordered list of the named variants:
-  `brand → success → warning → danger → info → neutral` (then repeats).
+  `brand → success → warning → danger → neutral` (then repeats).
 - Explicit `rhx-color` always wins over the auto-cycle.
 - Wedge count is expected in the **2–12** range. Beyond the number of named variants,
   colors repeat per the cycle above (documented, deterministic — not an error). Adjacent
