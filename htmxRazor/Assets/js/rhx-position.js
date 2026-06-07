@@ -250,8 +250,10 @@
       arrowX = Math.max(arrowPadding, Math.min(arrowX, floatingRect.width - arrowSize - arrowPadding));
 
       if (side === "top") {
+        // Popover is above trigger, arrow points down from bottom of popover
         arrowY = floatingRect.height - halfArrow;
       } else {
+        // Popover is below trigger, arrow points up from top of popover
         arrowY = -halfArrow;
       }
     } else {
@@ -261,8 +263,10 @@
       arrowY = Math.max(arrowPadding, Math.min(arrowY, floatingRect.height - arrowSize - arrowPadding));
 
       if (side === "left") {
+        // Popover is left of trigger, arrow points right from right edge of popover
         arrowX = floatingRect.width - halfArrow;
       } else {
+        // Popover is right of trigger, arrow points left from left edge of popover
         arrowX = -halfArrow;
       }
     }
