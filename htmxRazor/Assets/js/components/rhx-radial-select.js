@@ -4,7 +4,7 @@
  * color + icon onto the trigger, sets the hidden category input, and fires the wedge's
  * cascade request via htmx.ajax to repopulate the dropdown listbox — then auto-selects the
  * first option. The dropdown is a combobox: its button shows the selected value and opens a
- * popup listbox of the active category's items. Pie placement reuses rhx-position.js.
+ * popup listbox of the active category's items. The pie opens centered over the trigger.
  */
 (function () {
   "use strict";
@@ -47,18 +47,25 @@
         closeListbox();
         pie.hidden = false;
         trigger.setAttribute("aria-expanded", "true");
-        if (window.RHX && typeof window.RHX.positionElement === "function") {
-          window.RHX.positionElement(trigger, pie, {
-            placement: "bottom-start",
-            distance: 6,
-            flip: true,
-            shift: true,
-          });
-        }
+        centerPieOverTrigger();
         var active = wedges.find(function (w) {
           return w.getAttribute("aria-checked") === "true";
         }) || wedges[0];
         focusWedge(active);
+      }
+
+      // Center the circular pie directly over the trigger (its center aligns with the
+      // trigger's center), so it pops out of the button like a radial menu.
+      function centerPieOverTrigger() {
+        var parent = pie.offsetParent || control;
+        var parentRect = parent.getBoundingClientRect();
+        var trigRect = trigger.getBoundingClientRect();
+        var centerX = trigRect.left + trigRect.width / 2;
+        var centerY = trigRect.top + trigRect.height / 2;
+        pie.style.right = "auto";
+        pie.style.bottom = "auto";
+        pie.style.left = (centerX - parentRect.left - pie.offsetWidth / 2) + "px";
+        pie.style.top = (centerY - parentRect.top - pie.offsetHeight / 2) + "px";
       }
 
       function closePie(focusTrigger) {

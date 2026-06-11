@@ -48,6 +48,42 @@ public sealed class RadialSelectTests(DemoAppFactory app) : ComponentTestBase(ap
     }
 
     [Theory, MemberData(nameof(Browsers))]
+    public async Task Pie_opens_centered_over_trigger(string browserName)
+    {
+        var page = await OpenAsync(browserName, Path);
+
+        var trigger = page.Locator(Scope + "button.rhx-radial-select__trigger");
+        await trigger.ScrollIntoViewIfNeededAsync();
+
+        await trigger.ClickAsync();
+        var pie = page.Locator(Scope + ".rhx-radial-select__pie");
+        await Assertions.Expect(pie).ToBeVisibleAsync();
+        await page.WaitForTimeoutAsync(200); // let the fade-in settle
+
+        var pieBox = await pie.BoundingBoxAsync();
+        var trigBox = await trigger.BoundingBoxAsync();
+        Assert.NotNull(pieBox);
+        Assert.NotNull(trigBox);
+
+        var pieCenterX = pieBox!.X + pieBox.Width / 2;
+        var pieCenterY = pieBox.Y + pieBox.Height / 2;
+        var trigCenterX = trigBox!.X + trigBox.Width / 2;
+        var trigCenterY = trigBox.Y + trigBox.Height / 2;
+
+        // Pie is centered OVER the trigger: its center aligns with the trigger's center
+        // on both axes (overlapping it), not floating above or off to the right.
+        Assert.True(System.Math.Abs(pieCenterX - trigCenterX) < 4,
+            $"Pie center X {pieCenterX} should align with trigger center X {trigCenterX}.");
+        Assert.True(System.Math.Abs(pieCenterY - trigCenterY) < 4,
+            $"Pie center Y {pieCenterY} should align with trigger center Y {trigCenterY}.");
+
+        // The trigger sits inside the pie's bounds (the pie covers it).
+        Assert.True(trigCenterX >= pieBox.X && trigCenterX <= pieBox.X + pieBox.Width
+                 && trigCenterY >= pieBox.Y && trigCenterY <= pieBox.Y + pieBox.Height,
+            "Trigger center should fall within the pie bounds (pie covers the trigger).");
+    }
+
+    [Theory, MemberData(nameof(Browsers))]
     public async Task Selecting_wedge_cascades_and_autoselects_first(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
