@@ -72,14 +72,14 @@
         }
         var days = Array.prototype.slice.call(popup.querySelectorAll(".rhx-calendar__day"));
         var i = days.indexOf(cur);
-        var to = null;
+        var to = null, dir = 1, navOverflow = true;
         switch (e.key) {
-          case "ArrowRight": to = i + 1; break;
-          case "ArrowLeft": to = i - 1; break;
-          case "ArrowDown": to = i + 7; break;
-          case "ArrowUp": to = i - 7; break;
-          case "Home": to = i - (i % 7); break;
-          case "End": to = i - (i % 7) + 6; break;
+          case "ArrowRight": to = i + 1; dir = 1; break;
+          case "ArrowLeft": to = i - 1; dir = -1; break;
+          case "ArrowDown": to = i + 7; dir = 1; break;
+          case "ArrowUp": to = i - 7; dir = -1; break;
+          case "Home": to = i - (i % 7); dir = 1; navOverflow = false; break;
+          case "End": to = i - (i % 7) + 6; dir = -1; navOverflow = false; break;
           case "PageUp": e.preventDefault(); clickNav(".rhx-calendar__nav[aria-label='Previous month']"); return;
           case "PageDown": e.preventDefault(); clickNav(".rhx-calendar__nav[aria-label='Next month']"); return;
           case "Enter": case " ":
@@ -89,13 +89,20 @@
           case "Escape": e.preventDefault(); close(true); return;
           default: return;
         }
-        if (to != null) {
-          e.preventDefault();
-          if (to < 0 || to >= days.length) { clickNav(to < 0 ? ".rhx-calendar__nav[aria-label='Previous month']" : ".rhx-calendar__nav[aria-label='Next month']"); return; }
-          days.forEach(function (d) { d.setAttribute("tabindex", "-1"); });
-          days[to].setAttribute("tabindex", "0");
-          days[to].focus();
+        e.preventDefault();
+        // Skip disabled cells in the direction of travel.
+        while (to >= 0 && to < days.length && days[to].hasAttribute("disabled")) { to += dir; }
+        if (to < 0 || to >= days.length) {
+          if (navOverflow) {
+            clickNav(dir < 0
+              ? ".rhx-calendar__nav[aria-label='Previous month']"
+              : ".rhx-calendar__nav[aria-label='Next month']");
+          }
+          return;
         }
+        days.forEach(function (d) { d.setAttribute("tabindex", "-1"); });
+        days[to].setAttribute("tabindex", "0");
+        days[to].focus();
       });
 
       function clickNav(sel) { var b = popup.querySelector(sel); if (b) b.click(); }
