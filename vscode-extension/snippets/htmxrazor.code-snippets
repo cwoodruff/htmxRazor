@@ -194,6 +194,16 @@
     ],
     "description": "htmxRazor combobox with server-side filtering via htmx"
   },
+  "rhx-radial-select": {
+    "prefix": "rhx-radial-select",
+    "body": [
+      "<rhx-radial-select name=\"${1:FoodItem}\" rhx-category-name=\"${2:Category}\" rhx-placeholder=\"${3:Choose…}\" aria-label=\"${4:Category}\">",
+      "\t<rhx-radial-option rhx-value=\"${5:fruit}\" rhx-label=\"${6:Fruit}\" rhx-icon=\"${7:heart}\" rhx-color=\"${8|brand,success,warning,danger,neutral|}\" hx-get=\"${9:/Items?cat=fruit}\" />",
+      "\t$0",
+      "</rhx-radial-select>"
+    ],
+    "description": "htmxRazor radial select (pie category -> cascading dropdown)"
+  },
   "rhx-htmx-form": {
     "prefix": "rhx-htmx-form",
     "body": [

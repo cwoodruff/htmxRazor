@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] — Advanced Inputs
+
+### Added
+- **Radial Select** — `<rhx-radial-select>` + `<rhx-radial-option>`. A rectangular icon trigger flush-left against a dropdown opens a circular SVG pie of category wedges (color + icon). Selecting a wedge fires its `hx-get` (issued via `htmx.ajax`), swaps the dropdown's option set, echoes the category color + icon onto the trigger, and auto-selects the first option. Wedge colors use named variant tokens (`brand`/`success`/`warning`/`danger`/`neutral`) with a deterministic cycle (`brand → success → warning → danger → neutral`) when omitted, and an invalid color falls back to that cycle. Icons resolve through `IconRegistry`. Optional `rhx-category-name` submits the active category; `rhx-default-category` activates a wedge on initial render (checked + trigger echo). Accessible as a menu: trigger `aria-haspopup="menu"`/`aria-expanded`, wedges `role="menuitemradio"` + `aria-checked`, arrow-key + Home/End + type-ahead navigation, Enter/Space to select, Escape to close and restore focus, roving `tabindex`; honors `prefers-reduced-motion`. Pie placement reuses `rhx-position.js`. Demo page at `/Docs/Components/RadialSelect`.
+
+### Components Added
+- **Forms**: Radial Select, Radial Option
+
+### Tests
+- 1,855 unit tests (17 new), all passing. New Playwright E2E coverage (`RadialSelectTests`) for open → select wedge → cascade → auto-select-first → focus restore.
+
 ## [2.0.0] — Platform & DX
 
 ### Added
