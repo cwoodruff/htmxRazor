@@ -24,13 +24,14 @@ public static class CalendarRenderer
     private static string NavUrl(CalendarOptions o, CalendarView view, int year, int month)
     {
         var sb = new StringBuilder();
-        sb.Append(o.HxGetUrl).Append("?view=").Append(view.ToString().ToLowerInvariant());
+        var sep = o.HxGetUrl.Contains('?') ? '&' : '?';
+        sb.Append(o.HxGetUrl).Append(sep).Append("view=").Append(view.ToString().ToLowerInvariant());
         sb.Append("&year=").Append(year).Append("&month=").Append(month);
         if (o.Selected is { } s) sb.Append("&selected=").Append(s.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         if (o.Min is { } mn) sb.Append("&min=").Append(mn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         if (o.Max is { } mx) sb.Append("&max=").Append(mx.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         sb.Append("&week-start=").Append(o.WeekStart.ToString().ToLowerInvariant());
-        sb.Append("&id=").Append(o.TargetId);
+        sb.Append("&id=").Append(Uri.EscapeDataString(o.TargetId));
         return Enc(sb.ToString());
     }
 

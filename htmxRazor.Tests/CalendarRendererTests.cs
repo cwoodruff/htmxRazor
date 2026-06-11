@@ -61,6 +61,15 @@ public class CalendarRendererTests
     }
 
     [Fact]
+    public void Days_Weekday_Header_Starts_Sunday_When_Configured()
+    {
+        var html = CalendarRenderer.Render(DaysOpts() with { WeekStart = DayOfWeek.Sunday });
+        var suIdx = html.IndexOf(">Su<", StringComparison.Ordinal);
+        var moIdx = html.IndexOf(">Mo<", StringComparison.Ordinal);
+        Assert.True(suIdx >= 0 && moIdx > suIdx, "Su should appear before Mo for Sunday-start.");
+    }
+
+    [Fact]
     public void Days_Nav_Arrows_Carry_HxGet_With_PrevNext_Month()
     {
         var html = CalendarRenderer.Render(DaysOpts());
