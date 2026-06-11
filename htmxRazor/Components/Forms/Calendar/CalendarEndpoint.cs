@@ -10,6 +10,7 @@ public static class CalendarEndpoint
     public static string Render(IQueryCollection q, DateOnly today)
     {
         var year = ParseInt(q["year"].ToString(), today.Year);
+        if (year < 1 || year > 9999) year = today.Year;
         var month = ParseInt(q["month"].ToString(), today.Month);
         if (month < 1 || month > 12) month = today.Month;
 

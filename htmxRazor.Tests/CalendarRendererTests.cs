@@ -127,4 +127,19 @@ public class CalendarRendererTests
         var html = CalendarEndpoint.Render(q, today: new DateOnly(2026, 3, 4));
         Assert.Contains("March 2026", html);
     }
+
+    [Fact]
+    public void Endpoint_Degrades_Gracefully_On_Garbage_Query()
+    {
+        var q = new Microsoft.AspNetCore.Http.QueryCollection(
+            new System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
+            {
+                ["year"] = "0", ["month"] = "abc", ["selected"] = "notadate",
+                ["min"] = "", ["week-start"] = "garbage",
+            });
+
+        // Must not throw, and falls back to today's month.
+        var html = CalendarEndpoint.Render(q, today: new DateOnly(2026, 5, 7));
+        Assert.Contains("May 2026", html);
+    }
 }
