@@ -84,7 +84,7 @@ public class CalendarRendererTests
     {
         var o = DaysOpts() with { View = CalendarView.Months };
         var html = CalendarRenderer.Render(o);
-        Assert.Equal(12, System.Text.RegularExpressions.Regex.Matches(html, "rhx-calendar__month-cell").Count);
+        Assert.Equal(12, System.Text.RegularExpressions.Regex.Matches(html, "class=\"rhx-calendar__month-cell").Count);
         Assert.Contains(">Jan<", html);
         Assert.Contains(">Dec<", html);
         Assert.Contains("hx-get=\"/_rhx/calendar?view=days&amp;year=2026&amp;month=10", html);

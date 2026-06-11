@@ -127,7 +127,8 @@ public static class CalendarRenderer
         sb.Append("<div class=\"rhx-calendar__months\" role=\"grid\" aria-label=\"Select month\">");
         for (var m = 1; m <= 12; m++)
         {
-            var cls = m == o.Month ? "rhx-calendar__month-cell--selected" : "rhx-calendar__month-cell";
+            var cls = "rhx-calendar__month-cell";
+            if (m == o.Month) cls += " rhx-calendar__month-cell--selected";
             sb.Append($"<button type=\"button\" class=\"{cls}\" role=\"gridcell\" hx-get=\"{NavUrl(o, CalendarView.Days, o.Year, m)}\" hx-target=\"#{Enc(o.TargetId)}\" hx-swap=\"outerHTML\">{MonthAbbrev[m - 1]}</button>");
         }
         sb.Append("</div>");
