@@ -48,35 +48,39 @@ public sealed class RadialSelectTests(DemoAppFactory app) : ComponentTestBase(ap
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Pie_pops_up_centered_over_trigger(string browserName)
+    public async Task Pie_opens_centered_over_trigger(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var trigger = page.Locator(Scope + "button.rhx-radial-select__trigger");
-        // Ensure there is viewport room above so the pie isn't flipped below.
         await trigger.ScrollIntoViewIfNeededAsync();
-        await page.Mouse.WheelAsync(0, -200);
 
         await trigger.ClickAsync();
         var pie = page.Locator(Scope + ".rhx-radial-select__pie");
         await Assertions.Expect(pie).ToBeVisibleAsync();
-        await page.WaitForTimeoutAsync(250); // let the pop-in animation settle
+        await page.WaitForTimeoutAsync(200); // let the fade-in settle
 
         var pieBox = await pie.BoundingBoxAsync();
         var trigBox = await trigger.BoundingBoxAsync();
         Assert.NotNull(pieBox);
         Assert.NotNull(trigBox);
 
-        // Pops UP: the pie's vertical center sits above the trigger's top edge.
-        var pieMidY = pieBox!.Y + pieBox.Height / 2;
-        Assert.True(pieMidY < trigBox!.Y,
-            $"Pie should pop up above the trigger (pie mid-Y {pieMidY} vs trigger top {trigBox.Y}).");
+        var pieCenterX = pieBox!.X + pieBox.Width / 2;
+        var pieCenterY = pieBox.Y + pieBox.Height / 2;
+        var trigCenterX = trigBox!.X + trigBox.Width / 2;
+        var trigCenterY = trigBox.Y + trigBox.Height / 2;
 
-        // Centered OVER the trigger horizontally (not off to the right).
-        var pieCenterX = pieBox.X + pieBox.Width / 2;
-        var trigCenterX = trigBox.X + trigBox.Width / 2;
+        // Pie is centered OVER the trigger: its center aligns with the trigger's center
+        // on both axes (overlapping it), not floating above or off to the right.
         Assert.True(System.Math.Abs(pieCenterX - trigCenterX) < 4,
-            $"Pie should be horizontally centered over the trigger (pie center {pieCenterX} vs trigger center {trigCenterX}).");
+            $"Pie center X {pieCenterX} should align with trigger center X {trigCenterX}.");
+        Assert.True(System.Math.Abs(pieCenterY - trigCenterY) < 4,
+            $"Pie center Y {pieCenterY} should align with trigger center Y {trigCenterY}.");
+
+        // The trigger sits inside the pie's bounds (the pie covers it).
+        Assert.True(trigCenterX >= pieBox.X && trigCenterX <= pieBox.X + pieBox.Width
+                 && trigCenterY >= pieBox.Y && trigCenterY <= pieBox.Y + pieBox.Height,
+            "Trigger center should fall within the pie bounds (pie covers the trigger).");
     }
 
     [Theory, MemberData(nameof(Browsers))]
