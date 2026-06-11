@@ -67,6 +67,9 @@ public static class CalendarRenderer
 
     private static readonly string[] DayAbbrev = { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" };
 
+    private static readonly string[] MonthAbbrev =
+        { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
     private static string RenderDaysBody(CalendarOptions o)
     {
         var first = new DateOnly(o.Year, o.Month, 1);
@@ -118,7 +121,32 @@ public static class CalendarRenderer
         return sb.ToString();
     }
 
-    // Implemented in Task 2.
-    private static string RenderMonthsBody(CalendarOptions o) => "";
-    private static string RenderYearsBody(CalendarOptions o) => "";
+    private static string RenderMonthsBody(CalendarOptions o)
+    {
+        var sb = new StringBuilder();
+        sb.Append("<div class=\"rhx-calendar__months\" role=\"grid\" aria-label=\"Select month\">");
+        for (var m = 1; m <= 12; m++)
+        {
+            var cls = m == o.Month ? "rhx-calendar__month-cell--selected" : "rhx-calendar__month-cell";
+            sb.Append($"<button type=\"button\" class=\"{cls}\" role=\"gridcell\" hx-get=\"{NavUrl(o, CalendarView.Days, o.Year, m)}\" hx-target=\"#{Enc(o.TargetId)}\" hx-swap=\"outerHTML\">{MonthAbbrev[m - 1]}</button>");
+        }
+        sb.Append("</div>");
+        return sb.ToString();
+    }
+
+    private static string RenderYearsBody(CalendarOptions o)
+    {
+        var start = o.Year - (o.Year % 10) - 1; // decade window with one leading/trailing year
+        var sb = new StringBuilder();
+        sb.Append("<div class=\"rhx-calendar__years\" role=\"grid\" aria-label=\"Select year\">");
+        for (var i = 0; i < 12; i++)
+        {
+            var y = start + i;
+            var cls = "rhx-calendar__year-cell";
+            if (y == o.Year) cls += " rhx-calendar__year-cell--selected";
+            sb.Append($"<button type=\"button\" class=\"{cls}\" role=\"gridcell\" hx-get=\"{NavUrl(o, CalendarView.Months, y, o.Month)}\" hx-target=\"#{Enc(o.TargetId)}\" hx-swap=\"outerHTML\">{y}</button>");
+        }
+        sb.Append("</div>");
+        return sb.ToString();
+    }
 }

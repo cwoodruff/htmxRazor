@@ -78,4 +78,26 @@ public class CalendarRendererTests
         Assert.Contains("hx-target=\"#dp1-cal\"", html);
         Assert.Contains("hx-swap=\"outerHTML\"", html);
     }
+
+    [Fact]
+    public void Months_View_Renders_12_Month_Buttons_With_HxGet_To_Days()
+    {
+        var o = DaysOpts() with { View = CalendarView.Months };
+        var html = CalendarRenderer.Render(o);
+        Assert.Equal(12, System.Text.RegularExpressions.Regex.Matches(html, "rhx-calendar__month-cell").Count);
+        Assert.Contains(">Jan<", html);
+        Assert.Contains(">Dec<", html);
+        Assert.Contains("hx-get=\"/_rhx/calendar?view=days&amp;year=2026&amp;month=10", html);
+        Assert.Contains("rhx-calendar__month-cell--selected", html);
+    }
+
+    [Fact]
+    public void Years_View_Renders_Decade_Of_Year_Buttons()
+    {
+        var o = DaysOpts() with { View = CalendarView.Years };
+        var html = CalendarRenderer.Render(o);
+        Assert.Contains(">2026<", html);
+        Assert.Contains("rhx-calendar__year-cell--selected", html);
+        Assert.Contains("hx-get=\"/_rhx/calendar?view=months&amp;year=2026", html);
+    }
 }
