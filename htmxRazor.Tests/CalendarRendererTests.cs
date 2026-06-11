@@ -100,4 +100,31 @@ public class CalendarRendererTests
         Assert.Contains("rhx-calendar__year-cell--selected", html);
         Assert.Contains("hx-get=\"/_rhx/calendar?view=months&amp;year=2026", html);
     }
+
+    [Fact]
+    public void Endpoint_Parses_Query_And_Renders_Days_By_Default()
+    {
+        var q = new Microsoft.AspNetCore.Http.QueryCollection(
+            new System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
+            {
+                ["year"] = "2026", ["month"] = "10", ["selected"] = "2026-10-15",
+                ["min"] = "2026-10-01", ["max"] = "2026-10-31",
+                ["week-start"] = "monday", ["id"] = "dp1-cal",
+            });
+
+        var html = CalendarEndpoint.Render(q, today: new DateOnly(2026, 10, 9));
+
+        Assert.Contains("id=\"dp1-cal\"", html);
+        Assert.Contains("October 2026", html);
+        Assert.Contains("data-date=\"2026-10-15\" aria-selected=\"true\"", html);
+    }
+
+    [Fact]
+    public void Endpoint_Defaults_To_Today_Month_When_Year_Month_Missing()
+    {
+        var q = new Microsoft.AspNetCore.Http.QueryCollection(
+            new System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>());
+        var html = CalendarEndpoint.Render(q, today: new DateOnly(2026, 3, 4));
+        Assert.Contains("March 2026", html);
+    }
 }
