@@ -55,6 +55,7 @@ public class DatePickerTagHelperTests : TagHelperTestBase
         var helper = CreateHelper();
         helper.Name = "DueDate";
         helper.Value = "2026-10-15";
+        helper.Format = "yyyy-MM-dd";
         var ctx = CreateContext("rhx-date-picker");
         var output = CreateOutput("rhx-date-picker");
 
@@ -65,7 +66,7 @@ public class DatePickerTagHelperTests : TagHelperTestBase
         Assert.Contains("aria-haspopup=\"dialog\"", html);
         Assert.Contains("rhx-calendar", html);
         Assert.Contains("October 2026", html);
-        Assert.Contains("data-date=\"2026-10-15\" data-display=\"10/15/2026\" aria-selected=\"true\"", html);
+        Assert.Contains("data-date=\"2026-10-15\" data-display=\"2026-10-15\" aria-selected=\"true\"", html);
     }
 
     [Fact]
@@ -134,11 +135,12 @@ public class DatePickerTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.For = CreateModelExpressionFor("EventDate", new DateTime(2026, 10, 15, 9, 30, 0));
+        helper.Format = "yyyy-MM-dd";
         var ctx = CreateContext("rhx-date-picker");
         var output = CreateOutput("rhx-date-picker");
         await helper.ProcessAsync(ctx, output);
         var html = output.Content.GetContent();
         Assert.Contains("value=\"2026-10-15\"", html);          // hidden ISO, time stripped
-        Assert.Contains("data-date=\"2026-10-15\" data-display=\"10/15/2026\" aria-selected=\"true\"", html);
+        Assert.Contains("data-date=\"2026-10-15\" data-display=\"2026-10-15\" aria-selected=\"true\"", html);
     }
 }

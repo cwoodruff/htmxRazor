@@ -110,13 +110,14 @@ public class CalendarRendererTests
                 ["year"] = "2026", ["month"] = "10", ["selected"] = "2026-10-15",
                 ["min"] = "2026-10-01", ["max"] = "2026-10-31",
                 ["week-start"] = "monday", ["id"] = "dp1-cal",
+                ["format"] = "yyyy-MM-dd",
             });
 
         var html = CalendarEndpoint.Render(q, today: new DateOnly(2026, 10, 9));
 
         Assert.Contains("id=\"dp1-cal\"", html);
         Assert.Contains("October 2026", html);
-        Assert.Contains("data-date=\"2026-10-15\" data-display=\"10/15/2026\" aria-selected=\"true\"", html);
+        Assert.Contains("data-date=\"2026-10-15\" data-display=\"2026-10-15\" aria-selected=\"true\"", html);
     }
 
     [Fact]
