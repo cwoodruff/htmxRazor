@@ -15,6 +15,19 @@ public class DatePickerTagHelperTests : TagHelperTestBase
         Today = new DateOnly(2026, 10, 9),
     };
 
+    private class TestModel
+    {
+        public DateTime EventDate { get; set; }
+    }
+
+    private static ModelExpression CreateModelExpressionFor(string propertyName, object? value)
+    {
+        var provider = new EmptyModelMetadataProvider();
+        var metadata = provider.GetMetadataForProperty(typeof(TestModel), propertyName);
+        var explorer = new ModelExplorer(provider, metadata, value);
+        return new ModelExpression(propertyName, explorer);
+    }
+
     [Fact]
     public async Task Renders_Wrapper_Input_And_Hidden_Iso_Value()
     {
@@ -87,5 +100,45 @@ public class DatePickerTagHelperTests : TagHelperTestBase
         var idx = html.IndexOf("data-date=\"2026-10-05\"", StringComparison.Ordinal);
         Assert.True(idx >= 0);
         Assert.Contains("disabled", html.Substring(idx, 120));
+    }
+
+    [Fact]
+    public async Task Disabled_Disables_Input_And_Trigger()
+    {
+        var helper = CreateHelper();
+        helper.Name = "d";
+        helper.Disabled = true;
+        var ctx = CreateContext("rhx-date-picker");
+        var output = CreateOutput("rhx-date-picker");
+        await helper.ProcessAsync(ctx, output);
+        var html = output.Content.GetContent();
+        Assert.True(HasClass(output, "rhx-date-picker--disabled"));
+        // both the input and the trigger button carry disabled
+        Assert.True(System.Text.RegularExpressions.Regex.Matches(html, "disabled").Count >= 2);
+    }
+
+    [Fact]
+    public async Task Required_Adds_Aria_Required()
+    {
+        var helper = CreateHelper();
+        helper.Name = "d";
+        helper.Required = true;
+        var ctx = CreateContext("rhx-date-picker");
+        var output = CreateOutput("rhx-date-picker");
+        await helper.ProcessAsync(ctx, output);
+        Assert.Contains("aria-required=\"true\"", output.Content.GetContent());
+    }
+
+    [Fact]
+    public async Task DateTime_Model_Binding_Produces_Iso_Hidden_Value()
+    {
+        var helper = CreateHelper();
+        helper.For = CreateModelExpressionFor("EventDate", new DateTime(2026, 10, 15, 9, 30, 0));
+        var ctx = CreateContext("rhx-date-picker");
+        var output = CreateOutput("rhx-date-picker");
+        await helper.ProcessAsync(ctx, output);
+        var html = output.Content.GetContent();
+        Assert.Contains("value=\"2026-10-15\"", html);          // hidden ISO, time stripped
+        Assert.Contains("data-date=\"2026-10-15\" aria-selected=\"true\"", html);
     }
 }

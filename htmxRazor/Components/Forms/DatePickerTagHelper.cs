@@ -48,14 +48,18 @@ public class DatePickerTagHelper : FormControlTagHelperBase
         var name = ResolveName();
         var id = ResolveId();
         if (string.IsNullOrEmpty(id)) id = "rhx-dp-" + context.UniqueId;
-        var iso = NormalizeIso(ResolveValue());
+        var iso = ResolveIsoValue();
         var selected = ParseDate(iso);
         var calId = $"{id}-cal";
         var size = Size.ToLowerInvariant();
+        var hasError = HasError();
+        var resolvedRequired = ResolveRequired();
 
         var css = CreateCssBuilder()
             .AddIf(GetModifierClass(size), size != "medium")
-            .AddIf(GetModifierClass("disabled"), Disabled);
+            .AddIf(GetModifierClass("disabled"), Disabled)
+            .AddIf(GetModifierClass("readonly"), Readonly)
+            .AddIf(GetModifierClass("error"), hasError);
         ApplyWrapperAttributes(output, css);
         output.Attributes.SetAttribute("data-rhx-date-picker", "");
 
@@ -97,13 +101,14 @@ public class DatePickerTagHelper : FormControlTagHelperBase
         if (describedBy != null) sb.Append($" aria-describedby=\"{Enc(describedBy)}\"");
         if (Disabled) sb.Append(" disabled");
         if (Readonly) sb.Append(" readonly");
+        if (hasError) sb.Append(" aria-invalid=\"true\"");
+        if (resolvedRequired) sb.Append(" aria-required=\"true\"");
         sb.Append(" />");
 
         sb.Append($"<button type=\"button\" class=\"{GetElementClass("trigger")}\" aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"{Enc(calId)}\" aria-label=\"Open calendar\"");
         if (Disabled) sb.Append(" disabled");
         sb.Append('>');
-        var icon = IconRegistry.Get("calendar");
-        sb.Append($"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">{icon}</svg>");
+        sb.Append($"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">{IconRegistry.Get("calendar") ?? ""}</svg>");
         sb.Append("</button>");
         sb.Append("</div>");
 
@@ -122,6 +127,20 @@ public class DatePickerTagHelper : FormControlTagHelperBase
         sb.Append(BuildErrorHtml(errorId));
 
         output.Content.SetHtmlContent(sb.ToString());
+    }
+
+    /// <summary>Resolves the bound value to an ISO yyyy-MM-dd string, type-aware for date models.</summary>
+    private string? ResolveIsoValue()
+    {
+        if (!string.IsNullOrEmpty(Value)) return NormalizeIso(Value);
+        return For?.Model switch
+        {
+            DateOnly d => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            DateTime dt => DateOnly.FromDateTime(dt).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            DateTimeOffset dto => DateOnly.FromDateTime(dto.Date).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            null => null,
+            var m => NormalizeIso(m.ToString()),
+        };
     }
 
     private static DateOnly? ParseDate(string? s) =>
