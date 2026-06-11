@@ -36,6 +36,7 @@ public static class CalendarEndpoint
             WeekStart = weekStart,
             Today = today,
             TargetId = string.IsNullOrWhiteSpace(idVal) ? "rhx-cal" : idVal,
+            Format = q["format"].Count == 0 ? null : q["format"].ToString(),
         };
         return CalendarRenderer.Render(opts);
     }

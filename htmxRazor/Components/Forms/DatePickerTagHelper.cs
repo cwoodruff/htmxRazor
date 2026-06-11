@@ -79,6 +79,7 @@ public class DatePickerTagHelper : FormControlTagHelperBase
             TargetId = calId,
             ShowToday = ShowToday,
             ShowClear = ShowClear,
+            Format = Format,
         };
 
         var labelId = $"{id}-label";

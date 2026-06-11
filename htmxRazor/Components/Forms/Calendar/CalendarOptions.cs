@@ -32,4 +32,6 @@ public sealed record CalendarOptions
     public bool ShowToday { get; init; } = true;
     /// <summary>Show the footer "Clear" button.</summary>
     public bool ShowClear { get; init; } = true;
+    /// <summary>Optional .NET date format string for day-cell display labels (null = culture short date "d").</summary>
+    public string? Format { get; init; }
 }

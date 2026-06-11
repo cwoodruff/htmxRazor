@@ -116,7 +116,7 @@ public class CalendarRendererTests
 
         Assert.Contains("id=\"dp1-cal\"", html);
         Assert.Contains("October 2026", html);
-        Assert.Contains("data-date=\"2026-10-15\" aria-selected=\"true\"", html);
+        Assert.Contains("data-date=\"2026-10-15\" data-display=\"10/15/2026\" aria-selected=\"true\"", html);
     }
 
     [Fact]
@@ -141,6 +141,30 @@ public class CalendarRendererTests
         // Must not throw, and falls back to today's month.
         var html = CalendarEndpoint.Render(q, today: new DateOnly(2026, 5, 7));
         Assert.Contains("May 2026", html);
+    }
+
+    [Fact]
+    public void Days_Cells_Carry_Server_Formatted_Display()
+    {
+        var html = CalendarRenderer.Render(DaysOpts() with { Format = "yyyy-MM-dd" });
+        Assert.Contains("data-date=\"2026-10-15\" data-display=\"2026-10-15\"", html);
+    }
+
+    [Fact]
+    public void Nav_Url_Includes_Format_When_Set()
+    {
+        var html = CalendarRenderer.Render(DaysOpts() with { Format = "yyyy-MM-dd" });
+        Assert.Contains("format=yyyy-MM-dd", html);
+    }
+
+    [Fact]
+    public void Today_Action_Disabled_When_Today_Out_Of_Range()
+    {
+        // Today is 2026-10-09 (from DaysOpts); set Max earlier so today is out of range.
+        var html = CalendarRenderer.Render(DaysOpts() with { Max = new DateOnly(2026, 10, 1) });
+        var idx = html.IndexOf("data-rhx-cal-today", StringComparison.Ordinal);
+        Assert.True(idx >= 0);
+        Assert.Contains("disabled", html.Substring(idx, 40));
     }
 
     [Fact]

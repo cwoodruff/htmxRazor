@@ -31,6 +31,7 @@ public static class CalendarRenderer
         if (o.Min is { } mn) sb.Append("&min=").Append(mn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         if (o.Max is { } mx) sb.Append("&max=").Append(mx.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         sb.Append("&week-start=").Append(o.WeekStart.ToString().ToLowerInvariant());
+        if (!string.IsNullOrEmpty(o.Format)) sb.Append("&format=").Append(Uri.EscapeDataString(o.Format));
         sb.Append("&id=").Append(Uri.EscapeDataString(o.TargetId));
         return Enc(sb.ToString());
     }
@@ -56,7 +57,13 @@ public static class CalendarRenderer
         if (o.ShowToday || o.ShowClear)
         {
             sb.Append("<div class=\"rhx-calendar__footer\">");
-            if (o.ShowToday) sb.Append("<button type=\"button\" class=\"rhx-calendar__action\" data-rhx-cal-today>Today</button>");
+            if (o.ShowToday)
+            {
+                var todayDisabled = (o.Min is { } tmn && o.Today < tmn) || (o.Max is { } tmx && o.Today > tmx);
+                sb.Append("<button type=\"button\" class=\"rhx-calendar__action\" data-rhx-cal-today");
+                if (todayDisabled) sb.Append(" disabled");
+                sb.Append(">Today</button>");
+            }
             if (o.ShowClear) sb.Append("<button type=\"button\" class=\"rhx-calendar__action\" data-rhx-cal-clear>Clear</button>");
             sb.Append("</div>");
         }
@@ -108,7 +115,8 @@ public static class CalendarRenderer
                 if (isToday) cls += " rhx-calendar__day--today";
                 if (isSelected) cls += " rhx-calendar__day--selected";
 
-                sb.Append($"<button type=\"button\" class=\"{cls}\" role=\"gridcell\" data-date=\"{iso}\" ");
+                var disp = date.ToString(string.IsNullOrEmpty(o.Format) ? "d" : o.Format, CultureInfo.CurrentCulture);
+                sb.Append($"<button type=\"button\" class=\"{cls}\" role=\"gridcell\" data-date=\"{iso}\" data-display=\"{Enc(disp)}\" ");
                 sb.Append(isSelected ? "aria-selected=\"true\" " : "");
                 sb.Append(date == focus ? "tabindex=\"0\"" : "tabindex=\"-1\"");
                 if (disabled) sb.Append(" disabled aria-disabled=\"true\"");

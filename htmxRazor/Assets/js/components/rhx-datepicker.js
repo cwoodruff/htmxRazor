@@ -42,9 +42,9 @@
         if (focusTrigger && trigger) trigger.focus();
       }
 
-      function commit(iso) {
+      function commit(iso, display) {
         hidden.value = iso;
-        if (input) input.value = iso ? fmtDisplay(iso) : "";
+        if (input) input.value = iso ? (display || fmtDisplay(iso)) : "";
         hidden.dispatchEvent(new Event("input", { bubbles: true }));
         hidden.dispatchEvent(new Event("change", { bubbles: true }));
         dp.dispatchEvent(new CustomEvent("rhx:date-picker:change", { bubbles: true, detail: { value: iso } }));
@@ -55,7 +55,7 @@
 
       popup.addEventListener("click", function (e) {
         var day = e.target.closest(DAY);
-        if (day && popup.contains(day)) { commit(day.getAttribute("data-date")); close(true); return; }
+        if (day && popup.contains(day)) { commit(day.getAttribute("data-date"), day.getAttribute("data-display")); close(true); return; }
         if (e.target.closest("[data-rhx-cal-today]")) {
           var t = new Date();
           var iso = t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
@@ -84,7 +84,7 @@
           case "PageDown": e.preventDefault(); clickNav(".rhx-calendar__nav[aria-label='Next month']"); return;
           case "Enter": case " ":
             e.preventDefault();
-            if (!cur.hasAttribute("disabled")) { commit(cur.getAttribute("data-date")); close(true); }
+            if (!cur.hasAttribute("disabled")) { commit(cur.getAttribute("data-date"), cur.getAttribute("data-display")); close(true); }
             return;
           case "Escape": e.preventDefault(); close(true); return;
           default: return;
