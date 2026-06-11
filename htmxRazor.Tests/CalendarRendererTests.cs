@@ -142,4 +142,11 @@ public class CalendarRendererTests
         var html = CalendarEndpoint.Render(q, today: new DateOnly(2026, 5, 7));
         Assert.Contains("May 2026", html);
     }
+
+    [Fact]
+    public void RhxCalendar_RenderMonth_Produces_Same_Grid_As_Renderer()
+    {
+        var opts = DaysOpts();
+        Assert.Equal(CalendarRenderer.Render(opts), htmxRazor.Components.Forms.Calendar.RhxCalendar.RenderMonth(opts));
+    }
 }
