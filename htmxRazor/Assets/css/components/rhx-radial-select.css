@@ -1,0 +1,194 @@
+/* ─────────────────────────────────────────────
+   rhx-radial-select
+   A rectangular icon trigger flush-left against a
+   dropdown. The trigger opens a circular SVG pie of
+   colored, icon-labeled category wedges that cascade
+   the dropdown's option set via htmx.
+   ───────────────────────────────────────────── */
+
+@layer rhx.components {
+  .rhx-radial-select {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    font-family: var(--rhx-font-family);
+  }
+
+  .rhx-radial-select__group {
+    display: flex;
+    align-items: stretch;
+    height: 2.5rem;
+  }
+
+  /* ── Trigger (icon-only; echoes active category color) ── */
+  .rhx-radial-select__trigger {
+    flex: 0 0 auto;
+    width: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--rhx-border-width) solid var(--rhx-color-border);
+    border-right: none;
+    border-radius: var(--rhx-radius-md) 0 0 var(--rhx-radius-md);
+    background: var(--rhx-color-surface);
+    color: var(--rhx-color-brand-600);
+    cursor: pointer;
+    transition: background var(--rhx-transition-fast), color var(--rhx-transition-fast);
+  }
+
+  .rhx-radial-select__trigger:focus-visible {
+    outline: 2px solid var(--rhx-color-focus-ring);
+    outline-offset: -2px;
+    z-index: 1;
+  }
+
+  .rhx-radial-select__trigger[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .rhx-radial-select__trigger-icon {
+    display: inline-flex;
+  }
+
+  .rhx-radial-select__trigger-icon svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  /* Active category color echoed onto the trigger (set by JS via --rhx-radial-active). */
+  .rhx-radial-select__trigger[data-rhx-active-color] {
+    background: var(--rhx-radial-active, var(--rhx-color-surface));
+    color: var(--rhx-color-text-inverse);
+    border-color: var(--rhx-radial-active, var(--rhx-color-border));
+  }
+
+  /* ── Dropdown + listbox ── */
+  .rhx-radial-select__dropdown {
+    flex: 1 1 auto;
+    min-width: 12rem;
+  }
+
+  .rhx-radial-select__listbox {
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--rhx-space-md);
+    border: var(--rhx-border-width) solid var(--rhx-color-border);
+    border-radius: 0 var(--rhx-radius-md) var(--rhx-radius-md) 0;
+    background: var(--rhx-color-surface);
+    color: var(--rhx-color-text);
+    overflow: auto;
+    gap: var(--rhx-space-xs);
+  }
+
+  .rhx-radial-select__placeholder {
+    color: var(--rhx-color-text-muted);
+  }
+
+  .rhx-radial-select__option {
+    padding: var(--rhx-space-xs) var(--rhx-space-sm);
+    border-radius: var(--rhx-radius-sm);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .rhx-radial-select__option:hover,
+  .rhx-radial-select__option[data-rhx-focused] {
+    background: var(--rhx-color-surface-raised);
+  }
+
+  .rhx-radial-select__option[aria-selected="true"] {
+    background: var(--rhx-color-brand-100);
+    color: var(--rhx-color-brand-700);
+    font-weight: var(--rhx-font-weight-medium);
+  }
+
+  /* ── Pie popup ── */
+  .rhx-radial-select__pie {
+    position: absolute;
+    /* Fallback placement before rhx-position.js runs (it overrides top/left). */
+    top: calc(100% + var(--rhx-space-xs));
+    left: 0;
+    z-index: var(--rhx-z-dropdown);
+    width: 12rem;
+    height: 12rem;
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.22));
+    transform-origin: top left;
+    animation: rhx-radial-in 120ms ease-out;
+  }
+
+  .rhx-radial-select__pie[hidden] {
+    display: none;
+  }
+
+  .rhx-radial-select__wheel {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .rhx-radial-select__wedge {
+    cursor: pointer;
+    outline: none;
+  }
+
+  .rhx-radial-select__wedge > path {
+    stroke: var(--rhx-color-surface-raised);
+    stroke-width: 2;
+    transition: filter var(--rhx-transition-fast);
+  }
+
+  .rhx-radial-select__wedge:hover > path,
+  .rhx-radial-select__wedge:focus-visible > path {
+    filter: brightness(1.08);
+  }
+
+  .rhx-radial-select__wedge:focus-visible > path {
+    stroke: var(--rhx-color-focus-ring);
+    stroke-width: 3;
+  }
+
+  .rhx-radial-select__wedge[aria-checked="true"] > path {
+    stroke: var(--rhx-color-text);
+    stroke-width: 3;
+    filter: brightness(1.06);
+  }
+
+  .rhx-radial-select__wedge[aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  .rhx-radial-select__wedge[aria-disabled="true"] > path {
+    opacity: 0.4;
+  }
+
+  .rhx-radial-select__wedge-icon {
+    color: var(--rhx-color-text-inverse);
+    pointer-events: none;
+  }
+
+  @keyframes rhx-radial-in {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* ── Sizes ── */
+  .rhx-radial-select--small .rhx-radial-select__group { height: 2rem; }
+  .rhx-radial-select--small .rhx-radial-select__trigger { width: 2.25rem; }
+  .rhx-radial-select--large .rhx-radial-select__group { height: 3rem; }
+  .rhx-radial-select--large .rhx-radial-select__trigger { width: 3.25rem; }
+
+  /* ── Disabled block ── */
+  .rhx-radial-select--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rhx-radial-select__pie { animation: none; }
+    .rhx-radial-select__wedge > path,
+    .rhx-radial-select__trigger { transition: none; }
+  }
+}
