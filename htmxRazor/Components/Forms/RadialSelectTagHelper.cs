@@ -120,14 +120,25 @@ public sealed class RadialSelectTagHelper : FormControlTagHelperBase
         }
         sb.Append("</button>");
 
-        // ── Dropdown shell (listbox populated by the htmx cascade) ──
+        // ── Dropdown (combobox button + popup listbox populated by the htmx cascade) ──
         sb.Append($"<div class=\"{GetElementClass("dropdown")}\">");
+
+        // Combobox button — shows the selected value (or placeholder) and opens the listbox.
+        sb.Append($"<button type=\"button\" class=\"{GetElementClass("combobox")}\"");
+        sb.Append($" role=\"combobox\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"{Enc(listboxId)}\"");
+        if (!string.IsNullOrEmpty(AriaLabel)) sb.Append($" aria-label=\"{Enc(AriaLabel)}\"");
+        if (Disabled) sb.Append(" disabled");
+        sb.Append('>');
+        var placeholder = Placeholder ?? "";
+        sb.Append($"<span class=\"{GetElementClass("value")}\" data-rhx-radial-display data-rhx-placeholder=\"{Enc(placeholder)}\">{Enc(placeholder)}</span>");
+        sb.Append($"<svg class=\"{GetElementClass("arrow")}\" xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"6 9 12 15 18 9\"></polyline></svg>");
+        sb.Append("</button>");
+
+        // Popup listbox (hidden until opened).
         sb.Append($"<div class=\"{GetElementClass("listbox")}\" id=\"{Enc(listboxId)}\" role=\"listbox\"");
         if (!string.IsNullOrEmpty(AriaLabel)) sb.Append($" aria-label=\"{Enc(AriaLabel)}\"");
-        sb.Append('>');
-        if (!string.IsNullOrEmpty(Placeholder))
-            sb.Append($"<div class=\"{GetElementClass("placeholder")}\">{Enc(Placeholder)}</div>");
-        sb.Append("</div>"); // listbox
+        sb.Append(" hidden></div>");
+
         sb.Append("</div>"); // dropdown
         sb.Append("</div>"); // group
 

@@ -92,18 +92,27 @@ public class RadialSelectTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task RadialSelect_Renders_Listbox_Shell()
+    public async Task RadialSelect_Renders_Combobox_And_Popup_Listbox()
     {
         var helper = CreateRadialHelper();
         helper.Name = "FoodItem";
+        helper.Placeholder = "Choose…";
         var context = CreateContext("rhx-radial-select");
         var output = CreateOutput("rhx-radial-select", childContent: "");
 
         await helper.ProcessAsync(context, output);
 
         var html = output.Content.GetContent();
+        // Combobox button shows the value/placeholder and controls the listbox.
+        Assert.Contains("rhx-radial-select__combobox", html);
+        Assert.Contains("role=\"combobox\"", html);
+        Assert.Contains("aria-haspopup=\"listbox\"", html);
+        Assert.Contains("data-rhx-radial-display", html);
+        Assert.Contains("Choose…", html);
+        // Listbox is a popup, hidden until opened.
         Assert.Contains("rhx-radial-select__listbox", html);
         Assert.Contains("role=\"listbox\"", html);
+        Assert.Matches("rhx-radial-select__listbox[^>]*hidden", html);
     }
 
     [Fact]
