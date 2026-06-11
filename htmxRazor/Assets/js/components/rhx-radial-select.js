@@ -3,7 +3,8 @@
  * A pie of category wedges opened from a rectangular trigger. Selecting a wedge echoes its
  * color + icon onto the trigger, sets the hidden category input, and fires the wedge's
  * cascade request via htmx.ajax to repopulate the dropdown listbox — then auto-selects the
- * first option. Positioning reuses rhx-position.js.
+ * first option. The dropdown is a combobox: its button shows the selected value and opens a
+ * popup listbox of the active category's items. Pie placement reuses rhx-position.js.
  */
 (function () {
   "use strict";
@@ -19,19 +20,31 @@
 
       var trigger = control.querySelector(".rhx-radial-select__trigger");
       var pie = control.querySelector(".rhx-radial-select__pie");
+      var combobox = control.querySelector(".rhx-radial-select__combobox");
       var listbox = control.querySelector(".rhx-radial-select__listbox");
+      var display = control.querySelector("[data-rhx-radial-display]");
       var categoryInput = control.querySelector("[data-rhx-radial-category]");
       var valueInput = control.querySelector("[data-rhx-radial-value]");
       if (!trigger || !pie) return;
 
       var wedges = Array.prototype.slice.call(pie.querySelectorAll(WEDGE_SELECTOR));
 
-      function isOpen() {
+      // Reflect the initial empty/placeholder state on the value display.
+      if (display && (!valueInput || !valueInput.value)) {
+        display.setAttribute("data-rhx-empty", "");
+      }
+
+      // ──────────────────────────────────────────────
+      //  Pie (category picker)
+      // ──────────────────────────────────────────────
+
+      function pieOpen() {
         return !pie.hidden;
       }
 
-      function open() {
+      function openPie() {
         if (trigger.hasAttribute("disabled")) return;
+        closeListbox();
         pie.hidden = false;
         trigger.setAttribute("aria-expanded", "true");
         if (window.RHX && typeof window.RHX.positionElement === "function") {
@@ -48,7 +61,7 @@
         focusWedge(active);
       }
 
-      function close(focusTrigger) {
+      function closePie(focusTrigger) {
         pie.hidden = true;
         trigger.setAttribute("aria-expanded", "false");
         if (focusTrigger) trigger.focus();
@@ -61,7 +74,7 @@
         wedge.focus();
       }
 
-      function select(wedge) {
+      function selectWedge(wedge) {
         if (!wedge || wedge.getAttribute("aria-disabled") === "true") return;
 
         wedges.forEach(function (w) { w.setAttribute("aria-checked", "false"); });
@@ -103,7 +116,79 @@
             .then(autoSelectFirst);
         }
 
-        close(false);
+        closePie(false);
+      }
+
+      // ──────────────────────────────────────────────
+      //  Dropdown (items within the active category)
+      // ──────────────────────────────────────────────
+
+      function listboxOpen() {
+        return listbox && !listbox.hidden;
+      }
+
+      function openListbox() {
+        if (!listbox || combobox.hasAttribute("disabled")) return;
+        if (!listbox.querySelector(OPTION_SELECTOR)) return; // nothing to show yet
+        closePie(false);
+        listbox.hidden = false;
+        combobox.setAttribute("aria-expanded", "true");
+        var sel = listbox.querySelector('[role="option"][aria-selected="true"]')
+          || listbox.querySelector(OPTION_SELECTOR);
+        focusOption(sel);
+      }
+
+      function closeListbox() {
+        if (!listbox) return;
+        listbox.hidden = true;
+        if (combobox) combobox.setAttribute("aria-expanded", "false");
+        var f = listbox.querySelector("[data-rhx-focused]");
+        if (f) f.removeAttribute("data-rhx-focused");
+      }
+
+      function getOptions() {
+        return Array.prototype.slice.call(listbox.querySelectorAll(OPTION_SELECTOR));
+      }
+
+      function focusOption(option) {
+        if (!option) return;
+        var prev = listbox.querySelector("[data-rhx-focused]");
+        if (prev) prev.removeAttribute("data-rhx-focused");
+        option.setAttribute("data-rhx-focused", "");
+        option.scrollIntoView({ block: "nearest" });
+      }
+
+      function moveOption(delta) {
+        var opts = getOptions();
+        if (!opts.length) return;
+        var cur = listbox.querySelector("[data-rhx-focused]");
+        var idx = cur ? opts.indexOf(cur) : -1;
+        var next = (idx + delta + opts.length) % opts.length;
+        focusOption(opts[next]);
+      }
+
+      function selectOption(option) {
+        if (!option) return;
+        listbox.querySelectorAll('[aria-selected="true"]').forEach(function (o) {
+          o.setAttribute("aria-selected", "false");
+        });
+        option.setAttribute("aria-selected", "true");
+        setDisplay(option.textContent.trim());
+        if (valueInput) {
+          valueInput.value = option.getAttribute("data-value") || "";
+          valueInput.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+
+      function setDisplay(text) {
+        if (!display) return;
+        if (text) {
+          display.textContent = text;
+          display.removeAttribute("data-rhx-empty");
+        } else {
+          display.textContent = display.getAttribute("data-rhx-placeholder") || "";
+          display.setAttribute("data-rhx-empty", "");
+        }
       }
 
       function autoSelectFirst() {
@@ -114,32 +199,35 @@
         });
         if (first) {
           first.setAttribute("aria-selected", "true");
+          setDisplay(first.textContent.trim());
           if (valueInput) valueInput.value = first.getAttribute("data-value") || "";
-        } else if (valueInput) {
-          valueInput.value = "";
+        } else {
+          setDisplay("");
+          if (valueInput) valueInput.value = "";
         }
         if (valueInput) valueInput.dispatchEvent(new Event("change", { bubbles: true }));
       }
 
-      // ── Trigger ──
+      // ──────────────────────────────────────────────
+      //  Events — pie
+      // ──────────────────────────────────────────────
+
       trigger.addEventListener("click", function () {
-        isOpen() ? close(false) : open();
+        pieOpen() ? closePie(false) : openPie();
       });
 
       trigger.addEventListener("keydown", function (e) {
-        if ((e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") && !isOpen()) {
+        if ((e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") && !pieOpen()) {
           e.preventDefault();
-          open();
+          openPie();
         }
       });
 
-      // ── Wedge click ──
       pie.addEventListener("click", function (e) {
         var wedge = e.target.closest(WEDGE_SELECTOR);
-        if (wedge && pie.contains(wedge)) select(wedge);
+        if (wedge && pie.contains(wedge)) selectWedge(wedge);
       });
 
-      // ── Wedge keyboard (roving focus + type-ahead) ──
       pie.addEventListener("keydown", function (e) {
         if (!wedges.length) return;
         var idx = wedges.indexOf(document.activeElement);
@@ -166,14 +254,14 @@
           case "Enter":
           case " ":
             e.preventDefault();
-            if (idx >= 0) select(wedges[idx]);
+            if (idx >= 0) selectWedge(wedges[idx]);
             break;
           case "Escape":
             e.preventDefault();
-            close(true);
+            closePie(true);
             break;
           case "Tab":
-            close(false);
+            closePie(false);
             break;
           default:
             if (e.key.length === 1) {
@@ -187,25 +275,75 @@
         }
       });
 
-      // ── Listbox option selection (within the active category) ──
-      if (listbox) {
+      // ──────────────────────────────────────────────
+      //  Events — dropdown
+      // ──────────────────────────────────────────────
+
+      if (combobox && listbox) {
+        combobox.addEventListener("click", function () {
+          listboxOpen() ? closeListbox() : openListbox();
+        });
+
+        // Options aren't focusable, so all dropdown keys are handled on the combobox button.
+        combobox.addEventListener("keydown", function (e) {
+          if (!listboxOpen()) {
+            if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              openListbox();
+            }
+            return;
+          }
+          switch (e.key) {
+            case "ArrowDown":
+              e.preventDefault();
+              moveOption(1);
+              break;
+            case "ArrowUp":
+              e.preventDefault();
+              moveOption(-1);
+              break;
+            case "Home":
+              e.preventDefault();
+              focusOption(getOptions()[0]);
+              break;
+            case "End":
+              e.preventDefault();
+              var opts = getOptions();
+              focusOption(opts[opts.length - 1]);
+              break;
+            case "Enter":
+            case " ":
+              e.preventDefault();
+              var focused = listbox.querySelector("[data-rhx-focused]");
+              if (focused) {
+                selectOption(focused);
+                closeListbox();
+              }
+              break;
+            case "Escape":
+              e.preventDefault();
+              closeListbox();
+              break;
+            case "Tab":
+              closeListbox();
+              break;
+          }
+        });
+
         listbox.addEventListener("click", function (e) {
           var option = e.target.closest(OPTION_SELECTOR);
           if (!option || !listbox.contains(option)) return;
-          listbox.querySelectorAll('[aria-selected="true"]').forEach(function (o) {
-            o.setAttribute("aria-selected", "false");
-          });
-          option.setAttribute("aria-selected", "true");
-          if (valueInput) {
-            valueInput.value = option.getAttribute("data-value") || "";
-            valueInput.dispatchEvent(new Event("change", { bubbles: true }));
-          }
+          selectOption(option);
+          closeListbox();
+          combobox.focus();
         });
       }
 
-      // ── Click outside ──
+      // ── Click outside closes both popups ──
       document.addEventListener("click", function (e) {
-        if (isOpen() && !control.contains(e.target)) close(false);
+        if (control.contains(e.target)) return;
+        if (pieOpen()) closePie(false);
+        if (listboxOpen()) closeListbox();
       });
     });
   }
