@@ -48,6 +48,38 @@ public sealed class RadialSelectTests(DemoAppFactory app) : ComponentTestBase(ap
     }
 
     [Theory, MemberData(nameof(Browsers))]
+    public async Task Pie_pops_up_centered_over_trigger(string browserName)
+    {
+        var page = await OpenAsync(browserName, Path);
+
+        var trigger = page.Locator(Scope + "button.rhx-radial-select__trigger");
+        // Ensure there is viewport room above so the pie isn't flipped below.
+        await trigger.ScrollIntoViewIfNeededAsync();
+        await page.Mouse.WheelAsync(0, -200);
+
+        await trigger.ClickAsync();
+        var pie = page.Locator(Scope + ".rhx-radial-select__pie");
+        await Assertions.Expect(pie).ToBeVisibleAsync();
+        await page.WaitForTimeoutAsync(250); // let the pop-in animation settle
+
+        var pieBox = await pie.BoundingBoxAsync();
+        var trigBox = await trigger.BoundingBoxAsync();
+        Assert.NotNull(pieBox);
+        Assert.NotNull(trigBox);
+
+        // Pops UP: the pie's vertical center sits above the trigger's top edge.
+        var pieMidY = pieBox!.Y + pieBox.Height / 2;
+        Assert.True(pieMidY < trigBox!.Y,
+            $"Pie should pop up above the trigger (pie mid-Y {pieMidY} vs trigger top {trigBox.Y}).");
+
+        // Centered OVER the trigger horizontally (not off to the right).
+        var pieCenterX = pieBox.X + pieBox.Width / 2;
+        var trigCenterX = trigBox.X + trigBox.Width / 2;
+        Assert.True(System.Math.Abs(pieCenterX - trigCenterX) < 4,
+            $"Pie should be horizontally centered over the trigger (pie center {pieCenterX} vs trigger center {trigCenterX}).");
+    }
+
+    [Theory, MemberData(nameof(Browsers))]
     public async Task Selecting_wedge_cascades_and_autoselects_first(string browserName)
     {
         var page = await OpenAsync(browserName, Path);

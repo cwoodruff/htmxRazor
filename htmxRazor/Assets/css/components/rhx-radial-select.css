@@ -174,14 +174,15 @@
   /* ── Pie popup ── */
   .rhx-radial-select__pie {
     position: absolute;
-    /* Fallback placement before rhx-position.js runs (it overrides top/left). */
-    top: calc(100% + var(--rhx-space-xs));
-    left: 0;
+    /* Fallback: pop up, centered over the trigger, before rhx-position.js runs
+       (it overrides top/left at open). 12rem pie over a ~2.75rem trigger. */
+    bottom: calc(100% + var(--rhx-space-xs));
+    left: -4.625rem;
     z-index: var(--rhx-z-dropdown);
     width: 12rem;
     height: 12rem;
     filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.22));
-    transform-origin: top left;
+    transform-origin: bottom center;
     animation: rhx-radial-in 120ms ease-out;
   }
 
@@ -236,8 +237,8 @@
   }
 
   @keyframes rhx-radial-in {
-    from { opacity: 0; transform: scale(0.85); }
-    to   { opacity: 1; transform: scale(1); }
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 
   /* ── Sizes ── */

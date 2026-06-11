@@ -48,9 +48,10 @@
         pie.hidden = false;
         trigger.setAttribute("aria-expanded", "true");
         if (window.RHX && typeof window.RHX.positionElement === "function") {
+          // Pop the pie up and centered over the trigger button (not down-right).
           window.RHX.positionElement(trigger, pie, {
-            placement: "bottom-start",
-            distance: 6,
+            placement: "top",
+            distance: 8,
             flip: true,
             shift: true,
           });
