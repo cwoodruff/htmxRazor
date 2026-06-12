@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Forms**: Radial Select, Radial Option, Date Picker, Time Picker, Date Range Picker
 
 ### Tests
-- 1,855 unit tests (17 new), all passing. New Playwright E2E coverage (`RadialSelectTests`) for open → select wedge → cascade → auto-select-first → focus restore.
+- 1,909 unit tests (18 new), all passing. New Playwright E2E coverage (`RadialSelectTests`) for open → select wedge → cascade → auto-select-first → focus restore.
 
 ## [2.0.0] — Platform & DX
 

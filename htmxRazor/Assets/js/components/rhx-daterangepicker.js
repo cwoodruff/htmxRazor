@@ -32,6 +32,8 @@
 
       var startIso = rp.getAttribute("data-range-start") || "";
       var endIso = rp.getAttribute("data-range-end") || "";
+      var minIso = rp.getAttribute("data-min") || "";
+      var maxIso = rp.getAttribute("data-max") || "";
       var selecting = false;
 
       function isOpen() { return !popup.hidden; }
@@ -45,6 +47,10 @@
           window.RHX.positionElement(input.parentNode, popup, { placement: "bottom-start", distance: 4, flip: true, shift: true });
         }
         paint();
+        var allDays = popup.querySelectorAll(".rhx-calendar__day");
+        allDays.forEach(function (d) { d.setAttribute("tabindex", "-1"); });
+        var fd = popup.querySelector(".rhx-calendar__day--range-start") || popup.querySelector(DAY);
+        if (fd) { fd.setAttribute("tabindex", "0"); fd.focus(); }
       }
 
       function close() {
@@ -129,6 +135,9 @@
           default: return;
         }
         startIso = iso(s); endIso = iso(e); selecting = false;
+        if (minIso && startIso < minIso) startIso = minIso;
+        if (maxIso && endIso > maxIso) endIso = maxIso;
+        if (startIso && endIso && startIso > endIso) { startIso = ""; endIso = ""; return; }
         paint(); display(); commit(); close();
       }
 
@@ -151,7 +160,51 @@
       });
       popup.addEventListener("mouseleave", function () { if (selecting) paint(); });
 
-      popup.addEventListener("htmx:afterSwap", function () { paint(); });
+      function clickNav(sel) { var b = popup.querySelector(".rhx-calendar__nav" + sel); if (b) b.click(); }
+
+      // Calendar grid keyboard over BOTH months (flat cell sequence): arrows move (skipping disabled),
+      // PageUp/Down change months, Enter/Space pick the focused day, Escape closes.
+      popup.addEventListener("keydown", function (e) {
+        var cur = document.activeElement;
+        if (!cur || !cur.classList || !cur.classList.contains("rhx-calendar__day")) {
+          if (e.key === "Escape") { e.preventDefault(); close(); input.focus(); }
+          return;
+        }
+        var days = Array.prototype.slice.call(popup.querySelectorAll(".rhx-calendar__day"));
+        var i = days.indexOf(cur);
+        var to = null, dir = 1, navOverflow = true;
+        switch (e.key) {
+          case "ArrowRight": to = i + 1; dir = 1; break;
+          case "ArrowLeft": to = i - 1; dir = -1; break;
+          case "ArrowDown": to = i + 7; dir = 1; break;
+          case "ArrowUp": to = i - 7; dir = -1; break;
+          case "Home": to = i - (i % 7); dir = 1; navOverflow = false; break;
+          case "End": to = i - (i % 7) + 6; dir = -1; navOverflow = false; break;
+          case "PageUp": e.preventDefault(); clickNav("[aria-label='Previous month']"); return;
+          case "PageDown": e.preventDefault(); clickNav("[aria-label='Next month']"); return;
+          case "Enter": case " ": e.preventDefault(); if (!cur.hasAttribute("disabled")) pickDay(cur); return;
+          case "Escape": e.preventDefault(); close(); input.focus(); return;
+          default: return;
+        }
+        e.preventDefault();
+        while (to >= 0 && to < days.length && days[to].hasAttribute("disabled")) { to += dir; }
+        if (to < 0 || to >= days.length) {
+          if (navOverflow) clickNav(dir < 0 ? "[aria-label='Previous month']" : "[aria-label='Next month']");
+          return;
+        }
+        days.forEach(function (d) { d.setAttribute("tabindex", "-1"); });
+        days[to].setAttribute("tabindex", "0");
+        days[to].focus();
+      });
+
+      popup.addEventListener("htmx:afterSwap", function () {
+        paint();
+        if (!popup.hidden) {
+          popup.querySelectorAll(".rhx-calendar__day").forEach(function (d) { d.setAttribute("tabindex", "-1"); });
+          var f = popup.querySelector(".rhx-calendar__day--range-start") || popup.querySelector(DAY);
+          if (f) { f.setAttribute("tabindex", "0"); f.focus(); }
+        }
+      });
 
       document.addEventListener("click", function (e) { if (isOpen() && !rp.contains(e.target)) close(); });
 

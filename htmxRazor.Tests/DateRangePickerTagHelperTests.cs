@@ -122,4 +122,17 @@ public class DateRangePickerTagHelperTests : TagHelperTestBase
         Assert.True(HasClass(output, "rhx-date-range-picker--disabled"));
         Assert.True(System.Text.RegularExpressions.Regex.Matches(html, "disabled").Count >= 2);
     }
+
+    [Fact]
+    public async Task Emits_Min_Max_Data_Attributes_For_Js()
+    {
+        var helper = CreateHelper();
+        helper.StartName = "From"; helper.EndName = "To";
+        helper.Min = "2026-10-05"; helper.Max = "2026-10-25";
+        var ctx = CreateContext("rhx-date-range-picker");
+        var output = CreateOutput("rhx-date-range-picker");
+        await helper.ProcessAsync(ctx, output);
+        Assert.Equal("2026-10-05", GetAttribute(output, "data-min"));
+        Assert.Equal("2026-10-25", GetAttribute(output, "data-max"));
+    }
 }

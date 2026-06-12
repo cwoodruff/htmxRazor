@@ -79,6 +79,8 @@ public class DateRangePickerTagHelper : FormControlTagHelperBase
         output.Attributes.SetAttribute("data-rhx-date-range-picker", "");
         output.Attributes.SetAttribute("data-range-start", start is { } s0 ? s0.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "");
         output.Attributes.SetAttribute("data-range-end", end is { } e0 ? e0.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "");
+        output.Attributes.SetAttribute("data-min", ParseDate(Min) is { } mnv ? mnv.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "");
+        output.Attributes.SetAttribute("data-max", ParseDate(Max) is { } mxv ? mxv.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "");
 
         var weekStart = Enum.TryParse<DayOfWeek>(ExpandWeekStart(WeekStartName), true, out var ws) ? ws : DayOfWeek.Monday;
         var view = start ?? Today;
