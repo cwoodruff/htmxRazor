@@ -1,0 +1,56 @@
+@page
+@model TimePickerModel
+@{
+    Layout = "_ComponentPage";
+    ViewData["Title"] = "Time Picker";
+    ViewData["ComponentName"] = "Time Picker";
+    ViewData["ComponentTag"] = "rhx-time-picker";
+    ViewData["ComponentDescription"] = "A text input with a popup list of selectable times. Commits a hidden ISO HH:mm value; shows 12-hour or 24-hour display.";
+}
+
+<section class="docs-component-section">
+    <h2>Examples</h2>
+
+    <div class="docs-example">
+        <h3>Basic</h3>
+        <rhx-tab-group>
+            <rhx-tab rhx-panel="basic-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="basic-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="basic-preview" rhx-active="true">
+                <div class="docs-preview docs-preview--vertical" style="min-height: 18rem; align-items: flex-start;">
+                    <rhx-time-picker name="StartTime" rhx-placeholder="Pick a time…" rhx-step="30" />
+                </div>
+            </rhx-tab-panel>
+            <rhx-tab-panel rhx-name="basic-code">
+                <div class="docs-code"><pre><code>@Model.BasicCode</code></pre></div>
+            </rhx-tab-panel>
+        </rhx-tab-group>
+    </div>
+
+    <div class="docs-example">
+        <h3>Business hours, 15-min, 24-hour</h3>
+        <rhx-tab-group>
+            <rhx-tab rhx-panel="rng-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="rng-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="rng-preview" rhx-active="true">
+                <div class="docs-preview docs-preview--vertical" style="min-height: 18rem; align-items: flex-start;">
+                    <rhx-time-picker name="slot" rhx-min="09:00" rhx-max="17:00" rhx-step="15" rhx-12hour="false" />
+                </div>
+            </rhx-tab-panel>
+            <rhx-tab-panel rhx-name="rng-code">
+                <div class="docs-code"><pre><code>@Model.RangeCode</code></pre></div>
+            </rhx-tab-panel>
+        </rhx-tab-group>
+    </div>
+</section>
+
+@await Html.PartialAsync("_PropertyTable", Model.Properties)
+
+<section class="docs-component-section">
+    <h2>Accessibility</h2>
+    <ul class="docs-a11y-list">
+        <li>The input is a <code>role="combobox"</code> with <code>aria-haspopup="listbox"</code>/<code>aria-expanded</code>; the popup is <code>role="listbox"</code> with <code>role="option"</code> items.</li>
+        <li>Keyboard: Down/Up move, Home/End jump, Enter selects, Escape closes, printable keys type-ahead by label; the active option is tracked via <code>aria-activedescendant</code>.</li>
+        <li>The hidden value is ISO <code>HH:mm</code> (24-hour) for reliable model binding regardless of display mode.</li>
+    </ul>
+</section>
