@@ -79,4 +79,31 @@ public class CalendarRangeRendererTests
         Assert.True(idx >= 0);
         Assert.Contains("disabled", html.Substring(idx, 120));
     }
+
+    [Fact]
+    public void Endpoint_Parses_Query_And_Renders_Two_Months()
+    {
+        var q = new Microsoft.AspNetCore.Http.QueryCollection(
+            new System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
+            {
+                ["year"] = "2026", ["month"] = "10", ["min"] = "2026-01-01", ["max"] = "2026-12-31",
+                ["week-start"] = "monday", ["id"] = "rp1-cal",
+            });
+        var html = CalendarRangeEndpoint.Render(q, today: new DateOnly(2026, 10, 9));
+        Assert.Contains("id=\"rp1-cal\"", html);
+        Assert.Contains("October 2026", html);
+        Assert.Contains("November 2026", html);
+    }
+
+    [Fact]
+    public void Endpoint_Clamps_Out_Of_Range_Year_And_Defaults_To_Today()
+    {
+        var q = new Microsoft.AspNetCore.Http.QueryCollection(
+            new System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
+            {
+                ["year"] = "0", ["month"] = "abc",
+            });
+        var html = CalendarRangeEndpoint.Render(q, today: new DateOnly(2026, 3, 4));
+        Assert.Contains("March 2026", html);
+    }
 }
