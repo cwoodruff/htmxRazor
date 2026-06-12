@@ -4,6 +4,9 @@
  * if earlier). While picking, hovering a day shows a live in-range preview. Presets set both dates.
  * Range highlighting is painted entirely client-side onto the .rhx-calendar__day cells (on init,
  * select, hover, and after each htmx month swap). Commits two hidden ISO yyyy-MM-dd inputs.
+ * Display labels come from the server-rendered data-display attribute on each visible day cell;
+ * dates outside the two visible months (e.g. some presets) fall back to the browser's
+ * toLocaleDateString(), consistent with the date picker.
  */
 (function () {
   "use strict";
@@ -45,9 +48,13 @@
       }
 
       function close() {
+        // If the popup is dismissed mid-selection (start picked, no end yet), abandon the partial range.
+        if (selecting && !endIso) startIso = "";
+        selecting = false;
         popup.hidden = true;
         input.setAttribute("aria-expanded", "false");
         if (trigger) trigger.setAttribute("aria-expanded", "false");
+        display();
       }
 
       function paint(hoverIso) {
@@ -64,6 +71,7 @@
         }
         popup.querySelectorAll(".rhx-calendar__day").forEach(function (c) {
           c.classList.remove("rhx-calendar__day--in-range", "rhx-calendar__day--range-start", "rhx-calendar__day--range-end");
+          if (c.hasAttribute("disabled")) return;
           var d = c.getAttribute("data-date");
           if (!d || !lo) return;
           if (d === lo) c.classList.add("rhx-calendar__day--range-start");
@@ -141,6 +149,7 @@
         var day = e.target.closest(DAY);
         if (day && popup.contains(day)) paint(day.getAttribute("data-date"));
       });
+      popup.addEventListener("mouseleave", function () { if (selecting) paint(); });
 
       popup.addEventListener("htmx:afterSwap", function () { paint(); });
 
