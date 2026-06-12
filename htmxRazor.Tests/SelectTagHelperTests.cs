@@ -374,6 +374,50 @@ public class SelectTagHelperTests : TagHelperTestBase
         Assert.Contains("aria-required=\"true\"", content);
     }
 
+    [Fact]
+    public async Task Required_Single_Select_Renders_A_Validatable_Required_Mirror_Input()
+    {
+        // Issue #14: a `type="hidden"` input is barred from HTML constraint validation,
+        // so native `required` never fires on rhx-select. When required, the value-carrying
+        // input must be a focusable, validatable (non-hidden) mirror that the browser enforces.
+        var helper = CreateHelper();
+        helper.Name = "type";
+        helper.Required = true;
+        var context = CreateContext("rhx-select");
+        var output = CreateOutput("rhx-select");
+
+        helper.ViewContext = CreateViewContext();
+        await helper.ProcessAsync(context, output);
+
+        var content = output.Content.GetContent();
+        // The value input carries the native `required` attribute...
+        Assert.Contains("data-rhx-select-value", content);
+        Assert.Contains(" required", content);
+        // ...and is NOT type="hidden" (hidden inputs are barred from constraint validation)...
+        Assert.DoesNotContain("type=\"hidden\"", content);
+        // ...but is hidden from layout/AT via the validatable-mirror class + scrubbed semantics.
+        Assert.Contains("rhx-select__hidden--required", content);
+        Assert.Contains("tabindex=\"-1\"", content);
+        Assert.Contains("aria-hidden=\"true\"", content);
+    }
+
+    [Fact]
+    public async Task NonRequired_Single_Select_Keeps_A_Plain_Hidden_Input()
+    {
+        var helper = CreateHelper();
+        helper.Name = "type";
+        var context = CreateContext("rhx-select");
+        var output = CreateOutput("rhx-select");
+
+        helper.ViewContext = CreateViewContext();
+        await helper.ProcessAsync(context, output);
+
+        var content = output.Content.GetContent();
+        Assert.Contains("type=\"hidden\"", content);
+        Assert.DoesNotContain(" required", content);
+        Assert.DoesNotContain("rhx-select__hidden--required", content);
+    }
+
     // ── Size ──
 
     [Fact]

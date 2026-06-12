@@ -91,7 +91,9 @@ public sealed class SelectTests(DemoAppFactory app) : ComponentTestBase(app)
         var page = await OpenAsync(browserName, Path);
 
         var wrapper = page.Locator("#panel-enum-preview div.rhx-select");
-        var hidden = wrapper.Locator("input[type='hidden'][name='priority']");
+        // A non-nullable enum is implicitly required, so its value input is the validatable
+        // mirror (not type="hidden"); target it by the stable data attribute (issue #14).
+        var hidden = wrapper.Locator("input[data-rhx-select-value][name='priority']");
         await Assertions.Expect(hidden).ToHaveValueAsync("Medium");
         await Assertions.Expect(wrapper.Locator("span.rhx-select__value")).ToContainTextAsync("Medium");
     }
@@ -110,5 +112,36 @@ public sealed class SelectTests(DemoAppFactory app) : ComponentTestBase(app)
 
         await clearBtn.ClickAsync();
         await Assertions.Expect(hidden).ToHaveValueAsync("");
+    }
+
+    // Issue #14: rhx-required="true" must enforce native HTML form validation on rhx-select,
+    // just like rhx-input. The value mirror must be a validatable (non-hidden) control so the
+    // browser blocks an empty submit and shows its validation bubble.
+    [Theory, MemberData(nameof(Browsers))]
+    public async Task Required_select_blocks_native_form_submission_until_a_value_is_chosen(string browserName)
+    {
+        var page = await OpenAsync(browserName, Path);
+
+        var scope = page.Locator("#panel-required-preview");
+        var mirror = scope.Locator("[data-rhx-select-value]");
+
+        // The mirror is a real, validatable control — NOT type="hidden".
+        await Assertions.Expect(mirror).Not.ToHaveAttributeAsync("type", "hidden");
+
+        // Empty + required ⇒ the browser reports the field as invalid (valueMissing)...
+        Assert.True(await mirror.EvaluateAsync<bool>("el => el.validity.valueMissing"),
+            "Empty required select should report valueMissing=true.");
+
+        // ...and clicking submit does NOT navigate (native validation blocks it).
+        var urlBefore = page.Url;
+        await scope.Locator("button[type='submit']").ClickAsync();
+        await page.WaitForTimeoutAsync(150);
+        Assert.Equal(urlBefore, page.Url);
+
+        // Choosing a value clears the constraint violation.
+        await scope.Locator("button.rhx-select__trigger").ClickAsync();
+        await scope.Locator("[role='option']").First.ClickAsync();
+        Assert.False(await mirror.EvaluateAsync<bool>("el => el.validity.valueMissing"),
+            "After selecting a value the required select should be valid.");
     }
 }

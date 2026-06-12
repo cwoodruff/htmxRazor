@@ -23,6 +23,31 @@ public sealed class ButtonTests(DemoAppFactory app) : ComponentTestBase(app)
         }
     }
 
+    // Issue #13: an rhx-href button (rendered as <a>) came out smaller — both font and box —
+    // than a real <button>, because the reset's `button { font: inherit }` clobbered the
+    // component font whenever the cascade-layer order wasn't established before the component
+    // CSS. A link button and a real button with the same variant must render identically.
+    [Theory, MemberData(nameof(Browsers))]
+    public async Task Link_button_matches_real_button_font_and_size(string browserName)
+    {
+        var page = await OpenAsync(browserName, Path);
+
+        const string fontSizeJs = "el => getComputedStyle(el).fontSize";
+        const string heightJs = "el => Math.round(el.getBoundingClientRect().height)";
+
+        var realButton = page.Locator("#panel-variants-preview button.rhx-button.rhx-button--brand").First;
+        var linkButton = page.Locator("#panel-links-preview a.rhx-button.rhx-button--brand").First;
+
+        var buttonFont = await realButton.EvaluateAsync<string>(fontSizeJs);
+        var linkFont = await linkButton.EvaluateAsync<string>(fontSizeJs);
+        Assert.Equal(buttonFont, linkFont);
+
+        var buttonHeight = await realButton.EvaluateAsync<int>(heightJs);
+        var linkHeight = await linkButton.EvaluateAsync<int>(heightJs);
+        Assert.True(System.Math.Abs(buttonHeight - linkHeight) <= 1,
+            $"Link button height {linkHeight}px should match real button height {buttonHeight}px.");
+    }
+
     [Theory, MemberData(nameof(Browsers))]
     public async Task Disabled_button_is_not_interactive(string browserName)
     {

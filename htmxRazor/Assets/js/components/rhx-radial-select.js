@@ -34,6 +34,17 @@
         display.setAttribute("data-rhx-empty", "");
       }
 
+      // SVG paints siblings in document order, so a later wedge overdraws the shared edge
+      // of an earlier one. Keep the checked wedge last so its full outline stays on top.
+      function bringWedgeToFront(wedge) {
+        if (wedge && wedge.parentNode) wedge.parentNode.appendChild(wedge);
+      }
+
+      var initiallyChecked = wedges.find(function (w) {
+        return w.getAttribute("aria-checked") === "true";
+      });
+      if (initiallyChecked) bringWedgeToFront(initiallyChecked);
+
       // ──────────────────────────────────────────────
       //  Pie (category picker)
       // ──────────────────────────────────────────────
@@ -86,6 +97,7 @@
 
         wedges.forEach(function (w) { w.setAttribute("aria-checked", "false"); });
         wedge.setAttribute("aria-checked", "true");
+        bringWedgeToFront(wedge);
 
         var value = wedge.getAttribute("data-rhx-radial-option-value") || "";
         var color = wedge.getAttribute("data-rhx-radial-color");

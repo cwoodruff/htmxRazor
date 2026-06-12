@@ -7,8 +7,13 @@ using htmxRazor.Demo.Models;
 
 namespace htmxRazor.Demo.Pages.Docs.Components;
 
+[IgnoreAntiforgeryToken]
 public class SelectModel : PageModel
 {
+    // The "Required Validation" example posts to this page; just re-render so a valid
+    // submit is harmless. Native `required` blocks the submit when nothing is chosen.
+    public void OnPost() { }
+
     public List<SelectListItem> Countries { get; } = new()
     {
         new("United States", "US"),
@@ -64,6 +69,14 @@ public class SelectModel : PageModel
     public string BasicCode => @"<rhx-select rhx-label=""Country"" name=""country""
            rhx-placeholder=""Choose a country""
            rhx-items=""Model.Countries"" />";
+
+    public string RequiredCode => @"<form method=""post"" action=""/save"">
+    <rhx-select rhx-label=""Country"" name=""required-country""
+           rhx-placeholder=""Choose a country""
+           rhx-required=""true""
+           rhx-items=""Model.Countries"" />
+    <rhx-button type=""submit"" rhx-variant=""brand"">Submit</rhx-button>
+</form>";
 
     public string EnumBindingCode => @"<rhx-select rhx-label=""Priority"" name=""priority""
            value=""Medium"" rhx-for=""SelectedPriority"" />";

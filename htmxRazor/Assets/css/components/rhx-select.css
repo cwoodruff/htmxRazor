@@ -227,6 +227,23 @@
     display: none;
 }
 
+/* Required-validation mirror: visually hidden but still RENDERED and focusable, so the
+   browser enforces `required` and anchors its validation bubble to the control. It must
+   not be `display:none`/`visibility:hidden` (those bar the bubble), nor `type="hidden"`
+   (barred from constraint validation). See issue #14. */
+.rhx-select__hidden--required {
+    position: absolute;
+    left: 1rem;
+    bottom: 0;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
 /* ── Filled variant ── */
 .rhx-select--filled .rhx-select__trigger {
     background: var(--rhx-color-filled-bg);
