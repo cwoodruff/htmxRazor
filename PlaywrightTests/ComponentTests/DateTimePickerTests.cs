@@ -33,6 +33,17 @@ public sealed class DateTimePickerTests(DemoAppFactory app) : ComponentTestBase(
     }
 
     [Theory, MemberData(nameof(Browsers))]
+    public async Task Placeholder_renders_a_literal_ampersand_not_a_double_encoded_entity(string browserName)
+    {
+        var page = await OpenAsync(browserName, Path);
+
+        // Regression: the demo markup wrote "&amp;" which the tag helper re-encoded,
+        // surfacing a literal "&amp;" in the field. The placeholder must show a real "&".
+        var input = page.Locator(Scope + ".rhx-datetime-picker__input");
+        await Assertions.Expect(input).ToHaveAttributeAsync("placeholder", "Pick date & time…");
+    }
+
+    [Theory, MemberData(nameof(Browsers))]
     public async Task Month_navigation_swaps_calendar_and_keeps_time_pane(string browserName)
     {
         var page = await OpenAsync(browserName, Path);

@@ -32,6 +32,31 @@
         </rhx-tab-group>
     </div>
 
+    <!-- Required Validation -->
+    <div class="docs-example">
+        <h3>Required Validation</h3>
+        <rhx-tab-group>
+            <rhx-tab rhx-panel="required-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="required-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="required-preview" rhx-active="true">
+                <div class="docs-preview docs-preview--vertical">
+                    <form method="post" action="/Docs/Components/Select" class="docs-form">
+                        <rhx-select rhx-label="Country" name="required-country"
+                                    rhx-placeholder="Choose a country"
+                                    rhx-required="true"
+                                    rhx-items="Model.Countries" />
+                        <rhx-button type="submit" rhx-variant="brand">Submit</rhx-button>
+                    </form>
+                </div>
+            </rhx-tab-panel>
+            <rhx-tab-panel rhx-name="required-code">
+                <div class="docs-code">
+                    <pre><code>@Model.RequiredCode</code></pre>
+                </div>
+            </rhx-tab-panel>
+        </rhx-tab-group>
+    </div>
+
     <!-- Enum Binding -->
     <div class="docs-example">
         <h3>Enum Binding</h3>

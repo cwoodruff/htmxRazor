@@ -145,6 +145,36 @@ public sealed class RadialSelectTests(DemoAppFactory app) : ComponentTestBase(ap
         await Assertions.Expect(page.Locator(Scope + "[data-rhx-radial-value]")).ToHaveValueAsync("cherry");
     }
 
+    // The checked wedge's black outline must not be overdrawn by its neighbors. SVG paints
+    // siblings in document order, so the checked wedge has to be the LAST one in the DOM
+    // (painted on top) — both initially and after a new selection.
+    [Theory, MemberData(nameof(Browsers))]
+    public async Task Checked_wedge_is_painted_on_top_initially_and_after_selection(string browserName)
+    {
+        var page = await OpenAsync(browserName, Path);
+
+        const string checkedIsLast =
+            @"() => {
+                const root = document.querySelector('#panel-basic-preview');
+                const wedges = [...root.querySelectorAll('[role=""menuitemradio""]')];
+                const checked = root.querySelector('[role=""menuitemradio""][aria-checked=""true""]');
+                return checked !== null && wedges.indexOf(checked) === wedges.length - 1;
+              }";
+
+        // Default-checked wedge is brought to the front on init.
+        Assert.True(await page.EvaluateAsync<bool>(checkedIsLast),
+            "Initially checked wedge should be the last (top-most) sibling.");
+
+        // Selecting a different wedge moves it to the front.
+        await page.Locator(Scope + "button.rhx-radial-select__trigger").ClickAsync();
+        await page.Locator(Scope + "[role='menuitemradio'][data-rhx-radial-option-value='meat']").ClickAsync();
+
+        var meat = page.Locator(Scope + "[role='menuitemradio'][data-rhx-radial-option-value='meat']");
+        await Assertions.Expect(meat).ToHaveAttributeAsync("aria-checked", "true");
+        Assert.True(await page.EvaluateAsync<bool>(checkedIsLast),
+            "Newly selected wedge should become the last (top-most) sibling.");
+    }
+
     [Theory, MemberData(nameof(Browsers))]
     public async Task Escape_closes_pie_and_restores_focus(string browserName)
     {

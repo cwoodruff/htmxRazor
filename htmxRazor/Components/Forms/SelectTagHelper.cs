@@ -190,7 +190,15 @@ public class SelectTagHelper : FormControlTagHelperBase
         // ── Hidden input(s) for form submission ──
         if (!Multiple)
         {
-            sb.Append($"<input type=\"hidden\" class=\"{GetElementClass("hidden")}\" data-rhx-select-value");
+            // The value-carrying input. A `type="hidden"` input is barred from HTML constraint
+            // validation, so native `required` never fires on it (issue #14). When the select is
+            // required, render a focusable, validatable mirror instead — visually hidden via CSS
+            // but still rendered, so the browser enforces `required` and anchors its validation
+            // bubble to the control. Otherwise keep the plain hidden input.
+            if (resolvedRequired)
+                sb.Append($"<input class=\"{GetElementClass("hidden")}--required\" data-rhx-select-value required tabindex=\"-1\" aria-hidden=\"true\"");
+            else
+                sb.Append($"<input type=\"hidden\" class=\"{GetElementClass("hidden")}\" data-rhx-select-value");
             if (!string.IsNullOrEmpty(resolvedName))
                 sb.Append($" name=\"{Enc(resolvedName)}\"");
             sb.Append($" value=\"{Enc(resolvedValue ?? "")}\"");
