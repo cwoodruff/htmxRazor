@@ -119,6 +119,7 @@ public class TimePickerTagHelper : FormControlTagHelperBase
         {
             TimeOnly t => t,
             DateTime dt => TimeOnly.FromDateTime(dt),
+            // dto.DateTime uses the stored offset's local time (wall-clock), consistent with DatePickerTagHelper.
             DateTimeOffset dto => TimeOnly.FromDateTime(dto.DateTime),
             _ => null,
         };

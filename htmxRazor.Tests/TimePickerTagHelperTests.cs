@@ -116,4 +116,38 @@ public class TimePickerTagHelperTests : TagHelperTestBase
         await helper.ProcessAsync(ctx, output);
         Assert.Contains("value=\"08:05\"", output.Content.GetContent());
     }
+
+    [Fact]
+    public async Task Disabled_Adds_Modifier_And_Disables_Input_And_Trigger()
+    {
+        var helper = CreateHelper();
+        helper.Name = "t";
+        helper.Disabled = true;
+        var ctx = CreateContext("rhx-time-picker");
+        var output = CreateOutput("rhx-time-picker");
+
+        await helper.ProcessAsync(ctx, output);
+        var html = output.Content.GetContent();
+
+        Assert.True(HasClass(output, "rhx-time-picker--disabled"));
+        // both the visible input and the trigger button carry disabled
+        Assert.True(System.Text.RegularExpressions.Regex.Matches(html, "disabled").Count >= 2);
+    }
+
+    [Fact]
+    public async Task Label_Renders_With_For_And_AriaLabelledby()
+    {
+        var helper = CreateHelper();
+        helper.Name = "t";
+        helper.Label = "Start Time";
+        var ctx = CreateContext("rhx-time-picker");
+        var output = CreateOutput("rhx-time-picker");
+
+        await helper.ProcessAsync(ctx, output);
+        var html = output.Content.GetContent();
+
+        Assert.Contains(">Start Time</label>", html);
+        Assert.Contains("for=\"t-input\"", html);          // label points at the input id
+        Assert.Contains("aria-labelledby=\"t-label\"", html); // input references the label id
+    }
 }
