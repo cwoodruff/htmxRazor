@@ -55,7 +55,6 @@ public static class CalendarRangeRenderer
         var left = new DateOnly(o.Year, o.Month, 1);
         var right = left.AddMonths(1);
         var prev = left.AddMonths(-1);
-        var next = left.AddMonths(1);
         var leftLabel = left.ToString("MMMM yyyy", CultureInfo.InvariantCulture);
         var rightLabel = right.ToString("MMMM yyyy", CultureInfo.InvariantCulture);
 
@@ -66,7 +65,7 @@ public static class CalendarRangeRenderer
         sb.Append($"<button type=\"button\" class=\"rhx-calendar__nav\" aria-label=\"Previous month\" hx-get=\"{NavUrl(o, prev.Year, prev.Month)}\" hx-target=\"#{Enc(o.TargetId)}\" hx-swap=\"outerHTML\">&#8249;</button>");
         sb.Append($"<span class=\"rhx-date-range-picker__cal-caption\">{Enc(leftLabel)}</span>");
         sb.Append($"<span class=\"rhx-date-range-picker__cal-caption\">{Enc(rightLabel)}</span>");
-        sb.Append($"<button type=\"button\" class=\"rhx-calendar__nav\" aria-label=\"Next month\" hx-get=\"{NavUrl(o, next.Year, next.Month)}\" hx-target=\"#{Enc(o.TargetId)}\" hx-swap=\"outerHTML\">&#8250;</button>");
+        sb.Append($"<button type=\"button\" class=\"rhx-calendar__nav\" aria-label=\"Next month\" hx-get=\"{NavUrl(o, right.Year, right.Month)}\" hx-target=\"#{Enc(o.TargetId)}\" hx-swap=\"outerHTML\">&#8250;</button>");
         sb.Append("</div>");
 
         sb.Append("<div class=\"rhx-date-range-picker__months\">");

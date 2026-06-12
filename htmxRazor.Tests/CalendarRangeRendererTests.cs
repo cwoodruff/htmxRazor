@@ -52,4 +52,31 @@ public class CalendarRangeRendererTests
         Assert.Contains("hx-get=\"/_rhx/calendar-range?year=2027&amp;month=1", html);
         Assert.Contains("hx-get=\"/_rhx/calendar-range?year=2026&amp;month=11", html);
     }
+
+    [Fact]
+    public void Day_Cells_Carry_Data_Date_And_Data_Display()
+    {
+        var html = CalendarRangeRenderer.Render(Opts() with { Format = "yyyy-MM-dd" });
+        Assert.Contains("data-date=\"2026-10-01\"", html);
+        // with Format yyyy-MM-dd, the data-display is the ISO date (culture-independent assertion)
+        Assert.Contains("data-date=\"2026-10-01\" data-display=\"2026-10-01\"", html);
+    }
+
+    [Fact]
+    public void Min_Max_Disables_Days_Outside_Range_In_The_Grids()
+    {
+        var html = CalendarRangeRenderer.Render(Opts() with
+        {
+            Min = new DateOnly(2026, 10, 15),
+            Max = new DateOnly(2026, 11, 15),
+        });
+        // Oct 1 is before Min -> disabled
+        var idx = html.IndexOf("data-date=\"2026-10-01\"", System.StringComparison.Ordinal);
+        Assert.True(idx >= 0);
+        Assert.Contains("disabled", html.Substring(idx, 120));
+        // Nov 30 is after Max -> disabled
+        idx = html.IndexOf("data-date=\"2026-11-30\"", System.StringComparison.Ordinal);
+        Assert.True(idx >= 0);
+        Assert.Contains("disabled", html.Substring(idx, 120));
+    }
 }
