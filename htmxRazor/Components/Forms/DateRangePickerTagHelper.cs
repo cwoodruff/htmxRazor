@@ -13,6 +13,11 @@ namespace htmxRazor.Components.Forms;
 /// A two-date range picker: two side-by-side months with synced navigation, live in-range hover
 /// preview, and optional presets. Commits two hidden ISO yyyy-MM-dd values (start + end).
 /// </summary>
+/// <remarks>
+/// This control submits two separately-named hidden inputs (start + end) rather than a single
+/// bound field, so it does not emit single-field validation attributes (<c>data-val-*</c>,
+/// <c>aria-invalid</c>, <c>aria-required</c>); validate the two date fields on the server.
+/// </remarks>
 /// <example>
 /// <code>
 /// &lt;rhx-date-range-picker rhx-start-name="From" rhx-end-name="To"
@@ -100,6 +105,8 @@ public class DateRangePickerTagHelper : FormControlTagHelperBase
         if (!string.IsNullOrEmpty(display)) sb.Append($" value=\"{Enc(display)}\"");
         if (!string.IsNullOrEmpty(labelText)) sb.Append($" aria-labelledby=\"{Enc(labelId)}\"");
         if (!string.IsNullOrEmpty(AriaLabel)) sb.Append($" aria-label=\"{Enc(AriaLabel)}\"");
+        var describedBy = BuildAriaDescribedBy(hintId, errorId);
+        if (describedBy != null) sb.Append($" aria-describedby=\"{Enc(describedBy)}\"");
         if (Disabled) sb.Append(" disabled");
         if (Readonly) sb.Append(" readonly");
         sb.Append(" />");

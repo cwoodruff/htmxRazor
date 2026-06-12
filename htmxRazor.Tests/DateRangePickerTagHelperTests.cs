@@ -89,4 +89,37 @@ public class DateRangePickerTagHelperTests : TagHelperTestBase
         Assert.Contains("November 2026", html);
         Assert.Equal("", GetAttribute(output, "data-range-start"));
     }
+
+    [Fact]
+    public async Task Encodes_Start_And_End_Names()
+    {
+        var helper = CreateHelper();
+        helper.StartName = "<x>";
+        helper.EndName = "a\"b";
+        var ctx = CreateContext("rhx-date-range-picker");
+        var output = CreateOutput("rhx-date-range-picker");
+
+        await helper.ProcessAsync(ctx, output);
+        var html = output.Content.GetContent();
+
+        Assert.Contains("name=\"&lt;x&gt;\"", html);   // start name HTML-encoded
+        Assert.DoesNotContain("name=\"<x>\"", html);
+        Assert.Contains("a&quot;b", html);             // end name quote encoded
+    }
+
+    [Fact]
+    public async Task Disabled_Adds_Modifier_And_Disables_Input_And_Trigger()
+    {
+        var helper = CreateHelper();
+        helper.StartName = "From"; helper.EndName = "To";
+        helper.Disabled = true;
+        var ctx = CreateContext("rhx-date-range-picker");
+        var output = CreateOutput("rhx-date-range-picker");
+
+        await helper.ProcessAsync(ctx, output);
+        var html = output.Content.GetContent();
+
+        Assert.True(HasClass(output, "rhx-date-range-picker--disabled"));
+        Assert.True(System.Text.RegularExpressions.Regex.Matches(html, "disabled").Count >= 2);
+    }
 }
