@@ -211,6 +211,13 @@
     ],
     "description": "htmxRazor date picker (input + popup calendar, htmx month nav)"
   },
+  "rhx-time-picker": {
+    "prefix": "rhx-time-picker",
+    "body": [
+      "<rhx-time-picker name=\"${1:StartTime}\" rhx-placeholder=\"${2:Pick a time…}\" rhx-step=\"${3:30}\" rhx-12hour=\"${4|true,false|}\" />"
+    ],
+    "description": "htmxRazor time picker (input + popup time list)"
+  },
   "rhx-htmx-form": {
     "prefix": "rhx-htmx-form",
     "body": [

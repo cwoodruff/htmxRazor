@@ -326,7 +326,7 @@ public async Task<IActionResult> OnGetStatusStream(CancellationToken ct)
 | Category | Components |
 |----------|-----------|
 | **Actions** | Button, Button Group, Dropdown |
-| **Forms** | Input, Textarea, Select, Combobox, Radial Select, Date Picker, Checkbox, Switch, Radio, Slider, Rating, Color Picker, File Input, Number Input, htmx Form |
+| **Forms** | Input, Textarea, Select, Combobox, Radial Select, Date Picker, Time Picker, Checkbox, Switch, Radio, Slider, Rating, Color Picker, File Input, Number Input, htmx Form |
 | **Feedback** | Callout, Badge, Tag, Spinner, Skeleton, Progress Bar, Progress Ring, Tooltip, Toast, Toast Container |
 | **Navigation** | Tabs, Breadcrumb, Tree, Carousel, Pagination, Skip Nav, Landmark, Wizard |
 | **Organization** | Card, Divider, Split Panel, Scroller, Timeline, Kanban Board |
