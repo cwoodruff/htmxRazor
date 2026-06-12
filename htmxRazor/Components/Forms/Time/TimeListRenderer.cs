@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
+using System.Text;
 
 namespace htmxRazor.Components.Forms.Time;
 
@@ -38,4 +40,25 @@ public static class TimeListRenderer
             ? t.ToString("h:mm tt", CultureInfo.InvariantCulture)
             : t.ToString("HH:mm", CultureInfo.InvariantCulture);
     }
+
+    /// <summary>Renders the listbox option buttons for the given times. data-time is ISO HH:mm; the label is the display form.</summary>
+    public static string RenderOptions(int stepMinutes, TimeOnly? min, TimeOnly? max, bool twelveHour, string? format, TimeOnly? selected)
+    {
+        var sb = new StringBuilder();
+        foreach (var t in Times(stepMinutes, min, max))
+        {
+            var iso = t.ToString("HH:mm", CultureInfo.InvariantCulture);
+            var disp = FormatDisplay(t, twelveHour, format);
+            var isSelected = selected is { } s && s.Hour == t.Hour && s.Minute == t.Minute;
+
+            var cls = "rhx-time-picker__option";
+            if (isSelected) cls += " rhx-time-picker__option--selected";
+            sb.Append($"<button type=\"button\" class=\"{cls}\" role=\"option\" data-time=\"{iso}\"");
+            if (isSelected) sb.Append(" aria-selected=\"true\"");
+            sb.Append('>').Append(Enc(disp)).Append("</button>");
+        }
+        return sb.ToString();
+    }
+
+    private static string Enc(string s) => WebUtility.HtmlEncode(s);
 }

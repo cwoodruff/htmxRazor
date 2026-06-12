@@ -46,4 +46,32 @@ public class TimeListRendererTests
     {
         Assert.Equal("09.30", TimeListRenderer.FormatDisplay(new TimeOnly(9, 30), true, "HH.mm"));
     }
+
+    [Fact]
+    public void RenderOptions_Emits_One_Option_Per_Time_With_Iso_And_Display()
+    {
+        var html = TimeListRenderer.RenderOptions(30, null, null, twelveHour: true, format: null, selected: new TimeOnly(9, 30));
+        Assert.Equal(48, System.Text.RegularExpressions.Regex.Matches(html, "role=\"option\"").Count);
+        Assert.Contains("data-time=\"09:30\"", html);
+        Assert.Contains(">9:30 AM</button>", html);
+        Assert.Contains("data-time=\"00:00\"", html);
+    }
+
+    [Fact]
+    public void RenderOptions_Marks_Selected_Option()
+    {
+        var html = TimeListRenderer.RenderOptions(30, null, null, true, null, new TimeOnly(9, 30));
+        var idx = html.IndexOf("data-time=\"09:30\"", System.StringComparison.Ordinal);
+        Assert.True(idx >= 0);
+        var seg = html.Substring(idx, 60);
+        Assert.Contains("aria-selected=\"true\"", seg);
+        Assert.Contains("rhx-time-picker__option--selected", html);
+    }
+
+    [Fact]
+    public void RenderOptions_No_Selection_Has_No_AriaSelected()
+    {
+        var html = TimeListRenderer.RenderOptions(30, null, null, true, null, selected: null);
+        Assert.DoesNotContain("aria-selected=\"true\"", html);
+    }
 }
