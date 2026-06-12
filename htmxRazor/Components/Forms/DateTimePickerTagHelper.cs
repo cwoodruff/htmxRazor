@@ -26,7 +26,9 @@ public class DateTimePickerTagHelper : FormControlTagHelperBase
     protected override string BlockName => "datetime-picker";
 
     [HtmlAttributeName("rhx-placeholder")] public string? Placeholder { get; set; }
+    /// <summary>Earliest selectable date (ISO yyyy-MM-dd). Bounds the calendar only — the time list always spans the full day at <c>rhx-step</c>.</summary>
     [HtmlAttributeName("rhx-min")] public string? Min { get; set; }
+    /// <summary>Latest selectable date (ISO yyyy-MM-dd). Bounds the calendar only — the time list always spans the full day at <c>rhx-step</c>.</summary>
     [HtmlAttributeName("rhx-max")] public string? Max { get; set; }
     [HtmlAttributeName("rhx-week-start")] public string WeekStartName { get; set; } = "mon";
     [HtmlAttributeName("rhx-step")] public int Step { get; set; } = 30;
@@ -53,6 +55,7 @@ public class DateTimePickerTagHelper : FormControlTagHelperBase
         var dt = ResolveDateTime();
         var datePart = dt is { } d0 ? DateOnly.FromDateTime(d0) : (DateOnly?)null;
         var timePart = dt is { } d1 ? new TimeOnly(d1.Hour, d1.Minute) : (TimeOnly?)null;
+        // Minute precision; seconds are not supported by the picker.
         var iso = dt is { } d2 ? d2.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture) : "";
 
         var calId = $"{id}-cal";

@@ -114,4 +114,37 @@ public class DateTimePickerTagHelperTests : TagHelperTestBase
         Assert.DoesNotContain("data-rhx-cal-today", html);
         Assert.DoesNotContain("data-rhx-cal-clear", html);
     }
+
+    [Fact]
+    public async Task Disabled_Adds_Modifier_And_Disables_Input_And_Trigger()
+    {
+        var helper = CreateHelper();
+        helper.Name = "d";
+        helper.Disabled = true;
+        var ctx = CreateContext("rhx-datetime-picker");
+        var output = CreateOutput("rhx-datetime-picker");
+
+        await helper.ProcessAsync(ctx, output);
+        var html = output.Content.GetContent();
+
+        Assert.True(HasClass(output, "rhx-datetime-picker--disabled"));
+        Assert.True(System.Text.RegularExpressions.Regex.Matches(html, "disabled").Count >= 2);
+    }
+
+    [Fact]
+    public async Task Label_Renders_With_For_And_AriaLabelledby()
+    {
+        var helper = CreateHelper();
+        helper.Name = "d";
+        helper.Label = "Starts at";
+        var ctx = CreateContext("rhx-datetime-picker");
+        var output = CreateOutput("rhx-datetime-picker");
+
+        await helper.ProcessAsync(ctx, output);
+        var html = output.Content.GetContent();
+
+        Assert.Contains(">Starts at</label>", html);
+        Assert.Contains("for=\"d-input\"", html);
+        Assert.Contains("aria-labelledby=\"d-label\"", html);
+    }
 }
