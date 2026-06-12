@@ -204,6 +204,13 @@
     ],
     "description": "htmxRazor radial select (pie category -> cascading dropdown)"
   },
+  "rhx-date-picker": {
+    "prefix": "rhx-date-picker",
+    "body": [
+      "<rhx-date-picker name=\"${1:DueDate}\" rhx-placeholder=\"${2:Pick a date…}\" rhx-week-start=\"${3|mon,sun|}\" />"
+    ],
+    "description": "htmxRazor date picker (input + popup calendar, htmx month nav)"
+  },
   "rhx-htmx-form": {
     "prefix": "rhx-htmx-form",
     "body": [

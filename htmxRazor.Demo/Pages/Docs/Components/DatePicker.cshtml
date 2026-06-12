@@ -1,0 +1,56 @@
+@page
+@model DatePickerModel
+@{
+    Layout = "_ComponentPage";
+    ViewData["Title"] = "Date Picker";
+    ViewData["ComponentName"] = "Date Picker";
+    ViewData["ComponentTag"] = "rhx-date-picker";
+    ViewData["ComponentDescription"] = "A text input with a popup calendar. The month grid is server-rendered; prev/next and the month/year label navigate via htmx. Day selection commits a hidden ISO value.";
+}
+
+<section class="docs-component-section">
+    <h2>Examples</h2>
+
+    <div class="docs-example">
+        <h3>Basic</h3>
+        <rhx-tab-group>
+            <rhx-tab rhx-panel="basic-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="basic-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="basic-preview" rhx-active="true">
+                <div class="docs-preview docs-preview--vertical" style="min-height: 24rem; align-items: flex-start;">
+                    <rhx-date-picker name="DueDate" rhx-placeholder="Pick a date…" rhx-week-start="mon" />
+                </div>
+            </rhx-tab-panel>
+            <rhx-tab-panel rhx-name="basic-code">
+                <div class="docs-code"><pre><code>@Model.BasicCode</code></pre></div>
+            </rhx-tab-panel>
+        </rhx-tab-group>
+    </div>
+
+    <div class="docs-example">
+        <h3>Min / Max range</h3>
+        <rhx-tab-group>
+            <rhx-tab rhx-panel="mm-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="mm-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="mm-preview" rhx-active="true">
+                <div class="docs-preview docs-preview--vertical" style="min-height: 24rem; align-items: flex-start;">
+                    <rhx-date-picker name="d" rhx-min="2026-01-01" rhx-max="2026-12-31" rhx-placeholder="2026 only" />
+                </div>
+            </rhx-tab-panel>
+            <rhx-tab-panel rhx-name="mm-code">
+                <div class="docs-code"><pre><code>@Model.MinMaxCode</code></pre></div>
+            </rhx-tab-panel>
+        </rhx-tab-group>
+    </div>
+</section>
+
+@await Html.PartialAsync("_PropertyTable", Model.Properties)
+
+<section class="docs-component-section">
+    <h2>Accessibility</h2>
+    <ul class="docs-a11y-list">
+        <li>Trigger uses <code>aria-haspopup="dialog"</code>/<code>aria-expanded</code>; the popup is <code>role="dialog"</code>.</li>
+        <li>The grid uses <code>role="grid"</code> with <code>gridcell</code> days and roving <code>tabindex</code>; arrows move by day/week, PageUp/Down by month, Enter selects, Escape closes.</li>
+        <li>The hidden value is ISO <code>yyyy-MM-dd</code> for reliable model binding; the visible input shows the culture short date.</li>
+    </ul>
+</section>

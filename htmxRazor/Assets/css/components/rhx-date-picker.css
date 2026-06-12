@@ -1,0 +1,20 @@
+@layer rhx.components {
+  .rhx-date-picker { position: relative; display: inline-flex; flex-direction: column; gap: var(--rhx-space-xs); font-family: var(--rhx-font-family); max-width: 18rem; }
+  .rhx-date-picker__label { font-size: var(--rhx-font-size-sm); font-weight: var(--rhx-font-weight-medium); color: var(--rhx-color-text); }
+
+  .rhx-date-picker__control { display: flex; align-items: center; border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-md); background: var(--rhx-color-surface); }
+  .rhx-date-picker__control:focus-within { border-color: var(--rhx-color-brand-500); box-shadow: 0 0 0 1px var(--rhx-color-brand-500); }
+  .rhx-date-picker__input { flex: 1; min-height: 2.5rem; padding: var(--rhx-space-sm) var(--rhx-space-md); border: none; background: transparent; color: var(--rhx-color-text); font: inherit; outline: none; }
+  .rhx-date-picker__input::placeholder { color: var(--rhx-color-text-muted); }
+  .rhx-date-picker__trigger { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; align-self: stretch; border: none; background: none; color: var(--rhx-color-text-muted); cursor: pointer; }
+  .rhx-date-picker__trigger:hover:not([disabled]) { color: var(--rhx-color-brand-600); }
+  .rhx-date-picker__trigger:focus-visible { outline: 2px solid var(--rhx-color-focus-ring); outline-offset: -2px; }
+
+  .rhx-date-picker__popup { position: absolute; top: calc(100% + var(--rhx-space-2xs, 0.25rem)); left: 0; z-index: var(--rhx-z-dropdown); border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-md); background: var(--rhx-color-surface-raised); box-shadow: var(--rhx-shadow-lg); }
+  .rhx-date-picker__popup[hidden] { display: none; }
+
+  .rhx-date-picker--small .rhx-date-picker__input { min-height: 2rem; font-size: var(--rhx-font-size-sm); }
+  .rhx-date-picker--large .rhx-date-picker__input { min-height: 3rem; font-size: var(--rhx-font-size-md); }
+  .rhx-date-picker--disabled { opacity: 0.6; pointer-events: none; }
+  .rhx-date-picker--error .rhx-date-picker__control { border-color: var(--rhx-color-danger-500); }
+}
