@@ -1,0 +1,40 @@
+@page
+@model DateTimePickerModel
+@{
+    Layout = "_ComponentPage";
+    ViewData["Title"] = "Date & Time Picker";
+    ViewData["ComponentName"] = "Date & Time Picker";
+    ViewData["ComponentTag"] = "rhx-datetime-picker";
+    ViewData["ComponentDescription"] = "One control binding a single DateTime: a popup with a calendar and a time list. Commits a hidden ISO yyyy-MM-ddTHH:mm value once both date and time are set.";
+}
+
+<section class="docs-component-section">
+    <h2>Examples</h2>
+
+    <div class="docs-example">
+        <h3>Basic</h3>
+        <rhx-tab-group>
+            <rhx-tab rhx-panel="basic-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="basic-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="basic-preview" rhx-active="true">
+                <div class="docs-preview docs-preview--vertical" style="min-height: 26rem; align-items: flex-start;">
+                    <rhx-datetime-picker name="StartsAt" rhx-placeholder="Pick date &amp; time…" rhx-step="30" rhx-week-start="mon" />
+                </div>
+            </rhx-tab-panel>
+            <rhx-tab-panel rhx-name="basic-code">
+                <div class="docs-code"><pre><code>@Model.BasicCode</code></pre></div>
+            </rhx-tab-panel>
+        </rhx-tab-group>
+    </div>
+</section>
+
+@await Html.PartialAsync("_PropertyTable", Model.Properties)
+
+<section class="docs-component-section">
+    <h2>Accessibility</h2>
+    <ul class="docs-a11y-list">
+        <li>Trigger uses <code>aria-haspopup="dialog"</code>/<code>aria-expanded</code>; the popup is <code>role="dialog"</code> containing the calendar <code>grid</code> and a time <code>listbox</code>.</li>
+        <li>Calendar keyboard (arrows, PageUp/Down for months, Enter to select, Escape to close) works in the popup; the time list is selected by click.</li>
+        <li>The hidden value is ISO <code>yyyy-MM-ddTHH:mm</code> and is committed only once both a date and a time are chosen.</li>
+    </ul>
+</section>
