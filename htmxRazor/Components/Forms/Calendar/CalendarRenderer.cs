@@ -77,7 +77,7 @@ public static class CalendarRenderer
     private static readonly string[] MonthAbbrev =
         { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
-    private static string RenderDaysBody(CalendarOptions o)
+    internal static string RenderDaysBody(CalendarOptions o)
     {
         var first = new DateOnly(o.Year, o.Month, 1);
         var label = first.ToString("MMMM yyyy", CultureInfo.InvariantCulture);
