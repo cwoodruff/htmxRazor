@@ -1,0 +1,41 @@
+@page
+@model DateRangePickerModel
+@{
+    Layout = "_ComponentPage";
+    ViewData["Title"] = "Date Range Picker";
+    ViewData["ComponentName"] = "Date Range Picker";
+    ViewData["ComponentTag"] = "rhx-date-range-picker";
+    ViewData["ComponentDescription"] = "A two-date range picker: two side-by-side months with synced navigation, live in-range hover preview, and quick presets. Commits two hidden ISO yyyy-MM-dd values.";
+}
+
+<section class="docs-component-section">
+    <h2>Examples</h2>
+
+    <div class="docs-example">
+        <h3>Basic with presets</h3>
+        <rhx-tab-group>
+            <rhx-tab rhx-panel="basic-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="basic-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="basic-preview" rhx-active="true">
+                <div class="docs-preview docs-preview--vertical" style="min-height: 26rem; align-items: flex-start;">
+                    <rhx-date-range-picker rhx-start-name="From" rhx-end-name="To"
+                                           rhx-presets="today,last7,thismonth,last30" rhx-placeholder="Pick a range…" />
+                </div>
+            </rhx-tab-panel>
+            <rhx-tab-panel rhx-name="basic-code">
+                <div class="docs-code"><pre><code>@Model.BasicCode</code></pre></div>
+            </rhx-tab-panel>
+        </rhx-tab-group>
+    </div>
+</section>
+
+@await Html.PartialAsync("_PropertyTable", Model.Properties)
+
+<section class="docs-component-section">
+    <h2>Accessibility</h2>
+    <ul class="docs-a11y-list">
+        <li>Trigger uses <code>aria-haspopup="dialog"</code>/<code>aria-expanded</code>; the popup is <code>role="dialog"</code> with two calendar grids.</li>
+        <li>Two hidden ISO <code>yyyy-MM-dd</code> inputs (start + end) for reliable model binding.</li>
+        <li>First day click sets the start; the second sets the end (auto-swapped if earlier); hovering previews the range; presets set both at once.</li>
+    </ul>
+</section>
