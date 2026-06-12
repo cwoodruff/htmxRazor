@@ -19,6 +19,7 @@ public class TimePickerModel : PageModel
         new("rhx-format", "string", "-", ".NET time format string for display (overrides 12/24h)"),
         new("rhx-size", "string", "medium", "small, medium, large"),
         new("rhx-disabled", "bool", "false", "Disable the control"),
+        new("rhx-readonly", "bool", "false", "Render read-only (value shown, list cannot be opened)"),
     };
 
     public string BasicCode => "<rhx-time-picker name=\"StartTime\" rhx-placeholder=\"Pick a time…\" rhx-step=\"30\" />";

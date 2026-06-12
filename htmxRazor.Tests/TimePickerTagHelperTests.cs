@@ -135,6 +135,22 @@ public class TimePickerTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
+    public async Task Readonly_Adds_Modifier_And_Readonly_Attribute()
+    {
+        var helper = CreateHelper();
+        helper.Name = "t";
+        helper.Readonly = true;
+        var ctx = CreateContext("rhx-time-picker");
+        var output = CreateOutput("rhx-time-picker");
+
+        await helper.ProcessAsync(ctx, output);
+        var html = output.Content.GetContent();
+
+        Assert.True(HasClass(output, "rhx-time-picker--readonly"));
+        Assert.Contains("readonly", html);
+    }
+
+    [Fact]
     public async Task Label_Renders_With_For_And_AriaLabelledby()
     {
         var helper = CreateHelper();

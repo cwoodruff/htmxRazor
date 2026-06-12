@@ -27,7 +27,7 @@
       function isOpen() { return !listbox.hidden; }
 
       function open() {
-        if (input.hasAttribute("disabled")) return;
+        if (input.hasAttribute("disabled") || input.hasAttribute("readonly")) return;
         listbox.hidden = false;
         input.setAttribute("aria-expanded", "true");
         if (window.RHX && typeof window.RHX.positionElement === "function") {

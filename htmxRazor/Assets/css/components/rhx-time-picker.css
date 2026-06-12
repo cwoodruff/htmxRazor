@@ -19,5 +19,7 @@
   .rhx-time-picker--small .rhx-time-picker__input { min-height: 2rem; font-size: var(--rhx-font-size-sm); }
   .rhx-time-picker--large .rhx-time-picker__input { min-height: 3rem; font-size: var(--rhx-font-size-md); }
   .rhx-time-picker--disabled { opacity: 0.6; pointer-events: none; }
+  .rhx-time-picker--readonly .rhx-time-picker__trigger { cursor: default; color: var(--rhx-color-text-muted); }
+  .rhx-time-picker--readonly .rhx-time-picker__input { cursor: default; }
   .rhx-time-picker--error .rhx-time-picker__control { border-color: var(--rhx-color-danger-500); }
 }
