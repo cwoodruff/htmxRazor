@@ -211,6 +211,13 @@
     ],
     "description": "htmxRazor date picker (input + popup calendar, htmx month nav)"
   },
+  "rhx-date-range-picker": {
+    "prefix": "rhx-date-range-picker",
+    "body": [
+      "<rhx-date-range-picker rhx-start-name=\"${1:From}\" rhx-end-name=\"${2:To}\" rhx-presets=\"${3:today,last7,thismonth,last30}\" rhx-placeholder=\"${4:Pick a range…}\" />"
+    ],
+    "description": "htmxRazor date range picker (two months + presets)"
+  },
   "rhx-time-picker": {
     "prefix": "rhx-time-picker",
     "body": [

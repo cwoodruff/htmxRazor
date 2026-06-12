@@ -39,6 +39,19 @@ public static class ApplicationBuilderExtensions
             await next();
         });
 
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Path.Equals("/_rhx/calendar-range", StringComparison.OrdinalIgnoreCase)
+                && HttpMethods.IsGet(context.Request.Method))
+            {
+                var html = CalendarRangeEndpoint.Render(context.Request.Query, DateOnly.FromDateTime(DateTime.Today));
+                context.Response.ContentType = "text/html; charset=utf-8";
+                await context.Response.WriteAsync(html);
+                return;
+            }
+            await next();
+        });
+
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = embeddedProvider,
