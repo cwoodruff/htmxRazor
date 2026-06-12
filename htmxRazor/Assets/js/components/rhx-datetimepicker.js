@@ -54,6 +54,8 @@
         if (window.RHX && typeof window.RHX.positionElement === "function") {
           window.RHX.positionElement(input.parentNode, popup, { placement: "bottom-start", distance: 4, flip: true, shift: true });
         }
+        var focusDay = popup.querySelector(".rhx-calendar__day[tabindex='0']") || popup.querySelector(DAY);
+        if (focusDay) focusDay.focus();
       }
 
       function close(focusInput) {
@@ -71,16 +73,16 @@
       }
 
       function refresh() {
-        if (dateIso && timeIso) {
-          hidden.value = dateIso + "T" + timeIso;
-          input.value = dateDisp + " " + timeDisp;
-        } else {
-          hidden.value = "";
-          input.value = [dateDisp, timeDisp].filter(Boolean).join(" ");
+        var committed = (dateIso && timeIso) ? dateIso + "T" + timeIso : "";
+        input.value = (dateIso && timeIso)
+          ? (dateDisp + " " + timeDisp)
+          : [dateDisp, timeDisp].filter(Boolean).join(" ");
+        if (committed !== hidden.value) {
+          hidden.value = committed;
+          hidden.dispatchEvent(new Event("input", { bubbles: true }));
+          hidden.dispatchEvent(new Event("change", { bubbles: true }));
+          dtp.dispatchEvent(new CustomEvent("rhx:datetime-picker:change", { bubbles: true, detail: { value: committed } }));
         }
-        hidden.dispatchEvent(new Event("input", { bubbles: true }));
-        hidden.dispatchEvent(new Event("change", { bubbles: true }));
-        dtp.dispatchEvent(new CustomEvent("rhx:datetime-picker:change", { bubbles: true, detail: { value: hidden.value } }));
       }
 
       function selectDay(cell) {
@@ -153,19 +155,61 @@
         if (e.target.closest("[data-rhx-dt-done]")) { close(true); }
       });
 
+      function clickNav(sel) { var b = popup.querySelector(".rhx-calendar__nav" + sel); if (b) b.click(); }
+
+      // Calendar grid keyboard (APG): arrows move (skipping disabled), PageUp/Down change month,
+      // Enter/Space select the focused day, Escape closes. Mirrors the standalone date picker.
+      popup.addEventListener("keydown", function (e) {
+        var cur = document.activeElement;
+        if (!cur || !cur.classList || !cur.classList.contains("rhx-calendar__day")) {
+          if (e.key === "Escape") { e.preventDefault(); close(true); }
+          return;
+        }
+        var days = Array.prototype.slice.call(popup.querySelectorAll(".rhx-calendar__day"));
+        var i = days.indexOf(cur);
+        var to = null, dir = 1, navOverflow = true;
+        switch (e.key) {
+          case "ArrowRight": to = i + 1; dir = 1; break;
+          case "ArrowLeft": to = i - 1; dir = -1; break;
+          case "ArrowDown": to = i + 7; dir = 1; break;
+          case "ArrowUp": to = i - 7; dir = -1; break;
+          case "Home": to = i - (i % 7); dir = 1; navOverflow = false; break;
+          case "End": to = i - (i % 7) + 6; dir = -1; navOverflow = false; break;
+          case "PageUp": e.preventDefault(); clickNav("[aria-label='Previous month']"); return;
+          case "PageDown": e.preventDefault(); clickNav("[aria-label='Next month']"); return;
+          case "Enter": case " ":
+            e.preventDefault();
+            if (!cur.hasAttribute("disabled")) selectDay(cur);
+            return;
+          case "Escape": e.preventDefault(); close(true); return;
+          default: return;
+        }
+        e.preventDefault();
+        while (to >= 0 && to < days.length && days[to].hasAttribute("disabled")) { to += dir; }
+        if (to < 0 || to >= days.length) {
+          if (navOverflow) clickNav(dir < 0 ? "[aria-label='Previous month']" : "[aria-label='Next month']");
+          return;
+        }
+        days.forEach(function (d) { d.setAttribute("tabindex", "-1"); });
+        days[to].setAttribute("tabindex", "0");
+        days[to].focus();
+      });
+
       // After an htmx calendar swap, re-apply the client's date selection to whichever
       // cell now carries that date (if it is visible in the freshly swapped grid).
       popup.addEventListener("htmx:afterSwap", function () {
-        if (!dateIso) return;
-        var cell = popup.querySelector('.rhx-calendar__day[data-date="' + dateIso + '"]');
-        if (cell) {
-          var prev = popup.querySelector(".rhx-calendar__day--selected");
-          if (prev && prev !== cell) {
-            prev.classList.remove("rhx-calendar__day--selected");
-            prev.removeAttribute("aria-selected");
+        if (dateIso) {
+          var cell = popup.querySelector('.rhx-calendar__day[data-date="' + dateIso + '"]');
+          if (cell) {
+            var prev = popup.querySelector(".rhx-calendar__day--selected");
+            if (prev && prev !== cell) { prev.classList.remove("rhx-calendar__day--selected"); prev.removeAttribute("aria-selected"); }
+            cell.classList.add("rhx-calendar__day--selected");
+            cell.setAttribute("aria-selected", "true");
           }
-          cell.classList.add("rhx-calendar__day--selected");
-          cell.setAttribute("aria-selected", "true");
+        }
+        if (!popup.hidden) {
+          var f = popup.querySelector(".rhx-calendar__day[tabindex='0']") || popup.querySelector(DAY);
+          if (f) f.focus();
         }
       });
 
