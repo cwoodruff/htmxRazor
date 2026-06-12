@@ -225,6 +225,13 @@
     ],
     "description": "htmxRazor time picker (input + popup time list)"
   },
+  "rhx-datetime-picker": {
+    "prefix": "rhx-datetime-picker",
+    "body": [
+      "<rhx-datetime-picker name=\"${1:StartsAt}\" rhx-placeholder=\"${2:Pick date & time…}\" rhx-step=\"${3:30}\" rhx-week-start=\"${4|mon,sun|}\" />"
+    ],
+    "description": "htmxRazor date & time picker (calendar + time list)"
+  },
   "rhx-htmx-form": {
     "prefix": "rhx-htmx-form",
     "body": [
