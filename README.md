@@ -16,7 +16,7 @@ htmxRazor is a complete UI component library implemented as Razor Tag Helpers. E
 
 - **Server-rendered** — No JavaScript framework. Components are Tag Helpers that render HTML on the server.
 - **htmx-native** — Every component supports `hx-get`, `hx-post`, `hx-target`, `hx-swap`, and all htmx attributes directly.
-- **85+ components** — Buttons, forms, data tables, dialogs, command palette, kanban board, tabs, trees, carousels, toasts, pagination, and more across 11 categories.
+- **90+ components** — Buttons, forms, date/time pickers, radial select, data tables, dialogs, command palette, kanban board, tabs, trees, carousels, toasts, pagination, and more across 11 categories.
 - **Design tokens** — Light/dark themes via CSS custom properties. Toggle with `data-rhx-theme` or `RHX.toggleTheme()`.
 - **Accessible** — Semantic HTML, ARIA attributes, keyboard navigation, and screen reader support built in.
 - **Model binding** — Form components integrate with ASP.NET Core model binding, validation, and `ModelExpression`.
@@ -112,6 +112,27 @@ Some components with interactive behavior also need their JavaScript file:
            rhx-type="password"
            rhx-password-toggle="true"
            name="password" />
+```
+
+### Date, Time & Radial Inputs
+
+```html
+<!-- Calendar popup with server-rendered month navigation; binds an ISO yyyy-MM-dd value -->
+<rhx-date-picker rhx-for="StartDate" rhx-min="2020-01-01" rhx-week-start="Monday" />
+
+<!-- Time list stepping by 30 minutes; binds an ISO HH:mm value -->
+<rhx-time-picker rhx-for="Reminder" rhx-step="30" />
+
+<!-- Combined calendar + time list; binds an ISO yyyy-MM-ddTHH:mm value -->
+<rhx-datetime-picker rhx-for="Appointment" />
+
+<!-- Pie of category wedges drives a cascading, htmx-loaded dropdown -->
+<rhx-radial-select name="FoodItem" rhx-category-name="Category" aria-label="Food category">
+    <rhx-radial-option rhx-value="fruit" rhx-label="Fruit" rhx-icon="apple"
+                       rhx-color="danger" hx-get="/Menu?handler=Items&cat=fruit" />
+    <rhx-radial-option rhx-value="meat" rhx-label="Meat" rhx-icon="grid"
+                       rhx-color="success" hx-get="/Menu?handler=Items&cat=meat" />
+</rhx-radial-select>
 ```
 
 ### htmx on Any Component
@@ -354,7 +375,7 @@ public async Task<IActionResult> OnGetStatusStream(CancellationToken ct)
 |---------|-------------|
 | `htmxRazor` | Core Tag Helper library with embedded CSS/JS assets |
 | `htmxRazor.Demo` | Documentation site showcasing all components |
-| `htmxRazor.Tests` | 1,838 unit tests for Tag Helper rendering |
+| `htmxRazor.Tests` | 1,909 unit tests for Tag Helper rendering |
 
 ## Development
 
@@ -396,15 +417,9 @@ It's a fully self-contained design system built specifically for this component 
 
 ## Roadmap
 
-Features ranked by **user impact** and **implementation effort**. The library is at v2.0.1 with 85+ components. The **Planned** releases below (2.1–2.4) are the next 2.X updates; the **Shipped** sections record what's already landed. Each planned release maps to a [GitHub milestone](https://github.com/cwoodruff/htmxRazor/milestones).
+Features ranked by **user impact** and **implementation effort**. The library is at v2.1.0 with 90+ components. The **Planned** releases below (2.2–2.4) are the next 2.X updates; the **Shipped** sections record what's already landed. Each planned release maps to a [GitHub milestone](https://github.com/cwoodruff/htmxRazor/milestones).
 
 ### Planned
-
-#### v2.1 — Advanced Inputs
-
-- **Radial Select** — `<rhx-radial-select>` + `<rhx-radial-option>`. A rectangular trigger button sits flush-left against a dropdown; clicking it opens a circular SVG **pie** of category wedges (each with a color + icon). Selecting a wedge fires `hx-get`, swaps the dropdown's option set to that category, echoes the category's color + icon onto the trigger, and auto-selects the first option. Wedge colors use named variant tokens (`brand`/`success`/`warning`/`danger`/`neutral`) with a deterministic cycle when omitted. Accessible as a menu (`menuitemradio`, arrow-key + type-ahead navigation).
-- **Date / Time Picker** — `<rhx-date-picker>` family (date, time, range). The most-requested missing input — the catalog has date *formatting* but no date *input*. Full model binding, validation, design tokens, and keyboard accessibility.
-- **Playwright E2E in CI** — re-enable and stabilize the end-to-end suite so PRs are gated on real browser regression tests.
 
 #### v2.2 — Playground & DX Completion
 
@@ -451,6 +466,14 @@ Features ranked by **user impact** and **implementation effort**. The library is
 - **Timeline** — `<rhx-timeline>` and `<rhx-timeline-item>` with variant-colored connectors (brand, success, warning, danger), icon slots via `<rhx-timeline-icon>`, labels, active state highlighting, and vertical/horizontal/alternating layouts. Pairs with `<rhx-infinite-scroll>` or `<rhx-load-more>` for loading additional events.
 - **Optimistic UI** — `rhx-optimistic` attribute on `<rhx-switch>`, `<rhx-rating>`, and `<rhx-button>`. Immediately reflects visual state on click before the server responds; reverts automatically on error via `htmx:responseError` with a brief flash animation. Respects `prefers-reduced-motion`.
 - **Load More Pattern** — `<rhx-load-more>` button-triggered pagination. Renders a styled button with `hx-get`, loading spinner, and auto-removal after fetch. Configurable variant, target, swap strategy, and loading text.
+
+#### v2.1 — Advanced Inputs
+
+- **Radial Select** — `<rhx-radial-select>` + `<rhx-radial-option>`. A rectangular trigger sits flush-left against a dropdown; clicking it opens a circular SVG **pie** of category wedges (color + icon). Selecting a wedge fires its `hx-get`, swaps the dropdown's option set to that category, echoes the color + icon onto the trigger, and auto-selects the first option. Named variant colors (`brand`/`success`/`warning`/`danger`/`neutral`) with a deterministic cycle when omitted. Accessible as a menu (`menuitemradio`, arrow-key + Home/End + type-ahead, Esc to close).
+- **Date Picker** — `<rhx-date-picker>`: text input + popup calendar with server-rendered month navigation (built-in `/_rhx/calendar` endpoint). Commits a hidden ISO `yyyy-MM-dd` value; configurable `rhx-min`/`rhx-max`, `rhx-week-start`, `rhx-format`, Today/Clear. APG grid keyboard accessibility.
+- **Time Picker** — `<rhx-time-picker>`: text input + popup list stepping by `rhx-step` minutes. Commits a hidden ISO `HH:mm` value (`TimeOnly`/`DateTime`); 12-hour or 24-hour display. Listbox accessibility with type-ahead.
+- **Date & Time Picker** — `<rhx-datetime-picker>`: a single-`DateTime` control pairing the calendar with a time list; commits a hidden ISO `yyyy-MM-ddTHH:mm` value once both are set. Reuses the Date Picker calendar core and Time Picker list.
+- **Playwright E2E in CI** — end-to-end suite re-enabled and stabilized (Chromium per-PR + full nightly matrix), gating PRs on real browser regression tests.
 
 #### v2.0 — Platform & DX
 

@@ -6,12 +6,6 @@ public class RoadmapModel : PageModel
 {
     public List<ReleaseInfo> Planned { get; } = new()
     {
-        new("v2.1", "Advanced Inputs", "milestone/1", new[]
-        {
-            "Radial Select — pie category picker (rectangular trigger + circular SVG wedges) that drives a cascading htmx-loaded dropdown.",
-            "Date / Time Picker family — the most-requested missing input, with model binding and validation.",
-            "Playwright E2E re-enabled and stabilized in CI.",
-        }),
         new("v2.2", "Playground & DX Completion", "milestone/2", new[]
         {
             "Component Playground coverage for every Forms and Actions component.",
@@ -33,6 +27,10 @@ public class RoadmapModel : PageModel
 
     public List<ReleaseInfo> Shipped { get; } = new()
     {
+        new("v2.1", "Advanced Inputs", "", new[]
+        {
+            "Radial Select, Date Picker, Time Picker, Date & Time Picker, and Playwright E2E back in CI.",
+        }),
         new("v2.0", "Platform & DX", "", new[]
         {
             "Theme Builder, Component Playground, SignalR connector, CSS Anchor Positioning, VS Code snippets, Kanban board.",

@@ -30,7 +30,7 @@
     <div class="docs-feature-card">
         <rhx-icon rhx-name="grid" rhx-size="32" />
         <h3>Tag Helper Components</h3>
-        <p>85+ server-rendered components across 11 categories. Buttons, forms, data tables, kanban boards, navigation, overlays, feedback, and more.</p>
+        <p>90+ server-rendered components across 11 categories. Buttons, forms, date/time pickers, data tables, kanban boards, navigation, overlays, feedback, and more.</p>
     </div>
     <div class="docs-feature-card">
         <rhx-icon rhx-name="refresh" rhx-size="32" />
@@ -46,43 +46,39 @@
 
 <rhx-divider />
 
-<!-- What's New in v2.0 -->
+<!-- What's New in v2.1 -->
 <section style="max-width: 900px; margin: 0 auto; padding: var(--rhx-space-2xl) var(--rhx-space-xl);">
     <h2 style="text-align: center; font-size: var(--rhx-font-size-2xl); font-weight: var(--rhx-font-weight-bold); margin-bottom: var(--rhx-space-lg); color: var(--rhx-color-text);">
-        What's New in v2.0
+        What's New in v2.1 — Advanced Inputs
     </h2>
     <p style="text-align: center; color: var(--rhx-color-text-muted); margin-bottom: var(--rhx-space-xl);">
-        Platform tools, real-time connectivity, modern CSS, and a drag-and-drop Kanban board.
+        A date/time picker family, a radial category picker, and Playwright E2E back in CI.
     </p>
 
     <div class="docs-features">
         <div class="docs-feature-card">
-            <h3>Theme Builder</h3>
-            <p>Interactive page with color pickers for every <code>--rhx-*</code> token. Real-time preview, smart palette generation from a single color, and downloadable CSS override file.</p>
-            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/ThemeBuilder">Try it</rhx-button>
+            <h3>Radial Select</h3>
+            <p>A rectangular trigger opens a circular pie of color- and icon-labeled category wedges. Picking a wedge repopulates a dropdown via an htmx cascade and auto-selects the first option. Fully keyboard-accessible as a menu.</p>
+            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/RadialSelect">View docs</rhx-button>
         </div>
         <div class="docs-feature-card">
-            <h3>Component Playground</h3>
-            <p>Property toggle panels on demo pages. Change variant, size, and state props; the server re-renders via htmx. Shareable URL state and generated Razor markup.</p>
-            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/Button">See Button example</rhx-button>
+            <h3>Date Picker</h3>
+            <p>Text input + popup calendar with server-rendered month navigation. Commits a hidden ISO <code>yyyy-MM-dd</code> value for model binding, with min/max bounds, configurable week start, and APG grid keyboard accessibility.</p>
+            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/DatePicker">View docs</rhx-button>
         </div>
         <div class="docs-feature-card">
-            <h3>SignalR Hub Connector</h3>
-            <p>Declarative <code>&lt;rhx-signalr&gt;</code> Tag Helper for real-time SignalR connections. Swaps received HTML fragments, with auto-reconnect, group support, and connection state indicator.</p>
-            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/SignalR">View docs</rhx-button>
+            <h3>Time Picker</h3>
+            <p>Text input + popup list of selectable times stepping by a configurable minute interval. Commits a hidden ISO <code>HH:mm</code> value with 12- or 24-hour display, and listbox keyboard navigation with type-ahead.</p>
+            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/TimePicker">View docs</rhx-button>
         </div>
         <div class="docs-feature-card">
-            <h3>Kanban Board</h3>
-            <p>Drag-and-drop <code>&lt;rhx-kanban&gt;</code> with columns, cards, WIP limits, and keyboard navigation. Card drops fire <code>hx-post</code> for server persistence.</p>
-            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/Kanban">View docs</rhx-button>
+            <h3>Date &amp; Time Picker</h3>
+            <p>A single <code>DateTime</code> control pairing the calendar with a time list. Commits a hidden ISO <code>yyyy-MM-ddTHH:mm</code> value once both date and time are set. Reuses the Date Picker calendar and Time Picker list.</p>
+            <rhx-button rhx-variant="brand" rhx-appearance="plain" rhx-size="small" rhx-href="/Docs/Components/DateTimePicker">View docs</rhx-button>
         </div>
         <div class="docs-feature-card">
-            <h3>CSS Anchor Positioning</h3>
-            <p>Tooltip, popover, popup, and dropdown now use the CSS Anchor Positioning API in modern browsers, with automatic JS fallback. Less JavaScript, better viewport handling.</p>
-        </div>
-        <div class="docs-feature-card">
-            <h3>VS Code Snippets</h3>
-            <p>97 code snippets for every <code>&lt;rhx-*&gt;</code> tag with smart tabstops, choice lists, htmx variants, and multi-component composition snippets.</p>
+            <h3>Playwright E2E in CI</h3>
+            <p>The end-to-end suite is re-enabled and stabilized — Chromium runs per-PR and a full browser matrix runs nightly, gating changes on real browser regression tests.</p>
         </div>
     </div>
 </section>
@@ -95,15 +91,10 @@
         What's Next — the 2.X Roadmap
     </h2>
     <p style="text-align: center; color: var(--rhx-color-text-muted); margin-bottom: var(--rhx-space-xl);">
-        Four planned minor releases, each tracked as a GitHub milestone.
+        Three planned minor releases, each tracked as a GitHub milestone.
     </p>
 
     <div class="docs-features">
-        <div class="docs-feature-card">
-            <rhx-badge rhx-variant="brand">v2.1</rhx-badge>
-            <h3>Advanced Inputs</h3>
-            <p>The new <strong>Radial Select</strong> (pie category picker → cascading htmx dropdown), a Date/Time Picker family, and Playwright E2E back in CI.</p>
-        </div>
         <div class="docs-feature-card">
             <rhx-badge rhx-variant="neutral">v2.2</rhx-badge>
             <h3>Playground &amp; DX</h3>
