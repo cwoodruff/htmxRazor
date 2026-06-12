@@ -33,8 +33,8 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Test
-        # PlaywrightTests are excluded from CI — they require browser binaries
-        # and run for ~20 minutes. Run them locally before shipping.
+        # Unit tests only. Playwright E2E run in the separate `e2e` job (Chromium)
+        # and the full cross-browser matrix runs nightly (e2e-nightly.yml).
         run: dotnet test htmxRazor.Tests/htmxRazor.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
 
       - name: Upload test results
@@ -50,6 +50,38 @@ jobs:
         with:
           name: coverage
           path: "**/coverage.cobertura.xml"
+
+  # Playwright end-to-end tests on Chromium only — fast PR/push feedback.
+  # The full chromium+firefox+webkit matrix runs nightly (e2e-nightly.yml).
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build E2E project
+        run: dotnet build PlaywrightTests/PlaywrightTests.csproj --configuration Release
+
+      - name: Install Chromium (+ OS deps)
+        run: pwsh PlaywrightTests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run E2E (Chromium)
+        run: >-
+          dotnet test PlaywrightTests/PlaywrightTests.csproj
+          --no-build --configuration Release
+          --filter "DisplayName~chromium"
+          --logger "trx;LogFileName=e2e-chromium.trx"
+
+      - name: Upload E2E results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-results
+          path: "**/e2e-chromium.trx"
 
   pack:
     runs-on: ubuntu-latest
