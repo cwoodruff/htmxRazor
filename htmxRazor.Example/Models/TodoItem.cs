@@ -14,9 +14,30 @@ public class TodoItem
 
     public TodoPriority Priority { get; set; } = TodoPriority.Medium;
 
+    // ── 2.1 Advanced Inputs ──
+    /// <summary>Optional due date (Date Picker, <c>rhx-date-picker</c>).</summary>
+    public DateOnly? DueDate { get; set; }
+
+    /// <summary>Optional due time, only meaningful with <see cref="DueDate"/> (Time Picker, <c>rhx-time-picker</c>).</summary>
+    public TimeOnly? DueTime { get; set; }
+
+    /// <summary>Optional reminder instant (Date &amp; Time Picker, <c>rhx-datetime-picker</c>).</summary>
+    public DateTime? ReminderAt { get; set; }
+
+    /// <summary>Optional category (Radial Select, <c>rhx-radial-select</c>). One of <see cref="TodoCategory.All"/>.</summary>
+    public string? Category { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? CompletedAt { get; set; }
+
+    /// <summary>Combined due instant: the due date at its due time, or end-of-day when no time is set.</summary>
+    public DateTime? DueAt => DueDate is { } d
+        ? d.ToDateTime(DueTime ?? new TimeOnly(23, 59))
+        : null;
+
+    /// <summary>Incomplete and past its due instant.</summary>
+    public bool IsOverdue => !IsCompleted && DueAt is { } d && d < DateTime.Now;
 }
 
 public enum TodoPriority
@@ -24,6 +45,26 @@ public enum TodoPriority
     Low,
     Medium,
     High
+}
+
+/// <summary>
+/// Category metadata shared by the Radial Select wedges and the task-card tag, so colors and
+/// icons stay in sync. Icon names are known to <c>IconRegistry</c>.
+/// </summary>
+public record TodoCategory(string Name, string Color, string Icon)
+{
+    public static readonly IReadOnlyList<TodoCategory> All = new[]
+    {
+        new TodoCategory("Work", "brand", "grid"),
+        new TodoCategory("Personal", "success", "heart"),
+        new TodoCategory("Shopping", "warning", "star"),
+        new TodoCategory("Health", "danger", "check-circle"),
+    };
+
+    public static TodoCategory? Find(string? name) =>
+        string.IsNullOrWhiteSpace(name)
+            ? null
+            : All.FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase));
 }
 
 /// <summary>

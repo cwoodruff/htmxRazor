@@ -1,0 +1,36 @@
+@using htmxRazor.Example.Models
+@model TodoItem
+@{
+    // Server-rendered edit form body, swapped into the edit dialog by the task's Edit button so
+    // the advanced-input controls bind their initial values via value / rhx-default-category.
+}
+
+<form hx-put="/?handler=Update"
+      hx-target="#todo-list"
+      hx-swap="innerHTML"
+      hx-include="[name='filter'],[name='sort']"
+      class="dialog-form"
+      hx-on::after-request="document.getElementById('edit-todo-dialog').close()">
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <rhx-input rhx-label="Task title"
+               rhx-placeholder="Task title"
+               name="title"
+               value="@Model.Title"
+               required="required"
+               rhx-maxlength="200">
+    </rhx-input>
+
+    @await Html.PartialAsync("_TodoFields", Model)
+
+    <rhx-dialog-footer>
+        <rhx-button type="button"
+                    rhx-appearance="outlined"
+                    onclick="document.getElementById('edit-todo-dialog').close()">
+            Cancel
+        </rhx-button>
+        <rhx-button type="submit" rhx-variant="brand">
+            Save Changes
+        </rhx-button>
+    </rhx-dialog-footer>
+</form>

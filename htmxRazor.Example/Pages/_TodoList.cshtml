@@ -20,7 +20,7 @@ else
                               rhx-optimistic="true"
                               hx-post="/?handler=Toggle&id=@todo.Id"
                               hx-target="#todo-list"
-                              hx-include="[name='filter']"
+                              hx-include="[name='filter'],[name='sort']"
                               aria-label="@(todo.IsCompleted ? "Mark incomplete" : "Mark complete")">
                 </rhx-checkbox>
 
@@ -37,6 +37,15 @@ else
                         }
                         <rhx-badge rhx-variant="@variant" rhx-pill="true">@label</rhx-badge>
 
+                        @{ var category = htmxRazor.Example.Models.TodoCategory.Find(todo.Category); }
+                        @if (category is not null)
+                        {
+                            <rhx-tag-item rhx-variant="@category.Color" rhx-size="small">
+                                <rhx-icon name="@category.Icon" rhx-size="small"></rhx-icon>
+                                @category.Name
+                            </rhx-tag-item>
+                        }
+
                         @if (todo.IsCompleted && todo.CompletedAt.HasValue)
                         {
                             <rhx-tag-item rhx-variant="success" rhx-size="small">
@@ -44,9 +53,27 @@ else
                                 Done @todo.CompletedAt.Value.ToString("MMM d")
                             </rhx-tag-item>
                         }
+                        else if (todo.IsOverdue)
+                        {
+                            <rhx-badge rhx-variant="danger" rhx-pill="true">
+                                Overdue @todo.DueAt!.Value.ToString(todo.DueTime is null ? "MMM d" : "MMM d, h:mm tt")
+                            </rhx-badge>
+                        }
+                        else if (todo.DueAt is { } due)
+                        {
+                            <span>Due @due.ToString(todo.DueTime is null ? "MMM d" : "MMM d, h:mm tt")</span>
+                        }
                         else
                         {
                             <span>Created @todo.CreatedAt.ToString("MMM d")</span>
+                        }
+
+                        @if (todo.ReminderAt is { } remind)
+                        {
+                            <span class="todo-item__reminder" title="Reminder">
+                                <rhx-icon name="clock" rhx-size="small"></rhx-icon>
+                                @remind.ToString("MMM d, h:mm tt")
+                            </span>
                         }
                     </div>
                 </div>
@@ -56,7 +83,9 @@ else
                         <rhx-button rhx-appearance="plain"
                                     rhx-size="small"
                                     aria-label="Edit task"
-                                    onclick="openEditDialog(@todo.Id, '@todo.Title.Replace("'", "\\'").Replace("\"", "&quot;")', '@todo.Priority')">
+                                    hx-get="/?handler=EditForm&id=@todo.Id"
+                                    hx-target="#edit-form-body"
+                                    hx-swap="innerHTML">
                             <rhx-icon name="settings" rhx-size="small"></rhx-icon>
                         </rhx-button>
                     </rhx-tooltip>
@@ -68,7 +97,7 @@ else
                                     aria-label="Delete task"
                                     hx-delete="/?handler=Delete&id=@todo.Id"
                                     hx-target="#todo-list"
-                                    hx-include="[name='filter']"
+                                    hx-include="[name='filter'],[name='sort']"
                                     hx-confirm="Delete &quot;@todo.Title&quot;?">
                             <rhx-icon name="trash" rhx-size="small"></rhx-icon>
                         </rhx-button>

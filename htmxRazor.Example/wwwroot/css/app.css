@@ -106,6 +106,10 @@
     min-width: 12rem;
 }
 
+.toolbar__sort {
+    min-width: 10rem;
+}
+
 .toolbar__actions {
     display: flex;
     gap: var(--rhx-space-sm);
@@ -184,12 +188,40 @@
     flex-shrink: 0;
 }
 
+.todo-item__reminder {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--rhx-space-3xs, 2px);
+    color: var(--rhx-color-text-muted);
+}
+
 /* ── Dialog form ── */
 .dialog-form {
     display: flex;
     flex-direction: column;
     gap: var(--rhx-space-lg);
     padding: var(--rhx-space-md) 0;
+}
+
+/* Shared field label for controls that don't render their own (priority, category). */
+.field-label {
+    display: block;
+    font-size: var(--rhx-font-size-sm);
+    font-weight: var(--rhx-font-weight-medium);
+    color: var(--rhx-color-text);
+    margin-bottom: var(--rhx-space-xs);
+}
+
+/* Due date + due time side by side, stacking on narrow dialogs. */
+.field-row {
+    display: flex;
+    gap: var(--rhx-space-md);
+    flex-wrap: wrap;
+}
+
+.field-row > * {
+    flex: 1;
+    min-width: 9rem;
 }
 
 /* ── Progress section ── */

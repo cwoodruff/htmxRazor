@@ -18,25 +18,53 @@ public class IndexModel : PageModel
     public List<TodoItem> Todos { get; set; } = [];
     public string? Filter { get; set; }
     public string? Search { get; set; }
+    public string? Sort { get; set; }
     public int TotalCount => _todoService.TotalCount;
     public int ActiveCount => _todoService.ActiveCount;
     public int CompletedCount => _todoService.CompletedCount;
+    public int DueSoonCount => _todoService.DueSoonCount;
     public int ProgressPercent => TotalCount == 0 ? 0 : (int)Math.Round(100.0 * CompletedCount / TotalCount);
     public List<ActivityEntry> Activities => _todoService.GetRecentActivity();
 
-    public void OnGet(string? filter, string? search)
+    public void OnGet(string? filter, string? search, string? sort)
     {
         Filter = filter;
         Search = search;
-        Todos = _todoService.GetFiltered(filter, search);
+        Sort = sort;
+        Todos = _todoService.GetFiltered(filter, search, sort);
     }
 
-    public IActionResult OnGetTodoList(string? filter, string? search)
+    public IActionResult OnGetTodoList(string? filter, string? search, string? sort)
     {
         Filter = filter;
         Search = search;
-        Todos = _todoService.GetFiltered(filter, search);
+        Sort = sort;
+        Todos = _todoService.GetFiltered(filter, search, sort);
         return Partial("_TodoList", Todos);
+    }
+
+    /// <summary>Cascade endpoint for the category Radial Select: returns a single listbox option
+    /// echoing the chosen category so the control completes. Category-only — the option value is
+    /// not stored; <c>rhx-category-name</c> carries the category itself.</summary>
+    public IActionResult OnGetCategoryItems(string? category)
+    {
+        var cat = TodoCategory.Find(category);
+        if (cat is null)
+            return Content("<div class=\"rhx-radial-select__placeholder\">No category</div>", "text/html");
+
+        var name = System.Net.WebUtility.HtmlEncode(cat.Name);
+        return Content(
+            $"<div class=\"rhx-radial-select__option\" role=\"option\" data-value=\"{name}\" aria-selected=\"false\" tabindex=\"-1\">{name}</div>",
+            "text/html");
+    }
+
+    /// <summary>Returns the populated edit form (server-rendered so the date/time/category controls
+    /// bind their initial values via <c>rhx-value</c>/<c>rhx-default-category</c>).</summary>
+    public IActionResult OnGetEditForm(int id)
+    {
+        var todo = _todoService.GetById(id);
+        if (todo is null) return NotFound();
+        return Partial("_EditForm", todo);
     }
 
     public IActionResult OnGetStats()
@@ -54,21 +82,23 @@ public class IndexModel : PageModel
         return Partial("_ActivityLog", _todoService.GetRecentActivity());
     }
 
-    public IActionResult OnPostAdd(string title, TodoPriority priority, string? filter)
+    public IActionResult OnPostAdd(string title, TodoPriority priority, DateOnly? dueDate,
+        TimeOnly? dueTime, DateTime? reminderAt, string? category, string? filter, string? sort)
     {
         if (!string.IsNullOrWhiteSpace(title))
         {
-            _todoService.Add(title.Trim(), priority);
-            _todoService.LogActivity($"Added \"{title.Trim()}\"", "success", "plus");
+            _todoService.Add(title.Trim(), priority, dueDate, dueTime, reminderAt, category);
+            var due = dueDate is { } d ? $" (due {d:MMM d})" : "";
+            _todoService.LogActivity($"Added \"{title.Trim()}\"{due}", "success", "plus");
             Response.HxToast($"Task \"{title.Trim()}\" added", "success");
         }
 
         Response.HxTrigger("todoChanged");
-        Todos = _todoService.GetFiltered(filter, null);
+        Todos = _todoService.GetFiltered(filter, null, sort);
         return Partial("_TodoList", Todos);
     }
 
-    public IActionResult OnPostToggle(int id, string? filter)
+    public IActionResult OnPostToggle(int id, string? filter, string? sort)
     {
         var todo = _todoService.Toggle(id);
         if (todo is not null)
@@ -81,25 +111,26 @@ public class IndexModel : PageModel
         }
 
         Response.HxTrigger("todoChanged");
-        Todos = _todoService.GetFiltered(filter, null);
+        Todos = _todoService.GetFiltered(filter, null, sort);
         return Partial("_TodoList", Todos);
     }
 
-    public IActionResult OnPutUpdate(int id, string title, TodoPriority priority, string? filter)
+    public IActionResult OnPutUpdate(int id, string title, TodoPriority priority, DateOnly? dueDate,
+        TimeOnly? dueTime, DateTime? reminderAt, string? category, string? filter, string? sort)
     {
         if (!string.IsNullOrWhiteSpace(title))
         {
-            _todoService.Update(id, title.Trim(), priority);
+            _todoService.Update(id, title.Trim(), priority, dueDate, dueTime, reminderAt, category);
             _todoService.LogActivity($"Updated \"{title.Trim()}\"", "brand", "edit");
             Response.HxToast("Task updated", "brand");
         }
 
         Response.HxTrigger("todoChanged");
-        Todos = _todoService.GetFiltered(filter, null);
+        Todos = _todoService.GetFiltered(filter, null, sort);
         return Partial("_TodoList", Todos);
     }
 
-    public IActionResult OnDeleteDelete(int id, string? filter)
+    public IActionResult OnDeleteDelete(int id, string? filter, string? sort)
     {
         var todo = _todoService.GetById(id);
         _todoService.Delete(id);
@@ -110,18 +141,18 @@ public class IndexModel : PageModel
         }
 
         Response.HxTrigger("todoChanged");
-        Todos = _todoService.GetFiltered(filter, null);
+        Todos = _todoService.GetFiltered(filter, null, sort);
         return Partial("_TodoList", Todos);
     }
 
-    public IActionResult OnDeleteClearCompleted(string? filter)
+    public IActionResult OnDeleteClearCompleted(string? filter, string? sort)
     {
         var count = _todoService.ClearCompleted();
         _todoService.LogActivity($"Cleared {count} completed task{(count != 1 ? "s" : "")}", "danger", "trash");
         Response.HxToast($"Cleared {count} completed task{(count != 1 ? "s" : "")}", "danger");
 
         Response.HxTrigger("todoChanged");
-        Todos = _todoService.GetFiltered(filter, null);
+        Todos = _todoService.GetFiltered(filter, null, sort);
         return Partial("_TodoList", Todos);
     }
 }

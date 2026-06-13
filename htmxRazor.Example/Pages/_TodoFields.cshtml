@@ -1,0 +1,55 @@
+@using htmxRazor.Example.Models
+@model TodoItem
+@{
+    // Shared form fields for the Add (Model == null) and Edit dialogs. Showcases the 2.1
+    // advanced inputs: Date Picker, Time Picker, Date & Time Picker, and the Radial Select.
+    var t = Model;
+}
+
+<div>
+    <label class="field-label">Priority</label>
+    <rhx-select name="priority">
+        <rhx-option value="Low" selected="@(t?.Priority == TodoPriority.Low ? "selected" : null)">Low</rhx-option>
+        <rhx-option value="Medium" selected="@(t == null || t.Priority == TodoPriority.Medium ? "selected" : null)">Medium</rhx-option>
+        <rhx-option value="High" selected="@(t?.Priority == TodoPriority.High ? "selected" : null)">High</rhx-option>
+    </rhx-select>
+</div>
+
+<div class="field-row">
+    <rhx-date-picker rhx-label="Due date"
+                     name="dueDate"
+                     rhx-placeholder="Optional"
+                     rhx-min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                     value="@(t?.DueDate?.ToString("yyyy-MM-dd"))">
+    </rhx-date-picker>
+
+    <rhx-time-picker rhx-label="Due time"
+                     name="dueTime"
+                     rhx-placeholder="Optional"
+                     value="@(t?.DueTime?.ToString("HH:mm"))">
+    </rhx-time-picker>
+</div>
+
+<rhx-datetime-picker rhx-label="Reminder"
+                     name="reminderAt"
+                     rhx-placeholder="Optional — remind me at…"
+                     value="@(t?.ReminderAt?.ToString("yyyy-MM-ddTHH:mm"))">
+</rhx-datetime-picker>
+
+<div>
+    <label class="field-label">Category</label>
+    <rhx-radial-select name="categoryItem"
+                       rhx-category-name="category"
+                       rhx-default-category="@t?.Category"
+                       rhx-placeholder="Pick a category…"
+                       aria-label="Task category">
+        @foreach (var c in TodoCategory.All)
+        {
+            <rhx-radial-option rhx-value="@c.Name"
+                               rhx-label="@c.Name"
+                               rhx-icon="@c.Icon"
+                               rhx-color="@c.Color"
+                               hx-get="/?handler=CategoryItems&category=@c.Name" />
+        }
+    </rhx-radial-select>
+</div>

@@ -25,9 +25,21 @@
                    hx-get="/?handler=TodoList"
                    hx-trigger="input changed delay:300ms, search"
                    hx-target="#todo-list"
-                   hx-include="[name='filter']"
+                   hx-include="[name='filter'],[name='sort']"
                    value="@Model.Search">
         </rhx-input>
+    </div>
+    <div class="toolbar__sort">
+        <rhx-select rhx-label="Sort"
+                    rhx-size="small"
+                    name="sort"
+                    hx-get="/?handler=TodoList"
+                    hx-trigger="change"
+                    hx-target="#todo-list"
+                    hx-include="[name='filter'],[name='search']">
+            <rhx-option value="created" selected="@(Model.Sort != "due" ? "selected" : null)">Newest first</rhx-option>
+            <rhx-option value="due" selected="@(Model.Sort == "due" ? "selected" : null)">Due date</rhx-option>
+        </rhx-select>
     </div>
     <div class="toolbar__actions">
         <rhx-button rhx-variant="brand"
@@ -54,9 +66,10 @@
 
 <!-- Filter Tabs -->
 <rhx-tab-group aria-label="Task filters">
-    <rhx-tab rhx-panel="tasks" rhx-active="@(Model.Filter != "active" && Model.Filter != "completed")"
+    <rhx-tab rhx-panel="tasks" rhx-active="@(Model.Filter != "active" && Model.Filter != "completed" && Model.Filter != "duesoon")"
              hx-get="/?handler=TodoList&filter=all"
              hx-target="#todo-list"
+             hx-include="[name='sort']"
              hx-swap="innerHTML">
         All
         <rhx-badge rhx-variant="neutral" rhx-pill="true"><span id="badge-all">@Model.TotalCount</span></rhx-badge>
@@ -64,13 +77,23 @@
     <rhx-tab rhx-panel="tasks" rhx-active="@(Model.Filter == "active")"
              hx-get="/?handler=TodoList&filter=active"
              hx-target="#todo-list"
+             hx-include="[name='sort']"
              hx-swap="innerHTML">
         Active
         <rhx-badge rhx-variant="brand" rhx-pill="true"><span id="badge-active">@Model.ActiveCount</span></rhx-badge>
     </rhx-tab>
+    <rhx-tab rhx-panel="tasks" rhx-active="@(Model.Filter == "duesoon")"
+             hx-get="/?handler=TodoList&filter=duesoon"
+             hx-target="#todo-list"
+             hx-include="[name='sort']"
+             hx-swap="innerHTML">
+        Due Soon
+        <rhx-badge rhx-variant="warning" rhx-pill="true"><span id="badge-duesoon">@Model.DueSoonCount</span></rhx-badge>
+    </rhx-tab>
     <rhx-tab rhx-panel="tasks" rhx-active="@(Model.Filter == "completed")"
              hx-get="/?handler=TodoList&filter=completed"
              hx-target="#todo-list"
+             hx-include="[name='sort']"
              hx-swap="innerHTML">
         Completed
         <rhx-badge rhx-variant="success" rhx-pill="true"><span id="badge-completed">@Model.CompletedCount</span></rhx-badge>
@@ -90,6 +113,7 @@
     <form hx-post="/?handler=Add"
           hx-target="#todo-list"
           hx-swap="innerHTML"
+          hx-include="[name='filter'],[name='sort']"
           class="dialog-form">
         <rhx-input rhx-label="Task title"
                    rhx-placeholder="What needs to be done?"
@@ -98,14 +122,7 @@
                    rhx-maxlength="200">
         </rhx-input>
 
-        <div>
-            <label style="display: block; font-size: var(--rhx-font-size-sm); font-weight: var(--rhx-font-weight-medium); color: var(--rhx-color-text); margin-bottom: var(--rhx-space-xs);">Priority</label>
-            <rhx-select name="priority">
-                <rhx-option value="Low">Low</rhx-option>
-                <rhx-option value="Medium" selected="selected">Medium</rhx-option>
-                <rhx-option value="High">High</rhx-option>
-            </rhx-select>
-        </div>
+        @await Html.PartialAsync("_TodoFields", (htmxRazor.Example.Models.TodoItem?)null)
 
         <rhx-dialog-footer>
             <rhx-button type="button"
@@ -122,43 +139,9 @@
     </form>
 </rhx-dialog>
 
-<!-- Edit Task Dialog -->
+<!-- Edit Task Dialog — body is server-rendered (_EditForm) so the pickers bind their values -->
 <rhx-dialog id="edit-todo-dialog" rhx-label="Edit Task">
-    <form id="edit-form"
-          hx-put="/?handler=Update"
-          hx-target="#todo-list"
-          hx-swap="innerHTML"
-          class="dialog-form">
-        <input type="hidden" name="id" id="edit-id" />
-        <rhx-input rhx-label="Task title"
-                   rhx-placeholder="Task title"
-                   name="title"
-                   id="edit-title"
-                   required="required"
-                   rhx-maxlength="200">
-        </rhx-input>
-
-        <div>
-            <label style="display: block; font-size: var(--rhx-font-size-sm); font-weight: var(--rhx-font-weight-medium); color: var(--rhx-color-text); margin-bottom: var(--rhx-space-xs);">Priority</label>
-            <rhx-select name="priority" id="edit-priority">
-                <rhx-option value="Low">Low</rhx-option>
-                <rhx-option value="Medium">Medium</rhx-option>
-                <rhx-option value="High">High</rhx-option>
-            </rhx-select>
-        </div>
-
-        <rhx-dialog-footer>
-            <rhx-button type="button"
-                        rhx-appearance="outlined"
-                        onclick="document.getElementById('edit-todo-dialog').close()">
-                Cancel
-            </rhx-button>
-            <rhx-button type="submit" rhx-variant="brand"
-                        onclick="setTimeout(() => document.getElementById('edit-todo-dialog').close(), 100)">
-                Save Changes
-            </rhx-button>
-        </rhx-dialog-footer>
-    </form>
+    <div id="edit-form-body"></div>
 </rhx-dialog>
 
 <!-- Activity Log (v1.4: Timeline) -->
@@ -177,20 +160,12 @@
 
 @section Scripts {
 <script>
-    function openEditDialog(id, title, priority) {
-        document.getElementById('edit-id').value = id;
-        var titleInput = document.getElementById('edit-title');
-        if (titleInput) {
-            var input = titleInput.querySelector('input') || titleInput;
-            input.value = title;
+    // Open the edit dialog once its server-rendered form (with bound pickers) has been swapped in.
+    document.body.addEventListener('htmx:afterSwap', function(e) {
+        if (e.detail.target && e.detail.target.id === 'edit-form-body') {
+            document.getElementById('edit-todo-dialog').showModal();
         }
-        var prioritySelect = document.getElementById('edit-priority');
-        if (prioritySelect) {
-            var select = prioritySelect.querySelector('select') || prioritySelect;
-            select.value = priority;
-        }
-        document.getElementById('edit-todo-dialog').showModal();
-    }
+    });
 
     // Listen for todoChanged events to update filter tabs
     document.body.addEventListener('todoChanged', function() {
