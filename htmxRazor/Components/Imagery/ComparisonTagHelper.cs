@@ -68,37 +68,32 @@ public class ComparisonTagHelper : htmxRazorTagHelperBase
         var css = CreateCssBuilder();
         ApplyBaseAttributes(output, css);
 
-        output.Attributes.SetAttribute("data-rhx-comparison", "");
-
         RenderHtmxAttributes(output);
 
         output.Content.Clear();
 
-        // Before (full image, bottom layer)
+        // Before (full image, bottom layer — also establishes the intrinsic size)
         output.Content.AppendHtml(
             $"<div class=\"{GetElementClass("before")}\">" +
             $"<img src=\"{Enc(Before)}\" alt=\"{Enc(BeforeAlt)}\" />" +
             "</div>");
 
-        // After (clipped image, top layer)
+        // After (top layer) — user-resizable via CSS `resize` (drag the edge grip, no JS).
+        // The inner image is sized to the whole comparison (100cqw) so resizing this box
+        // clips rather than scales it, revealing the "before" image underneath.
         output.Content.AppendHtml(
-            $"<div class=\"{GetElementClass("after")}\" style=\"clip-path: inset(0 {100 - pos}% 0 0)\">" +
+            $"<div class=\"{GetElementClass("after")}\" style=\"width: {pos}%\">" +
             $"<img src=\"{Enc(After)}\" alt=\"{Enc(AfterAlt)}\" />" +
-            "</div>");
-
-        // Handle
-        output.Content.AppendHtml(
-            $"<div class=\"{GetElementClass("handle")}\" role=\"slider\" " +
-            $"aria-valuenow=\"{pos}\" aria-valuemin=\"0\" aria-valuemax=\"100\" " +
-            $"aria-label=\"Comparison slider\" tabindex=\"0\" " +
-            $"style=\"left: {pos}%\">" +
+            // Visual handle on the resized edge (decorative; the native resize grip is the control).
+            $"<div class=\"{GetElementClass("handle")}\" aria-hidden=\"true\">" +
             $"<div class=\"{GetElementClass("handle-line")}\"></div>" +
             $"<div class=\"{GetElementClass("handle-grip")}\">" +
             "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\">" +
             "<path d=\"M8 18l-6-6 6-6\" /><path d=\"M16 6l6 6-6 6\" />" +
             "</svg></div>" +
             $"<div class=\"{GetElementClass("handle-line")}\"></div>" +
-            "</div>");
+            "</div>" + // close handle
+            "</div>"); // close after
     }
 
     private static string Enc(string? value) => WebUtility.HtmlEncode(value ?? "") ?? "";

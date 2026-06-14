@@ -6,62 +6,64 @@
 .rhx-comparison {
     position: relative;
     overflow: hidden;
-    user-select: none;
-    touch-action: pan-y;
     line-height: 0;
-    cursor: ew-resize;
+    /* container query units (cqw) keep the after-image the full comparison width while its
+       wrapper is resized, so resizing clips it instead of scaling — revealing "before".
+       inline-size containment means width no longer comes from content, so set it explicitly. */
+    container-type: inline-size;
+    width: 100%;
 }
 
-.rhx-comparison__before,
+/* The "before" image establishes the intrinsic size (bottom layer). */
+.rhx-comparison__before {
+    position: relative;
+    z-index: 0;
+}
+
+/* The "after" wrapper is user-resizable via CSS `resize` (no JS) — drag its edge grip. */
 .rhx-comparison__after {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
     height: 100%;
-}
-
-.rhx-comparison__before {
-    z-index: 0;
-}
-
-.rhx-comparison__after {
     z-index: 1;
+    overflow: hidden;
+    resize: horizontal;
+    max-width: 100%;
+    min-width: 0;
 }
 
-.rhx-comparison__before img,
-.rhx-comparison__after img {
+/* The before image's intrinsic height sizes the whole comparison. */
+.rhx-comparison__before img {
     display: block;
     width: 100%;
+    height: auto;
+}
+
+.rhx-comparison__after img {
+    display: block;
+    width: 100cqw;
+    /* override the reset's img { max-width: 100% } so the image stays full-comparison-width
+       while its wrapper is narrowed (the wrapper clips it). */
+    max-width: none;
     height: 100%;
     object-fit: cover;
     pointer-events: none;
 }
 
-/* The "before" image also establishes intrinsic size */
-.rhx-comparison__before {
-    position: relative;
-}
-
-/* ── Handle ── */
+/* ── Handle (decorative, pinned to the resized edge) ── */
 
 .rhx-comparison__handle {
     position: absolute;
     top: 0;
     bottom: 0;
+    right: 0;
     z-index: 2;
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 0;
-    transform: translateX(-50%);
-    cursor: ew-resize;
-    outline: none;
-}
-
-.rhx-comparison__handle:focus-visible .rhx-comparison__handle-grip {
-    outline: 2px solid var(--rhx-color-brand-500);
-    outline-offset: 2px;
+    pointer-events: none;
 }
 
 .rhx-comparison__handle-line {
@@ -87,16 +89,5 @@
 .rhx-comparison__handle-grip svg {
     width: 1.25rem;
     height: 1.25rem;
-}
-
-/* ── Dragging state ── */
-
-.rhx-comparison--dragging {
-    cursor: ew-resize;
-}
-
-.rhx-comparison--dragging .rhx-comparison__handle-grip {
-    background: var(--rhx-color-brand-500);
-    color: #fff;
 }
 }

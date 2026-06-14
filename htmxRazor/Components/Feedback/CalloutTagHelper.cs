@@ -87,13 +87,18 @@ public class CalloutTagHelper : htmxRazorTagHelperBase
         ApplyBaseAttributes(output, css);
 
         output.Attributes.SetAttribute("role", "alert");
-        output.Attributes.SetAttribute("data-rhx-callout", "");
 
         if (!Open)
             output.Attributes.SetAttribute("hidden", "hidden");
 
+        // Auto-dismiss: fade out after the duration via a delayed CSS animation (no JS).
         if (Duration > 0)
-            output.Attributes.SetAttribute("data-rhx-duration", Duration.ToString());
+        {
+            var anim = $"animation: rhx-callout-auto-dismiss 300ms ease {Duration}ms forwards";
+            var existing = output.Attributes["style"]?.Value?.ToString();
+            output.Attributes.SetAttribute("style",
+                string.IsNullOrWhiteSpace(existing) ? anim : existing!.TrimEnd(';', ' ') + "; " + anim);
+        }
 
         // ── Build inner content ──
         var childContent = await output.GetChildContentAsync();
@@ -108,14 +113,18 @@ public class CalloutTagHelper : htmxRazorTagHelperBase
         output.Content.AppendHtml(childContent);
         output.Content.AppendHtml("</div>");
 
-        // Close button
+        // Close control — a focusable checkbox + label; CSS (:has(:checked)) hides the callout.
+        // No JavaScript: dismissing is a pure CSS state toggle.
         if (Closable)
         {
+            var dismissId = "rhx-callout-dismiss-" + context.UniqueId;
             output.Content.AppendHtml(
-                $"<button class=\"{GetElementClass("close")}\" type=\"button\" aria-label=\"Close\">" +
+                $"<input type=\"checkbox\" id=\"{Enc(dismissId)}\" class=\"{GetElementClass("dismiss")} rhx-sr-only\" aria-label=\"Close\" />");
+            output.Content.AppendHtml(
+                $"<label class=\"{GetElementClass("close")}\" for=\"{Enc(dismissId)}\" title=\"Close\" aria-hidden=\"true\">" +
                 "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">" +
                 "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"></line>" +
-                "</svg></button>");
+                "</svg></label>");
         }
 
         // ── htmx attributes ──

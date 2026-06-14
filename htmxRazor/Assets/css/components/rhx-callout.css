@@ -20,10 +20,19 @@
   line-height: var(--rhx-line-height-normal);
   color: var(--rhx-color-text);
   opacity: 1;
-  transition: opacity var(--rhx-transition-normal) ease;
+  /* `display` transition (allow-discrete) lets the dismiss fade out then collapse, no JS.
+     Browsers without allow-discrete simply hide instantly. */
+  transition: opacity var(--rhx-transition-normal) ease,
+              display var(--rhx-transition-normal) allow-discrete;
 }
 
 .rhx-callout[hidden] {
+  display: none;
+}
+
+/* ── Dismiss (CSS only) — the close control is a checkbox; checking it hides the callout ── */
+.rhx-callout:has(.rhx-callout__dismiss:checked) {
+  opacity: 0;
   display: none;
 }
 
@@ -59,7 +68,8 @@
   color: var(--rhx-color-text);
 }
 
-.rhx-callout__close:focus-visible {
+/* The visible close affordance is a <label>; focus lives on the adjacent sr-only checkbox. */
+.rhx-callout__dismiss:focus-visible + .rhx-callout__close {
   outline: 2px solid var(--rhx-color-focus-ring);
   outline-offset: 2px;
 }
@@ -119,11 +129,14 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CLOSING ANIMATION
+   AUTO-DISMISS (rhx-duration) — delayed fade, no JS
    ══════════════════════════════════════════════════════════════ */
 
-.rhx-callout--closing {
-  opacity: 0;
+@keyframes rhx-callout-auto-dismiss {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════

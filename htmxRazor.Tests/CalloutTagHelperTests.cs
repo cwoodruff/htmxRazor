@@ -54,7 +54,7 @@ public class CalloutTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Renders_Data_Rhx_Callout_Attribute()
+    public async Task Does_Not_Render_Js_Hook_Attribute()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-callout");
@@ -62,7 +62,7 @@ public class CalloutTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        Assert.True(output.Attributes.TryGetAttribute("data-rhx-callout", out _));
+        AssertNoAttribute(output, "data-rhx-callout");
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public class CalloutTagHelperTests : TagHelperTestBase
     // ──────────────────────────────────────────────
 
     [Fact]
-    public async Task Closable_Renders_Close_Button()
+    public async Task Closable_Renders_Css_Dismiss_Control()
     {
         var helper = CreateHelper();
         helper.Closable = true;
@@ -247,9 +247,11 @@ public class CalloutTagHelperTests : TagHelperTestBase
         await helper.ProcessAsync(context, output);
 
         var content = output.Content.GetContent();
-        Assert.Contains("rhx-callout__close", content);
+        // CSS-only dismiss: a focusable checkbox + a label styled as the close button.
+        Assert.Contains("rhx-callout__dismiss", content);
+        Assert.Contains("type=\"checkbox\"", content);
         Assert.Contains("aria-label=\"Close\"", content);
-        Assert.Contains("type=\"button\"", content);
+        Assert.Contains("rhx-callout__close", content);
     }
 
     // ──────────────────────────────────────────────
@@ -274,7 +276,7 @@ public class CalloutTagHelperTests : TagHelperTestBase
     // ──────────────────────────────────────────────
 
     [Fact]
-    public async Task Duration_Sets_Data_Attribute()
+    public async Task Duration_Sets_AutoDismiss_Animation()
     {
         var helper = CreateHelper();
         helper.Duration = 5000;
@@ -283,11 +285,13 @@ public class CalloutTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "data-rhx-duration", "5000");
+        var style = output.Attributes["style"]?.Value?.ToString() ?? "";
+        Assert.Contains("rhx-callout-auto-dismiss", style);
+        Assert.Contains("5000ms", style);
     }
 
     [Fact]
-    public async Task Duration_Zero_No_Data_Attribute()
+    public async Task Duration_Zero_No_Animation()
     {
         var helper = CreateHelper();
         helper.Duration = 0;
@@ -297,6 +301,8 @@ public class CalloutTagHelperTests : TagHelperTestBase
         await helper.ProcessAsync(context, output);
 
         AssertNoAttribute(output, "data-rhx-duration");
+        var style = output.Attributes["style"]?.Value?.ToString() ?? "";
+        Assert.DoesNotContain("auto-dismiss", style);
     }
 
     // ──────────────────────────────────────────────

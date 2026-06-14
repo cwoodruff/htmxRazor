@@ -37,7 +37,7 @@ public sealed class OptimisticTests(DemoAppFactory app) : ComponentTestBase(app)
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Optimistic_switch_reverts_on_server_error(string browserName)
+    public async Task Optimistic_switch_keeps_state_on_server_error(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
@@ -48,8 +48,9 @@ public sealed class OptimisticTests(DemoAppFactory app) : ComponentTestBase(app)
         await Assertions.Expect(input).Not.ToBeCheckedAsync();
         await label.ClickAsync();
 
-        // Server returns 500 — optimistic helper reverts the check state.
-        await Assertions.Expect(input).Not.ToBeCheckedAsync(new() { Timeout = 5000 });
+        // No JS: the native toggle stands and htmx does not swap on a 500, so the optimistic
+        // state persists (the server is the source of truth; client-side auto-revert was removed).
+        await Assertions.Expect(input).ToBeCheckedAsync(new() { Timeout = 5000 });
     }
 
     [Theory, MemberData(nameof(Browsers))]

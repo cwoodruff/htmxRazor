@@ -12,7 +12,7 @@ public sealed class HtmxFormTests(DemoAppFactory app) : ComponentTestBase(app)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var form = page.Locator("#panel-basic-preview form[data-rhx-htmx-form]");
+        var form = page.Locator("#panel-basic-preview form.rhx-htmx-form");
         await Assertions.Expect(form).ToHaveCountAsync(1);
         await Assertions.Expect(form).ToHaveAttributeAsync("hx-post", new System.Text.RegularExpressions.Regex(".*HtmxForm.*Contact.*"));
     }
@@ -22,7 +22,7 @@ public sealed class HtmxFormTests(DemoAppFactory app) : ComponentTestBase(app)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var form = page.Locator("#panel-basic-preview form[data-rhx-htmx-form]");
+        var form = page.Locator("#panel-basic-preview form.rhx-htmx-form");
         await Assertions.Expect(form).ToHaveAttributeAsync("hx-target-422", "#contact-errors");
         await Assertions.Expect(form).ToHaveAttributeAsync("hx-target-4*", "#contact-errors");
         await Assertions.Expect(form).ToHaveAttributeAsync("hx-target-5*", "#contact-errors");
@@ -34,7 +34,7 @@ public sealed class HtmxFormTests(DemoAppFactory app) : ComponentTestBase(app)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var form = page.Locator("#panel-basic-preview form[data-rhx-htmx-form]");
+        var form = page.Locator("#panel-basic-preview form.rhx-htmx-form");
         await Assertions.Expect(form.Locator("input[name='Name']")).ToHaveCountAsync(1);
         await Assertions.Expect(form.Locator("input[name='Email']")).ToHaveCountAsync(1);
         await Assertions.Expect(form.Locator("button[type='submit']")).ToHaveCountAsync(1);
@@ -45,7 +45,7 @@ public sealed class HtmxFormTests(DemoAppFactory app) : ComponentTestBase(app)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var form = page.Locator("#panel-basic-preview form[data-rhx-htmx-form]");
+        var form = page.Locator("#panel-basic-preview form.rhx-htmx-form");
         await form.Locator("input[name='Name']").FillAsync("Ada Lovelace");
         await form.Locator("input[name='Email']").FillAsync("ada@example.com");
         await form.Locator("button[type='submit']").ClickAsync();
@@ -59,7 +59,7 @@ public sealed class HtmxFormTests(DemoAppFactory app) : ComponentTestBase(app)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var form = page.Locator("#panel-basic-preview form[data-rhx-htmx-form]");
+        var form = page.Locator("#panel-basic-preview form.rhx-htmx-form");
         // Bypass native required-attr validation so the request reaches the server
         // and exercises the 422 + hx-target-422 routing path.
         await form.EvaluateAsync("f => { f.noValidate = true; }");
@@ -73,12 +73,14 @@ public sealed class HtmxFormTests(DemoAppFactory app) : ComponentTestBase(app)
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Reset_form_has_reset_on_success_attribute(string browserName)
+    public async Task Reset_form_resets_on_success_via_hx_on(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var form = page.Locator("#panel-reset-preview form[data-rhx-htmx-form]");
-        await Assertions.Expect(form).ToHaveAttributeAsync("data-rhx-reset-on-success", "true");
+        var form = page.Locator("#panel-reset-preview form.rhx-htmx-form");
+        // Reset-on-success is now htmx's own hx-on (no custom JS).
+        await Assertions.Expect(form).ToHaveAttributeAsync(
+            "hx-on::after-request", "if(event.detail.successful)this.reset()");
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -86,7 +88,7 @@ public sealed class HtmxFormTests(DemoAppFactory app) : ComponentTestBase(app)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var form = page.Locator("#panel-basic-preview form[data-rhx-htmx-form]");
+        var form = page.Locator("#panel-basic-preview form.rhx-htmx-form");
         await Assertions.Expect(form).ToHaveAttributeAsync("hx-disabled-elt", "find button[type='submit']");
     }
 }
