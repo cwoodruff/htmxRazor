@@ -5,7 +5,7 @@
     ViewData["Title"] = "Split Panel";
     ViewData["ComponentName"] = "Split Panel";
     ViewData["ComponentTag"] = "rhx-split-panel";
-    ViewData["ComponentDescription"] = "Resizable split container with snap points and vertical mode.";
+    ViewData["ComponentDescription"] = "Resizable split container (CSS resize, no JavaScript). Drag the start panel's edge grip to change the split; supports vertical mode.";
 }
 
 <section class="docs-component-section">
@@ -24,7 +24,7 @@
                             <rhx-split-start>
                                 <div style="padding: var(--rhx-space-lg);">
                                     <h4 style="margin:0 0 var(--rhx-space-sm) 0;">Sidebar</h4>
-                                    <p>Navigation or filter panel. Drag the divider to resize.</p>
+                                    <p>Navigation or filter panel. Drag the panel's edge grip to resize.</p>
                                 </div>
                             </rhx-split-start>
                             <rhx-split-end>
@@ -79,38 +79,6 @@
         </rhx-tab-group>
     </div>
 
-    <!-- Snap Points -->
-    <div class="docs-example">
-        <h3>Snap Points</h3>
-        <rhx-tab-group>
-            <rhx-tab rhx-panel="snap-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="snap-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="snap-preview" rhx-active="true">
-                <div class="docs-preview">
-                    <div style="height: 250px; border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-md); width: 100%;">
-                        <rhx-split-panel rhx-position="50" rhx-snap="25,50,75">
-                            <rhx-split-start>
-                                <div style="padding: var(--rhx-space-lg);">
-                                    <p>Drag and feel the snap points.</p>
-                                </div>
-                            </rhx-split-start>
-                            <rhx-split-end>
-                                <div style="padding: var(--rhx-space-lg);">
-                                    <p>The divider snaps at 25%, 50%, and 75%.</p>
-                                </div>
-                            </rhx-split-end>
-                        </rhx-split-panel>
-                    </div>
-                </div>
-            </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="snap-code">
-                <div class="docs-code">
-                    <pre><code>@Model.SnapCode</code></pre>
-                </div>
-            </rhx-tab-panel>
-        </rhx-tab-group>
-    </div>
-
     <!-- Disabled -->
     <div class="docs-example">
         <h3>Disabled</h3>
@@ -151,9 +119,8 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>The divider handle has <code>role="separator"</code> with <code>aria-valuenow</code> reflecting the current position.</li>
-        <li>Keyboard arrow keys (Left/Right or Up/Down) adjust the divider position.</li>
-        <li>When disabled, the divider is not focusable and does not respond to keyboard or pointer input.</li>
-        <li>Vertical mode sets <code>aria-orientation="vertical"</code> on the separator.</li>
+        <li>The divider carries <code>role="separator"</code> with <code>aria-orientation</code> reflecting the layout.</li>
+        <li>Resizing uses the native CSS <code>resize</code> grip on the start panel — no JavaScript, and it works with the browser's built-in pointer affordance.</li>
+        <li>When disabled, <code>resize</code> is turned off so the panels are fixed.</li>
     </ul>
 </section>

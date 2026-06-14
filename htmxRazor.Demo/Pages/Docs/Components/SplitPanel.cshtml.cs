@@ -8,17 +8,16 @@ public class SplitPanelModel : PageModel
 {
     public List<ComponentProperty> Properties { get; } = new()
     {
-        new("rhx-position", "int", "50", "Initial divider position as a percentage (0-100)"),
+        new("rhx-position", "int", "50", "Initial start-panel size as a percentage (0-100)"),
         new("rhx-vertical", "bool", "false", "Use vertical (top/bottom) layout instead of horizontal"),
-        new("rhx-snap", "string", "-", "Comma-separated snap point percentages (e.g. \"25,50,75\")"),
-        new("rhx-disabled", "bool", "false", "Prevents dragging the divider"),
+        new("rhx-disabled", "bool", "false", "Turns off resizing (fixed panels)"),
     };
 
     public string HorizontalCode => @"<rhx-split-panel rhx-position=""30"">
     <rhx-split-start>
         <div style=""padding: var(--rhx-space-lg);"">
             <h4 style=""margin:0 0 var(--rhx-space-sm) 0;"">Sidebar</h4>
-            <p>Navigation or filter panel. Drag the divider to resize.</p>
+            <p>Navigation or filter panel. Drag the panel's edge grip to resize.</p>
         </div>
     </rhx-split-start>
     <rhx-split-end>
@@ -40,19 +39,6 @@ public class SplitPanelModel : PageModel
         <div style=""padding: var(--rhx-space-lg);"">
             <h4 style=""margin:0 0 var(--rhx-space-sm) 0;"">Output</h4>
             <p>Console or preview area below the editor.</p>
-        </div>
-    </rhx-split-end>
-</rhx-split-panel>";
-
-    public string SnapCode => @"<rhx-split-panel rhx-position=""50"" rhx-snap=""25,50,75"">
-    <rhx-split-start>
-        <div style=""padding: var(--rhx-space-lg);"">
-            <p>Drag and feel the snap points.</p>
-        </div>
-    </rhx-split-start>
-    <rhx-split-end>
-        <div style=""padding: var(--rhx-space-lg);"">
-            <p>The divider snaps at 25%, 50%, and 75%.</p>
         </div>
     </rhx-split-end>
 </rhx-split-panel>";
