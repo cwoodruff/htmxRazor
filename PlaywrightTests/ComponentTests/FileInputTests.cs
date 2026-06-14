@@ -3,21 +3,20 @@ using PlaywrightTests.Infrastructure;
 
 namespace PlaywrightTests.ComponentTests;
 
+// rhx-file-input renders a native <input type="file"> (no JS). The browser supplies the file
+// chooser and selected-file display.
 public sealed class FileInputTests(DemoAppFactory app) : ComponentTestBase(app)
 {
     private const string Path = "/Docs/Components/FileInput";
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Basic_file_input_renders_dropzone_and_native_input(string browserName)
+    public async Task Basic_renders_native_file_input(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var wrapper = page.Locator("#panel-basic-preview [data-rhx-file-input]");
-        await Assertions.Expect(wrapper).ToHaveCountAsync(1);
-        await Assertions.Expect(wrapper.Locator("label.rhx-file-input__dropzone")).ToBeVisibleAsync();
-
-        var native = wrapper.Locator("input[type='file']");
-        await Assertions.Expect(native).ToHaveAttributeAsync("name", "file");
+        var input = page.Locator("#panel-basic-preview input.rhx-file-input__control");
+        await Assertions.Expect(input).ToHaveAttributeAsync("type", "file");
+        await Assertions.Expect(input).ToHaveAttributeAsync("name", "file");
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -25,30 +24,20 @@ public sealed class FileInputTests(DemoAppFactory app) : ComponentTestBase(app)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var native = page.Locator("#panel-images-preview [data-rhx-file-input] input[type='file']");
-        await Assertions.Expect(native).ToHaveAttributeAsync("accept", "image/*");
+        var input = page.Locator("#panel-images-preview input.rhx-file-input__control");
+        await Assertions.Expect(input).ToHaveAttributeAsync("accept", "image/*");
         await Assertions.Expect(
-            page.Locator("#panel-images-preview [data-rhx-file-input] .rhx-file-input__hint")
-        ).ToContainTextAsync("JPG");
+            page.Locator("#panel-images-preview .rhx-file-input__hint")).ToContainTextAsync("JPG");
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Multiple_file_input_has_multiple_attribute(string browserName)
+    public async Task Multiple_file_input_has_multiple_and_accept(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var native = page.Locator("#panel-multiple-preview [data-rhx-file-input] input[type='file']");
-        await Assertions.Expect(native).ToHaveAttributeAsync("multiple", "");
-        await Assertions.Expect(native).ToHaveAttributeAsync("accept", ".pdf,.doc,.docx");
-    }
-
-    [Theory, MemberData(nameof(Browsers))]
-    public async Task Max_size_input_exposes_data_attribute(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        var wrapper = page.Locator("#panel-maxsize-preview [data-rhx-file-input]");
-        await Assertions.Expect(wrapper).ToHaveAttributeAsync("data-rhx-max-size", "5242880");
+        var input = page.Locator("#panel-multiple-preview input.rhx-file-input__control");
+        await Assertions.Expect(input).ToHaveAttributeAsync("multiple", "");
+        await Assertions.Expect(input).ToHaveAttributeAsync("accept", ".pdf,.doc,.docx");
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -56,35 +45,27 @@ public sealed class FileInputTests(DemoAppFactory app) : ComponentTestBase(app)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var inputs = page.Locator("#panel-sizes-preview [data-rhx-file-input]");
-        await Assertions.Expect(inputs).ToHaveCountAsync(3);
-
-        await Assertions.Expect(
-            page.Locator("#panel-sizes-preview .rhx-file-input--small")
-        ).ToHaveCountAsync(1);
-        await Assertions.Expect(
-            page.Locator("#panel-sizes-preview .rhx-file-input--large")
-        ).ToHaveCountAsync(1);
+        await Assertions.Expect(page.Locator("#panel-sizes-preview .rhx-file-input")).ToHaveCountAsync(3);
+        await Assertions.Expect(page.Locator("#panel-sizes-preview .rhx-file-input--small")).ToHaveCountAsync(1);
+        await Assertions.Expect(page.Locator("#panel-sizes-preview .rhx-file-input--large")).ToHaveCountAsync(1);
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Disabled_file_input_has_disabled_native(string browserName)
+    public async Task Disabled_file_input_is_disabled(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var native = page.Locator("#panel-states-preview [data-rhx-file-input] input[type='file']");
-        await Assertions.Expect(native).ToBeDisabledAsync();
+        var input = page.Locator("#panel-states-preview input.rhx-file-input__control");
+        await Assertions.Expect(input).ToBeDisabledAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Selecting_file_triggers_file_list_update(string browserName)
+    public async Task Selecting_a_file_sets_the_input(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var wrapper = page.Locator("#panel-basic-preview [data-rhx-file-input]");
-        var native = wrapper.Locator("input[type='file']");
-
-        await native.SetInputFilesAsync(new[]
+        var input = page.Locator("#panel-basic-preview input.rhx-file-input__control");
+        await input.SetInputFilesAsync(new[]
         {
             new FilePayload
             {
@@ -94,8 +75,8 @@ public sealed class FileInputTests(DemoAppFactory app) : ComponentTestBase(app)
             }
         });
 
-        // File list container is aria-live and should update with file name
-        var list = wrapper.Locator(".rhx-file-input__file-list");
-        await Assertions.Expect(list).ToContainTextAsync("hello.txt", new() { Timeout = 5000 });
+        // The native input exposes the chosen file's name in its value (C:\fakepath\hello.txt).
+        var value = await input.InputValueAsync();
+        Assert.Contains("hello.txt", value);
     }
 }

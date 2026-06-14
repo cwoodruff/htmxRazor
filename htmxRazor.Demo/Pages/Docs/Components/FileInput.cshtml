@@ -5,7 +5,7 @@
     ViewData["Title"] = "File Input";
     ViewData["ComponentName"] = "File Input";
     ViewData["ComponentTag"] = "rhx-file-input";
-    ViewData["ComponentDescription"] = "File upload control with accept filters, multiple files, and size limits.";
+    ViewData["ComponentDescription"] = "Native file upload with accept filters, multiple files, and htmx — no JavaScript.";
 }
 
 <section class="docs-component-section">
@@ -39,7 +39,7 @@
             <rhx-tab-panel rhx-name="images-preview" rhx-active="true">
                 <div class="docs-preview docs-preview--vertical">
                     <rhx-file-input name="avatar" rhx-label="Profile Photo" rhx-accept="image/*"
-                                    rhx-hint="JPG, PNG, or GIF. Max 2MB." />
+                                    rhx-hint="JPG, PNG, or GIF." />
                 </div>
             </rhx-tab-panel>
             <rhx-tab-panel rhx-name="images-code">
@@ -65,27 +65,6 @@
             <rhx-tab-panel rhx-name="multiple-code">
                 <div class="docs-code">
                     <pre><code>@Model.MultipleCode</code></pre>
-                </div>
-            </rhx-tab-panel>
-        </rhx-tab-group>
-    </div>
-
-    <!-- Max File Size -->
-    <div class="docs-example">
-        <h3>Max File Size</h3>
-        <rhx-tab-group>
-            <rhx-tab rhx-panel="maxsize-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="maxsize-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="maxsize-preview" rhx-active="true">
-                <div class="docs-preview docs-preview--vertical">
-                    <rhx-file-input name="upload" rhx-label="Upload" rhx-multiple="true"
-                                    rhx-max-file-size="5242880"
-                                    rhx-hint="Maximum file size: 5MB per file" />
-                </div>
-            </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="maxsize-code">
-                <div class="docs-code">
-                    <pre><code>@Model.MaxSizeCode</code></pre>
                 </div>
             </rhx-tab-panel>
         </rhx-tab-group>
@@ -142,7 +121,7 @@
                     <form id="upload-form" hx-encoding="multipart/form-data">
                         <rhx-file-input name="uploadFile" rhx-label="Upload a File"
                                         rhx-accept=".pdf,.jpg,.png,.txt"
-                                        rhx-hint="PDF, JPG, PNG, or TXT. Max 10MB." />
+                                        rhx-hint="PDF, JPG, PNG, or TXT." />
                     </form>
                     <rhx-button rhx-variant="brand"
                                 hx-post="/Docs/Components/FileInput?handler=Upload"
@@ -171,9 +150,9 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Renders a native <code>&lt;input type="file"&gt;</code> element with an associated <code>&lt;label&gt;</code>.</li>
+        <li>Built on the native <code>&lt;input type="file"&gt;</code> with an associated <code>&lt;label&gt;</code> — the browser supplies the file chooser, selected-file display, and accessibility (no JavaScript).</li>
         <li>Hint text is linked via <code>aria-describedby</code> for screen reader context.</li>
         <li>The <code>accept</code> filter is announced to assistive technology so users know allowed file types.</li>
-        <li>Disabled state sets <code>aria-disabled="true"</code> on the input.</li>
+        <li>When htmx verbs are present, multipart encoding is set automatically for uploads.</li>
     </ul>
 </section>

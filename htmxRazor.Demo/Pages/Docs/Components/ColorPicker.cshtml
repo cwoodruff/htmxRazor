@@ -5,7 +5,7 @@
     ViewData["Title"] = "Color Picker";
     ViewData["ComponentName"] = "Color Picker";
     ViewData["ComponentTag"] = "rhx-color-picker";
-    ViewData["ComponentDescription"] = "Color selection with swatches, opacity, format options, and model binding.";
+    ViewData["ComponentDescription"] = "Native color selection with label, model binding, and htmx — no JavaScript.";
 }
 
 <section class="docs-component-section">
@@ -25,90 +25,6 @@
             <rhx-tab-panel rhx-name="basic-code">
                 <div class="docs-code">
                     <pre><code>@Model.BasicCode</code></pre>
-                </div>
-            </rhx-tab-panel>
-        </rhx-tab-group>
-    </div>
-
-    <!-- With Swatches -->
-    <div class="docs-example">
-        <h3>With Swatches</h3>
-        <rhx-tab-group>
-            <rhx-tab rhx-panel="swatches-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="swatches-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="swatches-preview" rhx-active="true">
-                <div class="docs-preview">
-                    <rhx-color-picker name="color-swatches" rhx-label="Brand Color"
-                                      value="#ef4444"
-                                      rhx-swatches="#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6,#ec4899,#000000" />
-                </div>
-            </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="swatches-code">
-                <div class="docs-code">
-                    <pre><code>@Model.SwatchesCode</code></pre>
-                </div>
-            </rhx-tab-panel>
-        </rhx-tab-group>
-    </div>
-
-    <!-- With Opacity -->
-    <div class="docs-example">
-        <h3>With Opacity</h3>
-        <rhx-tab-group>
-            <rhx-tab rhx-panel="opacity-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="opacity-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="opacity-preview" rhx-active="true">
-                <div class="docs-preview">
-                    <rhx-color-picker name="color-alpha" rhx-label="Overlay Color" value="#3b82f6"
-                                      rhx-opacity="true" />
-                </div>
-            </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="opacity-code">
-                <div class="docs-code">
-                    <pre><code>@Model.OpacityCode</code></pre>
-                </div>
-            </rhx-tab-panel>
-        </rhx-tab-group>
-    </div>
-
-    <!-- Formats -->
-    <div class="docs-example">
-        <h3>Formats</h3>
-        <rhx-tab-group>
-            <rhx-tab rhx-panel="formats-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="formats-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="formats-preview" rhx-active="true">
-                <div class="docs-preview">
-                    <rhx-color-picker name="color-rgb" rhx-label="RGB Color" value="#22c55e"
-                                      rhx-format="rgb" />
-                    <rhx-color-picker name="color-hsl" rhx-label="HSL Color" value="#8b5cf6"
-                                      rhx-format="hsl" />
-                </div>
-            </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="formats-code">
-                <div class="docs-code">
-                    <pre><code>@Model.FormatsCode</code></pre>
-                </div>
-            </rhx-tab-panel>
-        </rhx-tab-group>
-    </div>
-
-    <!-- Inline -->
-    <div class="docs-example">
-        <h3>Inline</h3>
-        <rhx-tab-group>
-            <rhx-tab rhx-panel="inline-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="inline-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="inline-preview" rhx-active="true">
-                <div class="docs-preview">
-                    <rhx-color-picker name="color-inline" rhx-label="Theme Color" value="#f97316"
-                                      rhx-inline="true"
-                                      rhx-swatches="#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6" />
-                </div>
-            </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="inline-code">
-                <div class="docs-code">
-                    <pre><code>@Model.InlineCode</code></pre>
                 </div>
             </rhx-tab-panel>
         </rhx-tab-group>
@@ -162,7 +78,6 @@
             <rhx-tab-panel rhx-name="htmx-preview" rhx-active="true">
                 <div class="docs-preview docs-preview--vertical">
                     <rhx-color-picker name="themeColor" rhx-label="Theme Color" value="#3b82f6"
-                                      rhx-swatches="#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6"
                                       hx-post="/Docs/Components/ColorPicker?handler=SaveColor"
                                       hx-trigger="change" hx-target="#color-result" hx-include="this" />
                     <div id="color-result" style="color: var(--rhx-color-text-muted); font-size: var(--rhx-font-size-sm);">
@@ -186,9 +101,8 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Trigger button has an <code>aria-label</code> describing the current color value.</li>
-        <li>Keyboard navigation is supported within the swatch grid using arrow keys.</li>
-        <li>The selected color value is announced to screen readers on change.</li>
-        <li>Disabled state sets <code>aria-disabled="true"</code> on the trigger.</li>
+        <li>Built on the native <code>&lt;input type="color"&gt;</code>, so the browser supplies the color-selection UI, keyboard support, and accessibility — no JavaScript.</li>
+        <li>The label is associated via <code>for</code>/<code>id</code>; the value is a hex <code>#rrggbb</code> string.</li>
+        <li>Native color inputs are hex-only (no opacity or preset swatches); a non-hex value falls back to <code>#000000</code>.</li>
     </ul>
 </section>
