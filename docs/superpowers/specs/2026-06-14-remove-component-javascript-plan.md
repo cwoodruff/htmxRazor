@@ -59,15 +59,15 @@ that must remain (justified below), `Remove` = behavior disappears with no repla
 | color-picker | HSV math, drag | **Native** | `<input type=color>` (rich drag UI dropped) |
 | slider | fill, value tooltip | **Native + CSS** | `<input type=range>` + `accent-color`; live value bubble dropped (or `<output>` — see JS\* note) |
 | rating | click/hover/kbd | **CSS** | reversed radio-input stars with `:checked ~`/`:hover ~` |
-| input | clear, password toggle, autosize, steppers | **CSS/Native + JS\*** | autosize → `field-sizing: content`; steppers → `type=number`; clear → `type=search`; **password toggle** → JS\* #2 |
+| input | clear, password toggle, autosize, steppers | **CSS/Native + JS\*** | steppers → `type=number`; clear → `type=search`; **password toggle** → JS\* #2; **textarea autosize** → `field-sizing: content` + JS\* #9 fallback (temporary, Firefox) |
 | file-input | DnD highlight, preview, size check | **Native** | `<input type=file>` + `accept`; DnD/preview dropped (or JS\* if wanted) |
 | validation | client error display | **Native + htmx** | HTML5 constraints (`required`, `pattern`, `:user-invalid`) + server validation via htmx partials |
 | callout | dismiss, auto-dismiss | **htmx + CSS** | dismiss → `hx-delete`+`hx-swap="delete"` (or CSS `:has(:checked)`); auto-dismiss → CSS timed animation |
 | toast | create from event, auto-dismiss, stack | **htmx + CSS** | server pushes OOB toast markup; self-remove via `hx-trigger="load delay:Ns"` + empty swap; stack via CSS |
-| carousel | nav, pagination, autoplay, drag | **CSS** | scroll-snap + `::scroll-button` + `::scroll-marker`. **Autoplay dropped** (or JS\* if required) |
+| carousel | nav, pagination, autoplay, drag | **CSS + JS\*** | scroll-snap + `::scroll-marker` (cross-browser); **prev/next buttons** → JS\* #10 (temporary) until `::scroll-button()` is cross-browser. **Autoplay dropped** (or JS\* if required) |
 | comparison | drag handle | **CSS** | range-input overlay technique (CSS-only before/after) |
 | split-panel | drag divider | **CSS** | `resize: horizontal`/`vertical` + `min/max` |
-| scroller | scroll buttons | **CSS** | overflow scroll + `::scroll-button` |
+| scroller | scroll buttons | **CSS + JS\*** | overflow scroll (cross-browser); **scroll buttons** → JS\* #10 (temporary) until `::scroll-button()` is cross-browser |
 | zoomable-frame | pan/zoom | **CSS (limited) or JS\*** | `overflow:auto` + pinch; smooth pan/zoom → JS\* if required |
 | animated-image | play/pause toggle | **CSS** | play on `:hover`/`:focus`, or `<video>`/animated source |
 | animation | apply CSS anim from attrs | **CSS** | plain CSS animations + htmx swap classes |
@@ -108,11 +108,24 @@ how unavoidable it is:
    groups/WebSocket transports.
 8. **Theme persistence** — remembering dark mode across visits needs storage. **Recommend a
    server cookie** (zero client JS) set via htmx; the toggle itself is CSS (`:has`).
+9. **Textarea autosize (TEMPORARY)** — `field-sizing: content` grows a textarea to its content
+   with zero JS, but Firefox doesn't support it yet (spike, 2026-06-14). *Sanctioned temporary
+   JS* (a tiny input-listener that sets height to scrollHeight) until `field-sizing` is
+   cross-browser, at which point the CSS replaces it and the script is deleted. The CSS is
+   shipped now so supporting browsers already get the no-JS path; the script is the fallback.
+10. **Carousel / scroller prev-next buttons (TEMPORARY)** — scroll-snap scrolling is fully
+    cross-browser, but the declarative `::scroll-button()` prev/next controls are Chromium-only
+    (spike, 2026-06-14). *Sanctioned temporary JS* (click handlers that call
+    `element.scrollBy()`) until `::scroll-button()` is cross-browser, then the CSS replaces it.
+    Scrolling/swiping works without JS regardless; only the buttons need it.
 
-> **Net:** with the recommended choices, the only *always-on* custom JS is the
-> **copy-button** (3) and the **password toggle** (2) — together well under ~20 lines — plus
-> whatever opt-in shims an app explicitly includes (1, 6). Everything else becomes native
-> HTML, CSS, htmx, or a server-side render. `rhx-position.js` and `rhx-core.js` are deleted.
+> **Net:** with the recommended choices, the *always-on* custom JS is the **copy-button** (3)
+> and the **password toggle** (2) — well under ~20 lines — plus two **temporary** platform-gap
+> shims for **textarea autosize** (9) and **carousel/scroller buttons** (10), and whatever
+> opt-in shims an app explicitly includes (1, 6). The temporary shims are isolated and tracked
+> for removal once `field-sizing` / `::scroll-button()` ship cross-browser. Everything else
+> becomes native HTML, CSS, htmx, or a server-side render. `rhx-position.js` and `rhx-core.js`
+> are deleted (the two temporary shims ship as self-contained, narrowly-scoped files).
 
 ## Decisions (locked 2026-06-14)
 
@@ -120,10 +133,16 @@ how unavoidable it is:
 2. **All four htmx redesigns approved:** kanban → htmx move buttons; command-palette → button-open (no Cmd+K); signalr → htmx SSE; radial-select → cascading native `<select>`s.
 3. **htmx extensions count as "htmx"** (SSE/WS extensions allowed).
 4. **Proceed via a Phase 0 spike** before the full migration.
+5. **Two temporary JS holdouts are sanctioned** for the platform gaps the spike found —
+   **textarea autosize** and **carousel/scroller prev-next buttons** — until a CSS/native
+   solution lands cross-browser (`field-sizing` in Firefox; `::scroll-button()` in
+   Firefox/WebKit). These are explicitly *temporary*: tracked, isolated, and removed once the
+   platform catches up. (See JS\* #9 and #10.)
 
-With these, the *always-on* custom JS target is just **copy-button** + **password toggle**
-(plus optional per-app shims). `rhx-core.js`, `rhx-position.js`, `rhx-signalr.js`,
-`rhx-kanban.js`, `rhx-radial-select.js`, `rhx-command-palette.js` all go away.
+With these, the *always-on* custom JS target is **copy-button** + **password toggle**, plus
+the two temporary holdouts (**textarea autosize**, **carousel/scroller buttons**) and optional
+per-app shims. `rhx-core.js`, `rhx-position.js`, `rhx-signalr.js`, `rhx-kanban.js`,
+`rhx-radial-select.js`, `rhx-command-palette.js` all go away.
 
 ## Original open decisions (now resolved above)
 
@@ -159,13 +178,13 @@ releases; confirm against Baseline/caniuse for the chosen floor).
 
 **Conclusion:** the core of the plan (native dialog via invoker commands, Popover-API
 dropdowns/menus, native form controls, anchor positioning, `:has()` CSS state) is viable on
-current evergreen engines. Two specific behaviors are **not** cross-browser CSS-only yet:
+current evergreen engines. Two specific behaviors are **not** cross-browser CSS-only yet, and per Decision #5 each gets a
+**sanctioned, temporary JS shim** (removed when the platform catches up):
 
-- **Textarea autosize** — `field-sizing` missing in Firefox. Fallback: ship a sensible `rows`
-  default and treat autosize as progressive enhancement (no JS), or accept FF gets fixed rows.
-- **Carousel / scroller prev-next buttons** — `::scroll-button()` is Chromium-only. scroll-snap
-  scrolling itself works everywhere; the *buttons* don't. Options: anchor-link "skip" nav,
-  accept scroll-only on FF/WebKit, or list this as a small JS holdout.
+- **Textarea autosize** — `field-sizing` missing in Firefox → JS\* #9 fallback (CSS still ships
+  for supporting browsers).
+- **Carousel / scroller prev-next buttons** — `::scroll-button()` Chromium-only → JS\* #10 for
+  the buttons (scroll-snap scrolling/swiping itself needs no JS).
 
 **Support floor:** target recent evergreen (roughly the last ~12-18 months of Chrome/Edge,
 Firefox, Safari). Older browsers degrade (non-positioned popovers, inert dialog buttons).
@@ -173,10 +192,13 @@ This must be stated in the library README and is a prerequisite for Phases 2-3.
 
 ## Execution phases (after decisions)
 
-- **Phase 0 — Spike & guardrails.** Add a CI grep/test that fails if any `.js` reappears
-  under `Assets/js/components`. Stand up a feature-detection note for the modern CSS/HTML
-  features. Pick the 3 hardest components and prototype them end-to-end to validate the
-  approach before committing.
+- **Phase 0 — Spike & guardrails.** Add a CI grep/test that fails if any `.js` appears
+  under `Assets/js/` **outside a small, explicit allowlist** — the sanctioned scripts only
+  (copy-button, password toggle, and the two *temporary* holdouts: textarea autosize,
+  carousel/scroller buttons). Each allowlisted file carries a header comment stating why it
+  exists and (for the temporary ones) the platform feature whose cross-browser support retires
+  it. Stand up a feature-detection note for the modern CSS/HTML features. Pick the 3 hardest
+  components and prototype them end-to-end to validate the approach before committing.
 - **Phase 1 — Free wins (Remove/Server/Native-static).** animation, animated-image,
   optimistic, relative-time, qr-code (server-side), htmx-form, wizard. Delete JS; verify.
 - **Phase 2 — CSS-only.** tooltip, drawer, dropdown, popover, popup, tabs, rating,
@@ -211,9 +233,11 @@ This must be stated in the library README and is a prerequisite for Phases 2-3.
 
 ## Recommendation
 
-The goal is achievable to **near-zero custom JS** (only clipboard + password toggle always
-on) **if** you accept native rendering for form controls (Decision #1) and the htmx-redesign
-of kanban/radial/command-palette/signalr. If native appearance is unacceptable, the realistic
+The goal is achievable to **near-zero custom JS** — only clipboard + password toggle as
+permanent shims, plus two **temporary** platform-gap shims (textarea autosize,
+carousel/scroller buttons; Decision #5) that retire when `field-sizing` / `::scroll-button()`
+ship cross-browser — **if** you accept native rendering for form controls (Decision #1) and
+the htmx-redesign of kanban/radial/command-palette/signalr. If native appearance is unacceptable, the realistic
 floor is higher because custom listbox/picker widgets can't keep their look *and* drop JS.
 Treat this as a **major, breaking release** and validate the modern-platform features against
 a defined browser floor in Phase 0 before committing.
