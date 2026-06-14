@@ -114,26 +114,22 @@ public class ComboboxModel : PageModel
         };
     }
 
-    public IActionResult OnGetSearchUsers(string? q)
+    // The native datalist's <input> submits its typed text under the field name ("userId").
+    // htmx sends that value; the handler returns <option> elements that replace the datalist.
+    public IActionResult OnGetSearchUsers(string? userId)
     {
-        var allUsers = new (string Name, string Id)[]
+        var allUsers = new[]
         {
-            ("Alice Johnson", "alice"), ("Bob Smith", "bob"), ("Carol Williams", "carol"),
-            ("David Brown", "david"), ("Eve Davis", "eve"), ("Frank Miller", "frank"),
-            ("Grace Wilson", "grace"), ("Henry Moore", "henry")
+            "Alice Johnson", "Bob Smith", "Carol Williams", "David Brown",
+            "Eve Davis", "Frank Miller", "Grace Wilson", "Henry Moore"
         };
 
-        var matches = string.IsNullOrWhiteSpace(q)
+        var matches = string.IsNullOrWhiteSpace(userId)
             ? allUsers
-            : allUsers.Where(u => u.Name.Contains(q, StringComparison.OrdinalIgnoreCase)).ToArray();
-
-        if (matches.Length == 0)
-        {
-            return Content("<div class=\"rhx-combobox__no-results\">No users found</div>", "text/html");
-        }
+            : allUsers.Where(u => u.Contains(userId, StringComparison.OrdinalIgnoreCase)).ToArray();
 
         var options = string.Join("", matches.Select(m =>
-            $"<div class=\"rhx-combobox__option\" role=\"option\" data-value=\"{m.Id}\" aria-selected=\"false\" tabindex=\"-1\">{System.Net.WebUtility.HtmlEncode(m.Name)}</div>"));
+            $"<option value=\"{System.Net.WebUtility.HtmlEncode(m)}\"></option>"));
         return Content(options, "text/html");
     }
 }

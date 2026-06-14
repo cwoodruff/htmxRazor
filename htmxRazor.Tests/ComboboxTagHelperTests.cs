@@ -7,11 +7,11 @@ using Xunit;
 
 namespace htmxRazor.Tests;
 
+// rhx-combobox renders a native autocomplete: <input list> bound to a <datalist> (no JS).
+// Submits the input's literal text; server-filter swaps datalist <option>s via htmx.
 public class ComboboxTagHelperTests : TagHelperTestBase
 {
     private ComboboxTagHelper CreateHelper() => new(CreateUrlHelperFactory());
-
-    // ── Test model ──
 
     private enum Status
     {
@@ -36,218 +36,62 @@ public class ComboboxTagHelperTests : TagHelperTestBase
         return new ModelExpression(propertyName, explorer);
     }
 
+    private async Task<string> RenderAsync(ComboboxTagHelper helper, ViewContext? vc = null)
+    {
+        var context = CreateContext("rhx-combobox");
+        var output = CreateOutput("rhx-combobox");
+        helper.ViewContext = vc ?? CreateViewContext();
+        await helper.ProcessAsync(context, output);
+        return output.Content.GetContent();
+    }
+
     // ── Element rendering ──
 
     [Fact]
-    public async Task Renders_Div_Element()
+    public async Task Renders_Div_Wrapper()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-combobox");
         var output = CreateOutput("rhx-combobox");
-
         helper.ViewContext = CreateViewContext();
         await helper.ProcessAsync(context, output);
 
         Assert.Equal("div", output.TagName);
-    }
-
-    [Fact]
-    public async Task Has_Block_Class()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
         Assert.True(HasClass(output, "rhx-combobox"));
     }
 
-    [Fact]
-    public async Task Has_Data_Attribute()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-combobox", "");
-    }
-
-    // ── Text input ──
+    // ── Native input + datalist ──
 
     [Fact]
-    public async Task Has_Text_Input()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-combobox__input", content);
-        Assert.Contains("type=\"text\"", content);
-    }
-
-    [Fact]
-    public async Task Input_Has_Combobox_Role()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("role=\"combobox\"", content);
-    }
-
-    [Fact]
-    public async Task Input_Has_Aria_Expanded_False()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("aria-expanded=\"false\"", content);
-    }
-
-    [Fact]
-    public async Task Input_Has_Aria_Autocomplete_List()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("aria-autocomplete=\"list\"", content);
-    }
-
-    [Fact]
-    public async Task Input_Has_Aria_Controls()
+    public async Task Has_Text_Input_Bound_To_Datalist()
     {
         var helper = CreateHelper();
         helper.Name = "city";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
+        var content = await RenderAsync(helper);
 
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("aria-controls=\"city-listbox\"", content);
+        Assert.Contains("rhx-combobox__control", content);
+        Assert.Contains("type=\"text\"", content);
+        Assert.Contains("list=\"city-list\"", content);
+        Assert.Contains("<datalist id=\"city-list\"", content);
     }
 
     [Fact]
     public async Task Input_Has_Autocomplete_Off()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var content = await RenderAsync(CreateHelper());
         Assert.Contains("autocomplete=\"off\"", content);
     }
 
-    // ── Trigger button ──
+    // ── Name / value ──
 
     [Fact]
-    public async Task Has_Trigger_Button()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-combobox__trigger", content);
-        Assert.Contains("aria-label=\"Toggle\"", content);
-    }
-
-    // ── Listbox ──
-
-    [Fact]
-    public async Task Has_Listbox()
-    {
-        var helper = CreateHelper();
-        helper.Name = "city";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("role=\"listbox\"", content);
-        Assert.Contains("id=\"city-listbox\"", content);
-        Assert.Contains(" hidden>", content);
-    }
-
-    // ── Hidden input ──
-
-    [Fact]
-    public async Task Has_Hidden_Input()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("type=\"hidden\"", content);
-        Assert.Contains("data-rhx-combobox-value", content);
-    }
-
-    [Fact]
-    public async Task Name_On_Hidden_Input()
-    {
-        var helper = CreateHelper();
-        helper.Name = "city";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        // Hidden input should have name attribute
-        Assert.Contains("data-rhx-combobox-value", content);
-        Assert.Contains("name=\"city\"", content);
-    }
-
-    [Fact]
-    public async Task Value_On_Hidden_Input()
+    public async Task Name_And_Value_On_Input()
     {
         var helper = CreateHelper();
         helper.Name = "city";
         helper.Value = "NYC";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var content = await RenderAsync(helper);
+        Assert.Contains("name=\"city\"", content);
         Assert.Contains("value=\"NYC\"", content);
     }
 
@@ -258,13 +102,7 @@ public class ComboboxTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.Placeholder = "Search cities...";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var content = await RenderAsync(helper);
         Assert.Contains("placeholder=\"Search cities...\"", content);
     }
 
@@ -276,17 +114,10 @@ public class ComboboxTagHelperTests : TagHelperTestBase
         var helper = CreateHelper();
         helper.Label = "City";
         helper.Name = "city";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var content = await RenderAsync(helper);
         Assert.Contains("rhx-combobox__label", content);
         Assert.Contains("id=\"city-label\"", content);
-        Assert.Contains("for=\"city-input\"", content);
-        Assert.Contains("City", content);
+        Assert.Contains("for=\"city\"", content);
         Assert.Contains("aria-labelledby=\"city-label\"", content);
     }
 
@@ -298,13 +129,7 @@ public class ComboboxTagHelperTests : TagHelperTestBase
         var helper = CreateHelper();
         helper.Hint = "Type to filter";
         helper.Name = "city";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var content = await RenderAsync(helper);
         Assert.Contains("rhx-combobox__hint", content);
         Assert.Contains("Type to filter", content);
     }
@@ -316,12 +141,12 @@ public class ComboboxTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.Name = "city";
+        var vc = CreateViewContext();
+        vc.ModelState.AddModelError("city", "City is required");
+
         var context = CreateContext("rhx-combobox");
         var output = CreateOutput("rhx-combobox");
-
-        var viewContext = CreateViewContext();
-        viewContext.ModelState.AddModelError("city", "City is required");
-        helper.ViewContext = viewContext;
+        helper.ViewContext = vc;
         await helper.ProcessAsync(context, output);
 
         Assert.True(HasClass(output, "rhx-combobox--error"));
@@ -333,50 +158,40 @@ public class ComboboxTagHelperTests : TagHelperTestBase
     // ── States ──
 
     [Fact]
-    public async Task Disabled_Adds_Modifier_And_Attributes()
+    public async Task Disabled_Adds_Modifier_And_Native_Attribute()
     {
         var helper = CreateHelper();
         helper.Disabled = true;
         var context = CreateContext("rhx-combobox");
         var output = CreateOutput("rhx-combobox");
-
         helper.ViewContext = CreateViewContext();
         await helper.ProcessAsync(context, output);
 
         Assert.True(HasClass(output, "rhx-combobox--disabled"));
-        var content = output.Content.GetContent();
-        Assert.Contains(" disabled", content);
+        Assert.Contains(" disabled", output.Content.GetContent());
     }
 
     [Fact]
-    public async Task Readonly_Adds_Modifier_And_Attribute()
+    public async Task Readonly_Adds_Modifier_And_Native_Attribute()
     {
         var helper = CreateHelper();
         helper.Readonly = true;
         var context = CreateContext("rhx-combobox");
         var output = CreateOutput("rhx-combobox");
-
         helper.ViewContext = CreateViewContext();
         await helper.ProcessAsync(context, output);
 
         Assert.True(HasClass(output, "rhx-combobox--readonly"));
-        var content = output.Content.GetContent();
-        Assert.Contains(" readonly", content);
+        Assert.Contains(" readonly", output.Content.GetContent());
     }
 
     [Fact]
-    public async Task Required_Sets_Aria()
+    public async Task Required_Adds_Native_Required()
     {
         var helper = CreateHelper();
         helper.Required = true;
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("aria-required=\"true\"", content);
+        var content = await RenderAsync(helper);
+        Assert.Contains(" required", content);
     }
 
     // ── Size ──
@@ -388,10 +203,8 @@ public class ComboboxTagHelperTests : TagHelperTestBase
         helper.Size = "small";
         var context = CreateContext("rhx-combobox");
         var output = CreateOutput("rhx-combobox");
-
         helper.ViewContext = CreateViewContext();
         await helper.ProcessAsync(context, output);
-
         Assert.True(HasClass(output, "rhx-combobox--small"));
     }
 
@@ -402,10 +215,8 @@ public class ComboboxTagHelperTests : TagHelperTestBase
         helper.Size = "large";
         var context = CreateContext("rhx-combobox");
         var output = CreateOutput("rhx-combobox");
-
         helper.ViewContext = CreateViewContext();
         await helper.ProcessAsync(context, output);
-
         Assert.True(HasClass(output, "rhx-combobox--large"));
     }
 
@@ -418,51 +229,40 @@ public class ComboboxTagHelperTests : TagHelperTestBase
         helper.Filled = true;
         var context = CreateContext("rhx-combobox");
         var output = CreateOutput("rhx-combobox");
-
         helper.ViewContext = CreateViewContext();
         await helper.ProcessAsync(context, output);
-
         Assert.True(HasClass(output, "rhx-combobox--filled"));
     }
 
     // ── Server filter ──
 
     [Fact]
-    public async Task ServerFilter_Sets_Data_Attribute()
+    public async Task ServerFilter_Sets_Data_Attribute_And_Targets_Datalist()
     {
         var helper = CreateHelper();
+        helper.Name = "city";
         helper.ServerFilter = true;
         var context = CreateContext("rhx-combobox");
         var output = CreateOutput("rhx-combobox");
-
         helper.ViewContext = CreateViewContext();
         await helper.ProcessAsync(context, output);
 
         AssertAttribute(output, "data-rhx-server-filter", "");
+        var content = output.Content.GetContent();
+        Assert.Contains("hx-target=\"#city-list\"", content);
+        Assert.Contains("hx-swap=\"innerHTML\"", content);
     }
 
-    // ── Items binding ──
+    // ── Items binding (datalist option value == display text) ──
 
     [Fact]
-    public async Task Items_Generates_Options()
+    public async Task Items_Generates_Datalist_Options()
     {
         var helper = CreateHelper();
-        helper.Items = new List<SelectListItem>
-        {
-            new("New York", "NYC"),
-            new("Los Angeles", "LA")
-        };
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("data-value=\"NYC\"", content);
-        Assert.Contains("New York", content);
-        Assert.Contains("data-value=\"LA\"", content);
-        Assert.Contains("Los Angeles", content);
+        helper.Items = new List<SelectListItem> { new("New York", "NYC"), new("Los Angeles", "LA") };
+        var content = await RenderAsync(helper);
+        Assert.Contains("<option value=\"New York\">", content);
+        Assert.Contains("<option value=\"Los Angeles\">", content);
     }
 
     // ── Enum auto-generation ──
@@ -472,36 +272,21 @@ public class ComboboxTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.For = CreateModelExpressionFor("Status", Status.InProgress);
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("To Do", content);
-        Assert.Contains("data-value=\"Todo\"", content);
-        Assert.Contains("In Progress", content);
-        Assert.Contains("data-value=\"InProgress\"", content);
-        Assert.Contains("Done", content);
+        var content = await RenderAsync(helper);
+        Assert.Contains("<option value=\"To Do\">", content);
+        Assert.Contains("<option value=\"In Progress\">", content);
+        Assert.Contains("<option value=\"Done\">", content);
     }
 
-    // ── htmx on text input ──
+    // ── htmx on input ──
 
     [Fact]
-    public async Task Htmx_On_Text_Input()
+    public async Task Htmx_On_Input()
     {
         var helper = CreateHelper();
         helper.HxGet = "/api/cities";
         helper.HxTrigger = "input changed delay:200ms";
-        helper.HxTarget = "find .rhx-combobox__listbox";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var content = await RenderAsync(helper);
         Assert.Contains("hx-get=\"/api/cities\"", content);
         Assert.Contains("hx-trigger=\"input changed delay:200ms\"", content);
     }
@@ -515,10 +300,8 @@ public class ComboboxTagHelperTests : TagHelperTestBase
         helper.CssClass = "my-combobox";
         var context = CreateContext("rhx-combobox");
         var output = CreateOutput("rhx-combobox");
-
         helper.ViewContext = CreateViewContext();
         await helper.ProcessAsync(context, output);
-
         Assert.True(HasClass(output, "rhx-combobox"));
         Assert.True(HasClass(output, "my-combobox"));
     }
@@ -530,31 +313,9 @@ public class ComboboxTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.For = CreateModelExpressionFor("City", "NYC");
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var content = await RenderAsync(helper);
         Assert.Contains("name=\"City\"", content);
         Assert.Contains("value=\"NYC\"", content);
-    }
-
-    // ── Control wrapper ──
-
-    [Fact]
-    public async Task Has_Control_Wrapper()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-combobox__control", content);
     }
 
     // ── MaxOptionsVisible ──
@@ -564,13 +325,7 @@ public class ComboboxTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.MaxOptionsVisible = 10;
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox");
-
-        helper.ViewContext = CreateViewContext();
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var content = await RenderAsync(helper);
         Assert.Contains("data-rhx-max-visible=\"10\"", content);
     }
 }

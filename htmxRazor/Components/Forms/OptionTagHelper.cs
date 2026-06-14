@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace htmxRazor.Components.Forms;
 
 /// <summary>
-/// Renders an option element for use inside <c>&lt;rhx-select&gt;</c> or <c>&lt;rhx-combobox&gt;</c>.
-/// Reads the parent component's class prefix and selected values from the tag helper context
-/// to apply appropriate BEM classes and ARIA attributes.
+/// Renders a native <c>&lt;option&gt;</c> for use inside <c>&lt;rhx-select&gt;</c>
+/// (a native <c>&lt;select&gt;</c>) or <c>&lt;rhx-combobox&gt;</c> (a native
+/// <c>&lt;datalist&gt;</c>). The parent component records, via the tag helper context,
+/// which values are currently selected so the option can mark itself <c>selected</c>.
 /// </summary>
 /// <example>
 /// <code>
@@ -33,6 +34,8 @@ public class OptionTagHelper : TagHelper
         var childContent = await output.GetChildContentAsync();
         var text = childContent.GetContent().Trim();
 
+        // "select" → native <select> option (supports selected/disabled);
+        // "combobox" → native <datalist> option (suggestion only).
         var prefix = context.Items.TryGetValue("OptionClassPrefix", out var p)
             ? p as string ?? "select"
             : "select";
@@ -40,24 +43,25 @@ public class OptionTagHelper : TagHelper
             ? sv as HashSet<string>
             : null;
 
-        var value = Value ?? text;
-        var isSelected = selectedValues?.Contains(value) == true;
-
-        output.TagName = "div";
+        output.TagName = "option";
         output.TagMode = TagMode.StartTagAndEndTag;
 
-        var cls = $"rhx-{prefix}__option";
-        if (isSelected) cls += $" rhx-{prefix}__option--selected";
-        if (Disabled) cls += $" rhx-{prefix}__option--disabled";
-
-        output.Attributes.SetAttribute("class", cls);
-        output.Attributes.SetAttribute("role", "option");
-        output.Attributes.SetAttribute("data-value", value);
-        output.Attributes.SetAttribute("aria-selected", isSelected.ToString().ToLowerInvariant());
-        output.Attributes.SetAttribute("tabindex", "-1");
-
-        if (Disabled)
-            output.Attributes.SetAttribute("aria-disabled", "true");
+        if (prefix == "combobox")
+        {
+            // Native <datalist> suggestion: the input submits its literal text, so the
+            // option's value IS the display text (native autocomplete has no hidden code).
+            output.Attributes.SetAttribute("value", text);
+        }
+        else
+        {
+            // Native <select> option: value/label are distinct; convey selection + disabled.
+            var value = Value ?? text;
+            output.Attributes.SetAttribute("value", value);
+            if (selectedValues?.Contains(value) == true)
+                output.Attributes.SetAttribute("selected", "selected");
+            if (Disabled)
+                output.Attributes.SetAttribute("disabled", "disabled");
+        }
 
         // Content from GetContent() is already HTML-safe (Razor encodes expressions)
         output.Content.SetHtmlContent(text);

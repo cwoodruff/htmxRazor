@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace htmxRazor.Components.Forms;
 
 /// <summary>
-/// Renders a custom-styled select control with button trigger, listbox panel,
-/// and hidden input for form submission. Supports single and multi-select,
-/// enum auto-generation, SelectListItem binding, and htmx integration.
+/// Renders a native <c>&lt;select&gt;</c> control (single or multiple) with label,
+/// hint, and error slots. Built entirely on the native element — no JavaScript —
+/// so listbox behavior, keyboard navigation, type-ahead, and accessibility come
+/// from the browser. Supports enum auto-generation, <see cref="SelectListItem"/>
+/// binding, child <c>&lt;rhx-option&gt;</c> elements, and htmx integration.
 /// </summary>
 /// <example>
 /// <code>
@@ -35,19 +37,21 @@ public class SelectTagHelper : FormControlTagHelperBase
     //  Select-specific properties
     // ──────────────────────────────────────────────
 
-    /// <summary>Placeholder text when no value is selected.</summary>
+    /// <summary>Placeholder text shown as a non-value first option when nothing is selected.</summary>
     [HtmlAttributeName("rhx-placeholder")]
     public string? Placeholder { get; set; }
 
-    /// <summary>Enable multi-select mode.</summary>
+    /// <summary>Enable multi-select mode (renders <c>&lt;select multiple&gt;</c>).</summary>
     [HtmlAttributeName("rhx-multiple")]
     public bool Multiple { get; set; }
 
-    /// <summary>Maximum number of options visible before scrolling. Default: 8.</summary>
+    /// <summary>Number of rows shown for a multi-select before scrolling. Default: 8.</summary>
     [HtmlAttributeName("rhx-max-visible")]
     public int MaxOptionsVisible { get; set; } = 8;
 
-    /// <summary>Show a clear button to reset the selection.</summary>
+    /// <summary>
+    /// Retained for source compatibility. Native selects offer no clear button; this is a no-op.
+    /// </summary>
     [HtmlAttributeName("rhx-with-clear")]
     public bool WithClear { get; set; }
 
@@ -87,12 +91,13 @@ public class SelectTagHelper : FormControlTagHelperBase
 
         var hintId = $"{resolvedId}-hint";
         var errorId = $"{resolvedId}-error";
-        var listboxId = $"{resolvedId}-listbox";
         var labelId = $"{resolvedId}-label";
+
+        var selectedValues = ParseSelectedValues(resolvedValue);
 
         // Store context for child <rhx-option> elements
         context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = ParseSelectedValues(resolvedValue);
+        context.Items["SelectedValues"] = selectedValues;
 
         // Process children (needed for <rhx-option> elements)
         var childContent = await output.GetChildContentAsync();
@@ -107,9 +112,6 @@ public class SelectTagHelper : FormControlTagHelperBase
             .AddIf(GetModifierClass("error"), hasError);
 
         ApplyWrapperAttributes(output, css);
-        output.Attributes.SetAttribute("data-rhx-select", "");
-        if (Multiple)
-            output.Attributes.SetAttribute("data-rhx-select-multiple", "");
 
         var sb = new StringBuilder();
 
@@ -117,16 +119,23 @@ public class SelectTagHelper : FormControlTagHelperBase
         var labelText = ResolveLabelText();
         if (!string.IsNullOrEmpty(labelText))
         {
-            sb.Append($"<label class=\"{GetElementClass("label")}\" id=\"{Enc(labelId)}\">{Enc(labelText)}</label>");
+            sb.Append($"<label class=\"{GetElementClass("label")}\" id=\"{Enc(labelId)}\" for=\"{Enc(resolvedId)}\">{Enc(labelText)}</label>");
         }
 
-        // ── Trigger button ──
-        sb.Append($"<button class=\"{GetElementClass("trigger")}\" type=\"button\"");
-        sb.Append($" id=\"{Enc(resolvedId)}\"");
-        sb.Append(" role=\"combobox\"");
-        sb.Append(" aria-expanded=\"false\"");
-        sb.Append(" aria-haspopup=\"listbox\"");
-        sb.Append($" aria-controls=\"{Enc(listboxId)}\"");
+        // ── Native <select> ──
+        sb.Append($"<select class=\"{GetElementClass("control")}\" id=\"{Enc(resolvedId)}\"");
+        if (!string.IsNullOrEmpty(resolvedName))
+            sb.Append($" name=\"{Enc(resolvedName)}\"");
+        if (Multiple)
+        {
+            sb.Append(" multiple");
+            sb.Append($" size=\"{MaxOptionsVisible}\"");
+        }
+        if (resolvedRequired)
+            sb.Append(" required");
+        // A native <select> has no readonly; emulate by disabling and submitting via a mirror input.
+        if (Disabled || Readonly)
+            sb.Append(" disabled");
         if (!string.IsNullOrEmpty(labelText))
             sb.Append($" aria-labelledby=\"{Enc(labelId)}\"");
         if (!string.IsNullOrEmpty(AriaLabel))
@@ -136,86 +145,41 @@ public class SelectTagHelper : FormControlTagHelperBase
             sb.Append($" aria-describedby=\"{Enc(describedBy)}\"");
         if (hasError)
             sb.Append(" aria-invalid=\"true\"");
-        if (resolvedRequired)
-            sb.Append(" aria-required=\"true\"");
-        if (Disabled)
-            sb.Append(" disabled");
+        sb.Append(BuildHtmxAttributeString());
+        sb.Append(BuildValidationAttributeString());
         sb.Append(">");
 
-        // Value display
-        sb.Append($"<span class=\"{GetElementClass("value")}\">");
-        if (string.IsNullOrEmpty(resolvedValue) && !string.IsNullOrEmpty(Placeholder))
-            sb.Append($"<span class=\"{GetElementClass("placeholder")}\">{Enc(Placeholder)}</span>");
-        else if (!string.IsNullOrEmpty(resolvedValue))
-            sb.Append(Enc(GetDisplayTextForValue(resolvedValue)));
-        sb.Append("</span>");
-
-        // Arrow icon
-        sb.Append($"<span class=\"{GetElementClass("arrow")}\" aria-hidden=\"true\">");
-        sb.Append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">");
-        sb.Append("<polyline points=\"6 9 12 15 18 9\"></polyline>");
-        sb.Append("</svg></span>");
-
-        sb.Append("</button>");
-
-        // ── Clear button ──
-        if (WithClear)
+        // Placeholder option (single-select only): an empty-value option so `required`
+        // can fail until a real choice is made. Selected/hidden when no value is set.
+        if (!Multiple && !string.IsNullOrEmpty(Placeholder))
         {
-            sb.Append($"<button class=\"{GetElementClass("clear")}\" type=\"button\" aria-label=\"Clear\"");
-            if (string.IsNullOrEmpty(resolvedValue)) sb.Append(" hidden");
-            sb.Append(">");
-            sb.Append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">");
-            sb.Append("<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"></line>");
-            sb.Append("</svg></button>");
+            sb.Append("<option value=\"\"");
+            if (resolvedRequired) sb.Append(" disabled");
+            if (string.IsNullOrEmpty(resolvedValue)) sb.Append(" selected hidden");
+            sb.Append($">{Enc(Placeholder)}</option>");
         }
 
-        // ── Listbox panel ──
-        sb.Append($"<div class=\"{GetElementClass("listbox")}\" role=\"listbox\" id=\"{Enc(listboxId)}\"");
-        if (!string.IsNullOrEmpty(labelText))
-            sb.Append($" aria-labelledby=\"{Enc(labelId)}\"");
-        if (Multiple)
-            sb.Append(" aria-multiselectable=\"true\"");
-        sb.Append($" data-rhx-max-visible=\"{MaxOptionsVisible}\"");
-        sb.Append(" hidden>");
-
-        // Generate options from Items, enum, or child content
-        var generatedOptions = GenerateOptions(resolvedValue);
+        // Generate options from Items, enum, or child <rhx-option> content
+        var generatedOptions = GenerateOptions(selectedValues);
         if (!string.IsNullOrEmpty(generatedOptions))
             sb.Append(generatedOptions);
         else
             sb.Append(childContent.GetContent());
 
-        sb.Append("</div>");
+        sb.Append("</select>");
 
-        // ── Hidden input(s) for form submission ──
-        if (!Multiple)
+        // ── Readonly mirror ── a disabled <select> doesn't submit, so carry the value.
+        if (Readonly && !Disabled && !string.IsNullOrEmpty(resolvedName))
         {
-            // The value-carrying input. A `type="hidden"` input is barred from HTML constraint
-            // validation, so native `required` never fires on it (issue #14). When the select is
-            // required, render a focusable, validatable mirror instead — visually hidden via CSS
-            // but still rendered, so the browser enforces `required` and anchors its validation
-            // bubble to the control. Otherwise keep the plain hidden input.
-            if (resolvedRequired)
-                sb.Append($"<input class=\"{GetElementClass("hidden")}--required\" data-rhx-select-value required tabindex=\"-1\" aria-hidden=\"true\"");
-            else
-                sb.Append($"<input type=\"hidden\" class=\"{GetElementClass("hidden")}\" data-rhx-select-value");
-            if (!string.IsNullOrEmpty(resolvedName))
-                sb.Append($" name=\"{Enc(resolvedName)}\"");
-            sb.Append($" value=\"{Enc(resolvedValue ?? "")}\"");
-            sb.Append(BuildHtmxAttributeString());
-            sb.Append(BuildValidationAttributeString());
-            sb.Append(" />");
-        }
-        else
-        {
-            // Multi-select: container with per-value hidden inputs
-            sb.Append($"<div class=\"{GetElementClass("values")}\" data-rhx-select-values data-name=\"{Enc(resolvedName)}\">");
-            var values = ParseSelectedValues(resolvedValue);
-            foreach (var v in values)
+            if (Multiple)
             {
-                sb.Append($"<input type=\"hidden\" name=\"{Enc(resolvedName)}\" value=\"{Enc(v)}\" />");
+                foreach (var v in selectedValues)
+                    sb.Append($"<input type=\"hidden\" name=\"{Enc(resolvedName)}\" value=\"{Enc(v)}\" />");
             }
-            sb.Append("</div>");
+            else
+            {
+                sb.Append($"<input type=\"hidden\" name=\"{Enc(resolvedName)}\" value=\"{Enc(resolvedValue ?? "")}\" />");
+            }
         }
 
         // ── Hint ──
@@ -246,48 +210,42 @@ public class SelectTagHelper : FormControlTagHelperBase
         return new HashSet<string>(StringComparer.OrdinalIgnoreCase) { value };
     }
 
-    private string? GenerateOptions(string? selectedValue)
+    private string? GenerateOptions(HashSet<string> selected)
     {
         if (Items != null)
-            return GenerateOptionsFromItems(selectedValue);
+            return GenerateOptionsFromItems(selected);
 
         if (For != null)
         {
             var modelType = Nullable.GetUnderlyingType(For.Metadata.ModelType) ?? For.Metadata.ModelType;
             if (modelType.IsEnum)
-                return GenerateOptionsFromEnum(modelType, selectedValue);
+                return GenerateOptionsFromEnum(modelType, selected);
         }
 
         return null;
     }
 
-    private string GenerateOptionsFromItems(string? selectedValue)
+    private string GenerateOptionsFromItems(HashSet<string> selected)
     {
         var sb = new StringBuilder();
-        var selected = ParseSelectedValues(selectedValue);
 
         foreach (var item in Items!)
         {
             var isSelected = selected.Contains(item.Value ?? "") || item.Selected;
-            sb.Append($"<div class=\"{GetElementClass("option")}");
-            if (isSelected) sb.Append($" {GetElementClass("option")}--selected");
-            if (item.Disabled) sb.Append($" {GetElementClass("option")}--disabled");
-            sb.Append("\" role=\"option\"");
-            sb.Append($" data-value=\"{Enc(item.Value)}\"");
-            sb.Append($" aria-selected=\"{isSelected.ToString().ToLowerInvariant()}\"");
-            if (item.Disabled) sb.Append(" aria-disabled=\"true\"");
-            sb.Append(" tabindex=\"-1\">");
+            sb.Append($"<option value=\"{Enc(item.Value)}\"");
+            if (isSelected) sb.Append(" selected");
+            if (item.Disabled) sb.Append(" disabled");
+            sb.Append(">");
             sb.Append(Enc(item.Text));
-            sb.Append("</div>");
+            sb.Append("</option>");
         }
 
         return sb.ToString();
     }
 
-    private string GenerateOptionsFromEnum(Type enumType, string? selectedValue)
+    private string GenerateOptionsFromEnum(Type enumType, HashSet<string> selected)
     {
         var sb = new StringBuilder();
-        var selected = ParseSelectedValues(selectedValue);
 
         foreach (var val in Enum.GetValues(enumType))
         {
@@ -297,41 +255,13 @@ public class SelectTagHelper : FormControlTagHelperBase
             var text = displayAttr?.Name ?? name;
 
             var isSelected = selected.Contains(name);
-            sb.Append($"<div class=\"{GetElementClass("option")}");
-            if (isSelected) sb.Append($" {GetElementClass("option")}--selected");
-            sb.Append("\" role=\"option\"");
-            sb.Append($" data-value=\"{Enc(name)}\"");
-            sb.Append($" aria-selected=\"{isSelected.ToString().ToLowerInvariant()}\"");
-            sb.Append(" tabindex=\"-1\">");
+            sb.Append($"<option value=\"{Enc(name)}\"");
+            if (isSelected) sb.Append(" selected");
+            sb.Append(">");
             sb.Append(Enc(text));
-            sb.Append("</div>");
+            sb.Append("</option>");
         }
 
         return sb.ToString();
-    }
-
-    private string GetDisplayTextForValue(string? value)
-    {
-        if (string.IsNullOrEmpty(value)) return "";
-
-        if (Items != null)
-        {
-            var item = Items.FirstOrDefault(i =>
-                string.Equals(i.Value, value, StringComparison.OrdinalIgnoreCase));
-            if (item != null) return item.Text;
-        }
-
-        if (For != null)
-        {
-            var modelType = Nullable.GetUnderlyingType(For.Metadata.ModelType) ?? For.Metadata.ModelType;
-            if (modelType.IsEnum)
-            {
-                var member = modelType.GetMember(value).FirstOrDefault();
-                var displayAttr = member?.GetCustomAttribute<DisplayAttribute>();
-                if (displayAttr?.Name != null) return displayAttr.Name;
-            }
-        }
-
-        return value;
     }
 }

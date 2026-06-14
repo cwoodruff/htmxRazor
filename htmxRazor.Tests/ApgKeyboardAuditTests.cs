@@ -406,8 +406,12 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
     //  Combobox — APG Combobox Pattern
     // ══════════════════════════════════════════════
 
+    // Combobox and select are now native elements: <input list>+<datalist> and <select>.
+    // The browser supplies the APG combobox/listbox roles, expansion, and keyboard support,
+    // so the audit verifies the native bindings rather than hand-rolled ARIA.
+
     [Fact]
-    public async Task Combobox_Input_Has_Role_Combobox()
+    public async Task Combobox_Input_Is_Bound_To_Datalist()
     {
         var helper = new ComboboxTagHelper(CreateUrlHelperFactory());
         helper.ViewContext = CreateViewContext();
@@ -418,69 +422,8 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
         await helper.ProcessAsync(context, output);
 
         var content = output.Content.GetContent();
-        Assert.Contains("role=\"combobox\"", content);
-    }
-
-    [Fact]
-    public async Task Combobox_Input_Has_AriaExpanded()
-    {
-        var helper = new ComboboxTagHelper(CreateUrlHelperFactory());
-        helper.ViewContext = CreateViewContext();
-        helper.Name = "city";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("aria-expanded=\"false\"", content);
-    }
-
-    [Fact]
-    public async Task Combobox_Input_Has_AriaAutocomplete()
-    {
-        var helper = new ComboboxTagHelper(CreateUrlHelperFactory());
-        helper.ViewContext = CreateViewContext();
-        helper.Name = "city";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("aria-autocomplete=\"list\"", content);
-    }
-
-    [Fact]
-    public async Task Combobox_Input_Has_AriaControls_Pointing_To_Listbox()
-    {
-        var helper = new ComboboxTagHelper(CreateUrlHelperFactory());
-        helper.ViewContext = CreateViewContext();
-        helper.Name = "city";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        // aria-controls should reference the listbox ID
-        Assert.Contains("aria-controls=\"", content);
-        Assert.Contains("role=\"listbox\"", content);
-    }
-
-    [Fact]
-    public async Task Combobox_Listbox_Has_Role_Listbox()
-    {
-        var helper = new ComboboxTagHelper(CreateUrlHelperFactory());
-        helper.ViewContext = CreateViewContext();
-        helper.Name = "city";
-        var context = CreateContext("rhx-combobox");
-        var output = CreateOutput("rhx-combobox", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("role=\"listbox\"", content);
+        Assert.Contains("list=\"city-list\"", content);
+        Assert.Contains("<datalist id=\"city-list\"", content);
     }
 
     [Fact]
@@ -496,5 +439,23 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
 
         var content = output.Content.GetContent();
         Assert.Contains("autocomplete=\"off\"", content);
+    }
+
+    [Fact]
+    public async Task Select_Renders_Native_Select_With_Label_Binding()
+    {
+        var helper = new SelectTagHelper(CreateUrlHelperFactory());
+        helper.ViewContext = CreateViewContext();
+        helper.Name = "country";
+        helper.Label = "Country";
+        var context = CreateContext("rhx-select");
+        var output = CreateOutput("rhx-select", childContent: "");
+
+        await helper.ProcessAsync(context, output);
+
+        var content = output.Content.GetContent();
+        Assert.Contains("<select", content);
+        Assert.Contains("id=\"country\"", content);
+        Assert.Contains("for=\"country\"", content);
     }
 }

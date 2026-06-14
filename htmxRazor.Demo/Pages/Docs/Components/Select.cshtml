@@ -77,20 +77,21 @@
         </rhx-tab-group>
     </div>
 
-    <!-- With Clear -->
+    <!-- Disabled & Readonly -->
     <div class="docs-example">
-        <h3>With Clear</h3>
+        <h3>Disabled &amp; Readonly</h3>
         <rhx-tab-group>
-            <rhx-tab rhx-panel="clear-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="clear-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="clear-preview" rhx-active="true">
+            <rhx-tab rhx-panel="states-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="states-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="states-preview" rhx-active="true">
                 <div class="docs-preview docs-preview--vertical">
-                    <rhx-select rhx-label="Country" name="country-clear" value="US"
-                                rhx-with-clear="true"
-                                rhx-items="Model.Countries" />
+                    <rhx-select rhx-label="Disabled" name="country-disabled" value="US"
+                                rhx-disabled="true" rhx-items="Model.Countries" />
+                    <rhx-select rhx-label="Readonly" name="country-readonly" value="US"
+                                rhx-readonly="true" rhx-items="Model.Countries" />
                 </div>
             </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="clear-code">
+            <rhx-tab-panel rhx-name="states-code">
                 <div class="docs-code">
                     <pre><code>@Model.WithClearCode</code></pre>
                 </div>
@@ -210,6 +211,6 @@
         <li>Renders a native <code>&lt;select&gt;</code> element with full keyboard support.</li>
         <li>Label is associated via <code>for</code>/<code>id</code> pairing.</li>
         <li>Required and disabled states are conveyed natively.</li>
-        <li>Multi-select uses <code>aria-multiselectable</code>.</li>
+        <li>Multi-select uses the native <code>&lt;select multiple&gt;</code> list box.</li>
     </ul>
 </section>

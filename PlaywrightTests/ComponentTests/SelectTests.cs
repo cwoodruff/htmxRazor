@@ -1,147 +1,111 @@
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 using PlaywrightTests.Infrastructure;
 
 namespace PlaywrightTests.ComponentTests;
 
+// rhx-select renders a native <select> (no JS). Listbox/keyboard/type-ahead are the browser's.
 public sealed class SelectTests(DemoAppFactory app) : ComponentTestBase(app)
 {
     private const string Path = "/Docs/Components/Select";
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Basic_select_renders_trigger_and_hidden_listbox(string browserName)
+    public async Task Basic_select_renders_native_control_with_placeholder(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var wrapper = page.Locator("#panel-basic-preview div.rhx-select");
         await Assertions.Expect(wrapper).ToHaveCountAsync(1);
-        await Assertions.Expect(wrapper).ToHaveAttributeAsync("data-rhx-select", "");
 
-        var trigger = wrapper.Locator("button.rhx-select__trigger");
-        await Assertions.Expect(trigger).ToHaveAttributeAsync("role", "combobox");
-        await Assertions.Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+        var control = wrapper.Locator("select.rhx-select__control");
+        await Assertions.Expect(control).ToHaveCountAsync(1);
 
-        var listbox = wrapper.Locator("[role='listbox']");
-        await Assertions.Expect(listbox).Not.ToBeVisibleAsync();
-
-        await Assertions.Expect(
-            wrapper.Locator("span.rhx-select__placeholder")
-        ).ToContainTextAsync("Choose a country");
+        // Placeholder is an empty-value option, selected while nothing is chosen.
+        var placeholder = control.Locator("option[value='']");
+        await Assertions.Expect(placeholder).ToContainTextAsync("Choose a country");
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Clicking_trigger_opens_listbox(string browserName)
+    public async Task Selecting_an_option_updates_select_value(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var wrapper = page.Locator("#panel-children-preview div.rhx-select");
-        var trigger = wrapper.Locator("button.rhx-select__trigger");
-        var listbox = wrapper.Locator("[role='listbox']");
+        var control = page.Locator("#panel-children-preview select.rhx-select__control[name='color']");
+        await Assertions.Expect(control).ToHaveValueAsync("");
 
-        await Assertions.Expect(listbox).Not.ToBeVisibleAsync();
-        await trigger.ClickAsync();
-        await Assertions.Expect(listbox).ToBeVisibleAsync();
-        await Assertions.Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+        await control.SelectOptionAsync(new SelectOptionValue { Value = "green" });
+        await Assertions.Expect(control).ToHaveValueAsync("green");
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Selecting_an_option_updates_hidden_input_and_display(string browserName)
+    public async Task Disabled_option_is_natively_disabled(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var wrapper = page.Locator("#panel-children-preview div.rhx-select");
-        var trigger = wrapper.Locator("button.rhx-select__trigger");
-        var hidden = wrapper.Locator("input[type='hidden'][name='color']");
-
-        await Assertions.Expect(hidden).ToHaveValueAsync("");
-
-        await trigger.ClickAsync();
-        await wrapper.Locator("[role='option'][data-value='green']").ClickAsync();
-
-        await Assertions.Expect(hidden).ToHaveValueAsync("green");
-        await Assertions.Expect(wrapper.Locator("span.rhx-select__value")).ToContainTextAsync("Green");
-        await Assertions.Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+        var control = page.Locator("#panel-children-preview select.rhx-select__control[name='color']");
+        var purple = control.Locator("option[value='purple']");
+        Assert.True(await purple.EvaluateAsync<bool>("el => el.disabled"),
+            "The purple option should be natively disabled.");
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Disabled_option_cannot_be_selected(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        var wrapper = page.Locator("#panel-children-preview div.rhx-select");
-        var purple = wrapper.Locator("[role='option'][data-value='purple']");
-        await Assertions.Expect(purple).ToHaveAttributeAsync("aria-disabled", "true");
-    }
-
-    [Theory, MemberData(nameof(Browsers))]
-    public async Task Multi_select_sets_multiselectable_attribute(string browserName)
+    public async Task Multi_select_renders_native_multiple(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var wrapper = page.Locator("#panel-multi-preview div.rhx-select");
-        await Assertions.Expect(wrapper).ToHaveAttributeAsync("data-rhx-select-multiple", "");
-        await Assertions.Expect(wrapper).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("rhx-select--multiple"));
+        await Assertions.Expect(wrapper).ToHaveClassAsync(new Regex("rhx-select--multiple"));
 
-        var listbox = wrapper.Locator("[role='listbox']");
-        await Assertions.Expect(listbox).ToHaveAttributeAsync("aria-multiselectable", "true");
+        var control = wrapper.Locator("select.rhx-select__control");
+        await Assertions.Expect(control).ToHaveAttributeAsync("multiple", "");
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Preselected_value_is_shown_in_display(string browserName)
+    public async Task Preselected_enum_value_is_selected(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var wrapper = page.Locator("#panel-enum-preview div.rhx-select");
-        // A non-nullable enum is implicitly required, so its value input is the validatable
-        // mirror (not type="hidden"); target it by the stable data attribute (issue #14).
-        var hidden = wrapper.Locator("input[data-rhx-select-value][name='priority']");
-        await Assertions.Expect(hidden).ToHaveValueAsync("Medium");
-        await Assertions.Expect(wrapper.Locator("span.rhx-select__value")).ToContainTextAsync("Medium");
+        var control = page.Locator("#panel-enum-preview select.rhx-select__control[name='priority']");
+        await Assertions.Expect(control).ToHaveValueAsync("Medium");
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task With_clear_example_shows_clear_button_when_value_set(string browserName)
+    public async Task Disabled_and_readonly_states(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var wrapper = page.Locator("#panel-clear-preview div.rhx-select");
-        var clearBtn = wrapper.Locator("button.rhx-select__clear");
-        await Assertions.Expect(clearBtn).ToBeVisibleAsync();
+        var disabled = page.Locator("#panel-states-preview select.rhx-select__control[name='country-disabled']");
+        await Assertions.Expect(disabled).ToBeDisabledAsync();
 
-        var hidden = wrapper.Locator("input[type='hidden'][name='country-clear']");
-        await Assertions.Expect(hidden).ToHaveValueAsync("US");
-
-        await clearBtn.ClickAsync();
-        await Assertions.Expect(hidden).ToHaveValueAsync("");
+        // Readonly is emulated with a disabled select + a hidden mirror that still submits.
+        var readonlyWrap = page.Locator("#panel-states-preview div.rhx-select").Nth(1);
+        await Assertions.Expect(readonlyWrap.Locator("select")).ToBeDisabledAsync();
+        await Assertions.Expect(
+            readonlyWrap.Locator("input[type='hidden'][name='country-readonly']")).ToHaveValueAsync("US");
     }
 
-    // Issue #14: rhx-required="true" must enforce native HTML form validation on rhx-select,
-    // just like rhx-input. The value mirror must be a validatable (non-hidden) control so the
-    // browser blocks an empty submit and shows its validation bubble.
+    // Issue #14 (now native): rhx-required enforces HTML form validation directly on the
+    // native <select>; an empty required select reports valueMissing and blocks submit.
     [Theory, MemberData(nameof(Browsers))]
     public async Task Required_select_blocks_native_form_submission_until_a_value_is_chosen(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var scope = page.Locator("#panel-required-preview");
-        var mirror = scope.Locator("[data-rhx-select-value]");
+        var control = scope.Locator("select.rhx-select__control[name='required-country']");
 
-        // The mirror is a real, validatable control — NOT type="hidden".
-        await Assertions.Expect(mirror).Not.ToHaveAttributeAsync("type", "hidden");
-
-        // Empty + required ⇒ the browser reports the field as invalid (valueMissing)...
-        Assert.True(await mirror.EvaluateAsync<bool>("el => el.validity.valueMissing"),
+        await Assertions.Expect(control).ToHaveAttributeAsync("required", "");
+        Assert.True(await control.EvaluateAsync<bool>("el => el.validity.valueMissing"),
             "Empty required select should report valueMissing=true.");
 
-        // ...and clicking submit does NOT navigate (native validation blocks it).
         var urlBefore = page.Url;
         await scope.Locator("button[type='submit']").ClickAsync();
         await page.WaitForTimeoutAsync(150);
         Assert.Equal(urlBefore, page.Url);
 
-        // Choosing a value clears the constraint violation.
-        await scope.Locator("button.rhx-select__trigger").ClickAsync();
-        await scope.Locator("[role='option']").First.ClickAsync();
-        Assert.False(await mirror.EvaluateAsync<bool>("el => el.validity.valueMissing"),
+        // Choosing a real value clears the constraint violation.
+        await control.SelectOptionAsync(new SelectOptionValue { Index = 1 });
+        Assert.False(await control.EvaluateAsync<bool>("el => el.validity.valueMissing"),
             "After selecting a value the required select should be valid.");
     }
 }

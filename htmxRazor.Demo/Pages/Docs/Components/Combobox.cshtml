@@ -157,8 +157,7 @@
                                   rhx-placeholder="Type a name..."
                                   rhx-server-filter="true"
                                   hx-get="/Docs/Components/Combobox?handler=SearchUsers"
-                                  hx-trigger="input changed delay:300ms"
-                                  hx-target="next .rhx-combobox__listbox" />
+                                  hx-trigger="input changed delay:300ms" />
                 </div>
             </rhx-tab-panel>
             <rhx-tab-panel rhx-name="htmx-code">
@@ -177,9 +176,9 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Uses <code>role="combobox"</code> with <code>aria-expanded</code> and <code>aria-autocomplete</code>.</li>
-        <li>Listbox options use <code>role="option"</code> with <code>aria-selected</code>.</li>
-        <li>Keyboard navigation: arrow keys, Enter to select, Escape to close.</li>
-        <li>Active descendant tracked via <code>aria-activedescendant</code>.</li>
+        <li>Built on a native <code>&lt;input list&gt;</code> bound to a <code>&lt;datalist&gt;</code>, so the browser supplies the combobox role, suggestion popup, and ARIA.</li>
+        <li>Keyboard navigation (arrow keys, Enter, Escape) and type-ahead filtering are native browser behavior.</li>
+        <li>The label is associated via <code>for</code>/<code>id</code> pairing.</li>
+        <li>With <code>rhx-server-filter</code>, htmx swaps fresh <code>&lt;option&gt;</code> suggestions into the datalist as the user types.</li>
     </ul>
 </section>

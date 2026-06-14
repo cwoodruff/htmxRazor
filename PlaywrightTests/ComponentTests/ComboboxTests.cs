@@ -1,78 +1,53 @@
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 using PlaywrightTests.Infrastructure;
 
 namespace PlaywrightTests.ComponentTests;
 
+// rhx-combobox renders a native <input list> bound to a <datalist> (no JS).
+// Filtering, the suggestion popup, and keyboard support are native browser behavior.
 public sealed class ComboboxTests(DemoAppFactory app) : ComponentTestBase(app)
 {
     private const string Path = "/Docs/Components/Combobox";
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Basic_combobox_renders_text_input_and_hidden_listbox(string browserName)
+    public async Task Basic_combobox_renders_input_bound_to_datalist(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var wrapper = page.Locator("#panel-basic-preview div.rhx-combobox");
         await Assertions.Expect(wrapper).ToHaveCountAsync(1);
-        await Assertions.Expect(wrapper).ToHaveAttributeAsync("data-rhx-combobox", "");
 
-        var input = wrapper.Locator("input[role='combobox']");
-        await Assertions.Expect(input).ToHaveAttributeAsync("aria-expanded", "false");
-        await Assertions.Expect(input).ToHaveAttributeAsync("aria-autocomplete", "list");
+        var input = wrapper.Locator("input.rhx-combobox__control");
         await Assertions.Expect(input).ToHaveAttributeAsync("placeholder", "Search cities...");
+        await Assertions.Expect(input).ToHaveAttributeAsync("autocomplete", "off");
 
-        var listbox = wrapper.Locator("[role='listbox']");
-        await Assertions.Expect(listbox).Not.ToBeVisibleAsync();
-
-        var hidden = wrapper.Locator("input[type='hidden'][name='city']");
-        await Assertions.Expect(hidden).ToHaveValueAsync("");
+        // The input's `list` points to a sibling <datalist> with the same id.
+        var listId = await input.GetAttributeAsync("list");
+        Assert.False(string.IsNullOrEmpty(listId));
+        await Assertions.Expect(wrapper.Locator($"datalist#{listId}")).ToHaveCountAsync(1);
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Focusing_the_input_opens_the_listbox(string browserName)
+    public async Task Child_options_become_datalist_suggestions(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var wrapper = page.Locator("#panel-children-preview div.rhx-combobox");
-        var input = wrapper.Locator("input[role='combobox']");
-        var listbox = wrapper.Locator("[role='listbox']");
-
-        await input.FocusAsync();
-        await Assertions.Expect(listbox).ToBeVisibleAsync();
-        await Assertions.Expect(input).ToHaveAttributeAsync("aria-expanded", "true");
+        var options = wrapper.Locator("datalist > option");
+        await Assertions.Expect(options).ToHaveCountAsync(5);
+        // Datalist option value IS the display text (native autocomplete has no hidden code).
+        await Assertions.Expect(wrapper.Locator("datalist > option[value='Cherry']")).ToHaveCountAsync(1);
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Typing_filters_options_client_side(string browserName)
+    public async Task Typing_a_suggestion_sets_the_input_value(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var wrapper = page.Locator("#panel-children-preview div.rhx-combobox");
-        var input = wrapper.Locator("input[role='combobox']");
-
-        await input.ClickAsync();
-        await input.FillAsync("ban");
-
-        var visibleOptions = wrapper.Locator("[role='option']:visible");
-        await Assertions.Expect(visibleOptions).ToHaveCountAsync(1);
-        await Assertions.Expect(visibleOptions.First).ToContainTextAsync("Banana");
-    }
-
-    [Theory, MemberData(nameof(Browsers))]
-    public async Task Clicking_an_option_commits_value_to_hidden_input(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        var wrapper = page.Locator("#panel-children-preview div.rhx-combobox");
-        var input = wrapper.Locator("input[role='combobox']");
-        var hidden = wrapper.Locator("input[type='hidden'][name='fruit']");
-
-        await input.ClickAsync();
-        await wrapper.Locator("[role='option'][data-value='cherry']").ClickAsync();
-
-        await Assertions.Expect(hidden).ToHaveValueAsync("cherry");
+        var input = page.Locator("#panel-children-preview input.rhx-combobox__control[name='fruit']");
+        await input.FillAsync("Cherry");
         await Assertions.Expect(input).ToHaveValueAsync("Cherry");
-        await Assertions.Expect(input).ToHaveAttributeAsync("aria-expanded", "false");
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -81,7 +56,7 @@ public sealed class ComboboxTests(DemoAppFactory app) : ComponentTestBase(app)
         var page = await OpenAsync(browserName, Path);
 
         var wrapper = page.Locator("#panel-filled-preview div.rhx-combobox");
-        await Assertions.Expect(wrapper).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("rhx-combobox--filled"));
+        await Assertions.Expect(wrapper).ToHaveClassAsync(new Regex("rhx-combobox--filled"));
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -91,9 +66,7 @@ public sealed class ComboboxTests(DemoAppFactory app) : ComponentTestBase(app)
 
         var wrapper = page.Locator("#panel-states-preview div.rhx-combobox.rhx-combobox--disabled");
         await Assertions.Expect(wrapper).ToHaveCountAsync(1);
-
-        var input = wrapper.Locator("input[role='combobox']");
-        await Assertions.Expect(input).ToBeDisabledAsync();
+        await Assertions.Expect(wrapper.Locator("input.rhx-combobox__control")).ToBeDisabledAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -102,7 +75,21 @@ public sealed class ComboboxTests(DemoAppFactory app) : ComponentTestBase(app)
         var page = await OpenAsync(browserName, Path);
 
         var wrapper = page.Locator("#panel-states-preview div.rhx-combobox.rhx-combobox--readonly");
-        var input = wrapper.Locator("input[role='combobox']");
+        var input = wrapper.Locator("input.rhx-combobox__control");
         await Assertions.Expect(input).ToHaveAttributeAsync("readonly", "");
+    }
+
+    [Theory, MemberData(nameof(Browsers))]
+    public async Task Server_filter_fetches_options_into_datalist_on_type(string browserName)
+    {
+        var page = await OpenAsync(browserName, Path);
+
+        var wrapper = page.Locator("#panel-htmx-preview div.rhx-combobox");
+        var input = wrapper.Locator("input.rhx-combobox__control[name='userId']");
+
+        await input.FillAsync("a");
+        // htmx swaps server-rendered <option>s into the datalist.
+        await Assertions.Expect(wrapper.Locator("datalist > option").First).ToHaveCountAsync(1);
+        await Assertions.Expect(wrapper.Locator("datalist > option[value='Alice Johnson']")).ToHaveCountAsync(1);
     }
 }

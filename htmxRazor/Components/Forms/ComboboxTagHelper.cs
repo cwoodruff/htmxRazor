@@ -8,17 +8,26 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace htmxRazor.Components.Forms;
 
 /// <summary>
-/// Renders a searchable/filterable select that combines a text input with a dropdown listbox.
-/// Supports client-side filtering by default, or server-side filtering via htmx
-/// when <c>rhx-server-filter="true"</c> is set.
+/// Renders a native autocomplete combobox: a text <c>&lt;input list&gt;</c> bound to a
+/// <c>&lt;datalist&gt;</c> of suggestions. Built entirely on native elements — no
+/// JavaScript — so filtering, keyboard navigation, and accessibility come from the
+/// browser. With <c>rhx-server-filter="true"</c>, htmx attributes on the input fetch a
+/// fresh set of <c>&lt;option&gt;</c> suggestions into the datalist as the user types.
 /// </summary>
+/// <remarks>
+/// Native autocomplete submits the input's literal text, so there is no hidden value/code
+/// separate from the displayed suggestion (the value/label distinction of the old custom
+/// widget is dropped).
+/// </remarks>
 /// <example>
 /// <code>
-/// &lt;rhx-combobox rhx-for="City" rhx-placeholder="Search cities..." /&gt;
+/// &lt;rhx-combobox rhx-for="City" rhx-placeholder="Search cities..."&gt;
+///     &lt;rhx-option&gt;Austin&lt;/rhx-option&gt;
+///     &lt;rhx-option&gt;Boston&lt;/rhx-option&gt;
+/// &lt;/rhx-combobox&gt;
 ///
 /// &lt;rhx-combobox name="city" rhx-label="City" rhx-server-filter="true"
-///                hx-get="/api/cities" hx-trigger="input changed delay:200ms"
-///                hx-target="next .rhx-combobox__listbox" /&gt;
+///                hx-get="/api/cities" hx-trigger="input changed delay:200ms" /&gt;
 /// </code>
 /// </example>
 [HtmlTargetElement("rhx-combobox")]
@@ -35,7 +44,10 @@ public class ComboboxTagHelper : FormControlTagHelperBase
     [HtmlAttributeName("rhx-placeholder")]
     public string? Placeholder { get; set; }
 
-    /// <summary>Maximum number of options visible before scrolling. Default: 8.</summary>
+    /// <summary>
+    /// Retained for source compatibility. The native datalist controls its own visible
+    /// suggestion count; this value is emitted as a data attribute only.
+    /// </summary>
     [HtmlAttributeName("rhx-max-visible")]
     public int MaxOptionsVisible { get; set; } = 8;
 
@@ -44,23 +56,23 @@ public class ComboboxTagHelper : FormControlTagHelperBase
     public bool Filled { get; set; }
 
     /// <summary>
-    /// Collection of SelectListItem to generate options from.
+    /// Collection of SelectListItem to generate suggestions from.
     /// When set, child rhx-option elements are ignored.
     /// </summary>
     [HtmlAttributeName("rhx-items")]
     public IEnumerable<SelectListItem>? Items { get; set; }
 
     /// <summary>
-    /// When true, options are filtered server-side via htmx instead of client-side JS filtering.
-    /// Set htmx attributes (hx-get, hx-trigger, hx-target) on this component for server filtering.
+    /// When true, datalist suggestions are fetched server-side via htmx as the user types.
+    /// Set htmx attributes (hx-get, hx-trigger) on this component; the server returns a set
+    /// of <c>&lt;option&gt;</c> elements that replace the datalist contents.
     /// </summary>
     [HtmlAttributeName("rhx-server-filter")]
     public bool ServerFilter { get; set; }
 
     /// <summary>
-    /// The query parameter name used for the search text when <see cref="ServerFilter"/> is true.
-    /// This name is set on the visible text input so htmx includes the typed value in requests.
-    /// Default: "q".
+    /// Retained for source compatibility. With native autocomplete the input's own
+    /// <c>name</c> carries the typed text to the server, so a separate search param is unused.
     /// </summary>
     [HtmlAttributeName("rhx-search-param")]
     public string SearchParam { get; set; } = "q";
@@ -90,16 +102,12 @@ public class ComboboxTagHelper : FormControlTagHelperBase
 
         var hintId = $"{resolvedId}-hint";
         var errorId = $"{resolvedId}-error";
-        var listboxId = $"{resolvedId}-listbox";
         var labelId = $"{resolvedId}-label";
-        var inputId = $"{resolvedId}-input";
+        var listId = $"{resolvedId}-list";
 
-        // Store context for child <rhx-option> elements
+        // Store context for child <rhx-option> elements (datalist mode).
         context.Items["OptionClassPrefix"] = "combobox";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            resolvedValue ?? ""
-        };
+        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         var childContent = await output.GetChildContentAsync();
 
@@ -112,7 +120,6 @@ public class ComboboxTagHelper : FormControlTagHelperBase
             .AddIf(GetModifierClass("error"), hasError);
 
         ApplyWrapperAttributes(output, css);
-        output.Attributes.SetAttribute("data-rhx-combobox", "");
         if (ServerFilter)
             output.Attributes.SetAttribute("data-rhx-server-filter", "");
 
@@ -122,78 +129,59 @@ public class ComboboxTagHelper : FormControlTagHelperBase
         var labelText = ResolveLabelText();
         if (!string.IsNullOrEmpty(labelText))
         {
-            sb.Append($"<label class=\"{GetElementClass("label")}\" id=\"{Enc(labelId)}\" for=\"{Enc(inputId)}\">{Enc(labelText)}</label>");
+            sb.Append($"<label class=\"{GetElementClass("label")}\" id=\"{Enc(labelId)}\" for=\"{Enc(resolvedId)}\">{Enc(labelText)}</label>");
         }
 
-        // ── Control wrapper ──
-        sb.Append($"<div class=\"{GetElementClass("control")}\">");
-
-        // Text input
-        sb.Append($"<input class=\"{GetElementClass("input")}\"");
-        sb.Append(" type=\"text\"");
-        sb.Append($" id=\"{Enc(inputId)}\"");
-        sb.Append(" role=\"combobox\"");
-        sb.Append(" aria-expanded=\"false\"");
-        sb.Append(" aria-autocomplete=\"list\"");
-        sb.Append($" aria-controls=\"{Enc(listboxId)}\"");
+        // ── Native autocomplete input ──
+        sb.Append($"<input class=\"{GetElementClass("control")}\" type=\"text\"");
+        sb.Append($" id=\"{Enc(resolvedId)}\"");
+        sb.Append($" list=\"{Enc(listId)}\"");
+        if (!string.IsNullOrEmpty(resolvedName))
+            sb.Append($" name=\"{Enc(resolvedName)}\"");
         sb.Append(" autocomplete=\"off\"");
-        if (ServerFilter && !string.IsNullOrEmpty(SearchParam))
-            sb.Append($" name=\"{Enc(SearchParam)}\"");
+        if (!string.IsNullOrEmpty(Placeholder))
+            sb.Append($" placeholder=\"{Enc(Placeholder)}\"");
+        if (!string.IsNullOrEmpty(resolvedValue))
+            sb.Append($" value=\"{Enc(resolvedValue)}\"");
         if (!string.IsNullOrEmpty(labelText))
             sb.Append($" aria-labelledby=\"{Enc(labelId)}\"");
         if (!string.IsNullOrEmpty(AriaLabel))
             sb.Append($" aria-label=\"{Enc(AriaLabel)}\"");
-        if (!string.IsNullOrEmpty(Placeholder))
-            sb.Append($" placeholder=\"{Enc(Placeholder)}\"");
-        if (!string.IsNullOrEmpty(resolvedValue))
-            sb.Append($" value=\"{Enc(GetDisplayTextForValue(resolvedValue))}\"");
         var describedBy = BuildAriaDescribedBy(hintId, errorId);
         if (describedBy != null)
             sb.Append($" aria-describedby=\"{Enc(describedBy)}\"");
         if (hasError)
             sb.Append(" aria-invalid=\"true\"");
         if (resolvedRequired)
-            sb.Append(" aria-required=\"true\"");
+            sb.Append(" required");
         if (Disabled)
             sb.Append(" disabled");
         if (Readonly)
             sb.Append(" readonly");
-        // htmx attributes on text input (for server-side filtering)
+        // htmx attributes on the input (server-side suggestion fetching). The server returns
+        // <option> elements; default to targeting the datalist so they replace its contents
+        // (unless the author specified their own target/swap).
+        if (ServerFilter)
+        {
+            if (string.IsNullOrWhiteSpace(HxTarget))
+                sb.Append($" hx-target=\"#{Enc(listId)}\"");
+            if (string.IsNullOrWhiteSpace(HxSwap))
+                sb.Append(" hx-swap=\"innerHTML\"");
+        }
         sb.Append(BuildHtmxAttributeString());
+        sb.Append(BuildValidationAttributeString());
         sb.Append(" />");
 
-        // Trigger button (toggle)
-        sb.Append($"<button class=\"{GetElementClass("trigger")}\" type=\"button\" tabindex=\"-1\" aria-label=\"Toggle\"");
-        if (Disabled) sb.Append(" disabled");
-        sb.Append(">");
-        sb.Append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">");
-        sb.Append("<polyline points=\"6 9 12 15 18 9\"></polyline>");
-        sb.Append("</svg></button>");
+        // ── Datalist of suggestions ──
+        sb.Append($"<datalist id=\"{Enc(listId)}\" data-rhx-max-visible=\"{MaxOptionsVisible}\">");
 
-        sb.Append("</div>"); // close control
-
-        // ── Listbox ──
-        sb.Append($"<div class=\"{GetElementClass("listbox")}\" role=\"listbox\" id=\"{Enc(listboxId)}\"");
-        if (!string.IsNullOrEmpty(labelText))
-            sb.Append($" aria-labelledby=\"{Enc(labelId)}\"");
-        sb.Append($" data-rhx-max-visible=\"{MaxOptionsVisible}\"");
-        sb.Append(" hidden>");
-
-        var generatedOptions = GenerateOptions(resolvedValue);
+        var generatedOptions = GenerateOptions();
         if (!string.IsNullOrEmpty(generatedOptions))
             sb.Append(generatedOptions);
         else
             sb.Append(childContent.GetContent());
 
-        sb.Append("</div>");
-
-        // ── Hidden input for form submission ──
-        sb.Append($"<input type=\"hidden\" class=\"{GetElementClass("hidden")}\" data-rhx-combobox-value");
-        if (!string.IsNullOrEmpty(resolvedName))
-            sb.Append($" name=\"{Enc(resolvedName)}\"");
-        sb.Append($" value=\"{Enc(resolvedValue ?? "")}\"");
-        sb.Append(BuildValidationAttributeString());
-        sb.Append(" />");
+        sb.Append("</datalist>");
 
         // ── Hint ──
         sb.Append(BuildHintHtml(hintId));
@@ -205,45 +193,33 @@ public class ComboboxTagHelper : FormControlTagHelperBase
     }
 
     // ──────────────────────────────────────────────
-    //  Option generation
+    //  Suggestion generation (datalist <option>s; value == display text)
     // ──────────────────────────────────────────────
 
-    private string? GenerateOptions(string? selectedValue)
+    private string? GenerateOptions()
     {
         if (Items != null)
-            return GenerateOptionsFromItems(selectedValue);
+            return GenerateOptionsFromItems();
 
         if (For != null)
         {
             var modelType = Nullable.GetUnderlyingType(For.Metadata.ModelType) ?? For.Metadata.ModelType;
             if (modelType.IsEnum)
-                return GenerateOptionsFromEnum(modelType, selectedValue);
+                return GenerateOptionsFromEnum(modelType);
         }
 
         return null;
     }
 
-    private string GenerateOptionsFromItems(string? selectedValue)
+    private string GenerateOptionsFromItems()
     {
         var sb = new StringBuilder();
         foreach (var item in Items!)
-        {
-            var isSelected = string.Equals(item.Value, selectedValue, StringComparison.OrdinalIgnoreCase) || item.Selected;
-            sb.Append($"<div class=\"{GetElementClass("option")}");
-            if (isSelected) sb.Append($" {GetElementClass("option")}--selected");
-            if (item.Disabled) sb.Append($" {GetElementClass("option")}--disabled");
-            sb.Append("\" role=\"option\"");
-            sb.Append($" data-value=\"{Enc(item.Value)}\"");
-            sb.Append($" aria-selected=\"{isSelected.ToString().ToLowerInvariant()}\"");
-            if (item.Disabled) sb.Append(" aria-disabled=\"true\"");
-            sb.Append(" tabindex=\"-1\">");
-            sb.Append(Enc(item.Text));
-            sb.Append("</div>");
-        }
+            sb.Append($"<option value=\"{Enc(item.Text)}\"></option>");
         return sb.ToString();
     }
 
-    private string GenerateOptionsFromEnum(Type enumType, string? selectedValue)
+    private string GenerateOptionsFromEnum(Type enumType)
     {
         var sb = new StringBuilder();
         foreach (var val in Enum.GetValues(enumType))
@@ -252,42 +228,8 @@ public class ComboboxTagHelper : FormControlTagHelperBase
             var member = enumType.GetMember(name).FirstOrDefault();
             var displayAttr = member?.GetCustomAttribute<DisplayAttribute>();
             var text = displayAttr?.Name ?? name;
-            var isSelected = string.Equals(name, selectedValue, StringComparison.OrdinalIgnoreCase);
-
-            sb.Append($"<div class=\"{GetElementClass("option")}");
-            if (isSelected) sb.Append($" {GetElementClass("option")}--selected");
-            sb.Append("\" role=\"option\"");
-            sb.Append($" data-value=\"{Enc(name)}\"");
-            sb.Append($" aria-selected=\"{isSelected.ToString().ToLowerInvariant()}\"");
-            sb.Append(" tabindex=\"-1\">");
-            sb.Append(Enc(text));
-            sb.Append("</div>");
+            sb.Append($"<option value=\"{Enc(text)}\"></option>");
         }
         return sb.ToString();
-    }
-
-    private string GetDisplayTextForValue(string? value)
-    {
-        if (string.IsNullOrEmpty(value)) return "";
-
-        if (Items != null)
-        {
-            var item = Items.FirstOrDefault(i =>
-                string.Equals(i.Value, value, StringComparison.OrdinalIgnoreCase));
-            if (item != null) return item.Text;
-        }
-
-        if (For != null)
-        {
-            var modelType = Nullable.GetUnderlyingType(For.Metadata.ModelType) ?? For.Metadata.ModelType;
-            if (modelType.IsEnum)
-            {
-                var member = modelType.GetMember(value).FirstOrDefault();
-                var displayAttr = member?.GetCustomAttribute<DisplayAttribute>();
-                if (displayAttr?.Name != null) return displayAttr.Name;
-            }
-        }
-
-        return value;
     }
 }

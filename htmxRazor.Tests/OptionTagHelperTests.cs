@@ -1,196 +1,109 @@
 using htmxRazor.Components.Forms;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Xunit;
 
 namespace htmxRazor.Tests;
 
+// rhx-option renders a native <option>: for rhx-select it carries value/selected/disabled;
+// for rhx-combobox (a <datalist>) the option's value IS its display text.
 public class OptionTagHelperTests : TagHelperTestBase
 {
-    // ── Element rendering ──
-
-    [Fact]
-    public async Task Renders_Div_Element()
+    private TagHelperContext SelectCtx(params string[] selected)
     {
-        var helper = new OptionTagHelper();
-        helper.Value = "us";
-        var context = CreateContext("rhx-option");
-        var output = CreateOutput("rhx-option", childContent: "United States");
-
-        context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.Equal("div", output.TagName);
+        var ctx = CreateContext("rhx-option");
+        ctx.Items["OptionClassPrefix"] = "select";
+        ctx.Items["SelectedValues"] = new HashSet<string>(selected, StringComparer.OrdinalIgnoreCase);
+        return ctx;
     }
 
-    [Fact]
-    public async Task Has_Option_Class_With_Select_Prefix()
+    private TagHelperContext ComboboxCtx()
     {
-        var helper = new OptionTagHelper();
-        helper.Value = "us";
-        var context = CreateContext("rhx-option");
-        var output = CreateOutput("rhx-option", childContent: "United States");
-
-        context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.True(HasClass(output, "rhx-select__option"));
+        var ctx = CreateContext("rhx-option");
+        ctx.Items["OptionClassPrefix"] = "combobox";
+        ctx.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        return ctx;
     }
 
-    [Fact]
-    public async Task Has_Option_Class_With_Combobox_Prefix()
-    {
-        var helper = new OptionTagHelper();
-        helper.Value = "us";
-        var context = CreateContext("rhx-option");
-        var output = CreateOutput("rhx-option", childContent: "United States");
-
-        context.Items["OptionClassPrefix"] = "combobox";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.True(HasClass(output, "rhx-combobox__option"));
-    }
+    // ── Element ──
 
     [Fact]
-    public async Task Has_Role_Option()
+    public async Task Renders_Option_Element()
     {
-        var helper = new OptionTagHelper();
-        helper.Value = "us";
-        var context = CreateContext("rhx-option");
+        var helper = new OptionTagHelper { Value = "us" };
         var output = CreateOutput("rhx-option", childContent: "United States");
+        await helper.ProcessAsync(SelectCtx(), output);
 
-        context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "role", "option");
-    }
-
-    [Fact]
-    public async Task Has_Data_Value()
-    {
-        var helper = new OptionTagHelper();
-        helper.Value = "us";
-        var context = CreateContext("rhx-option");
-        var output = CreateOutput("rhx-option", childContent: "United States");
-
-        context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-value", "us");
-    }
-
-    [Fact]
-    public async Task Has_Tabindex_Minus_One()
-    {
-        var helper = new OptionTagHelper();
-        helper.Value = "us";
-        var context = CreateContext("rhx-option");
-        var output = CreateOutput("rhx-option", childContent: "United States");
-
-        context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "tabindex", "-1");
+        Assert.Equal("option", output.TagName);
     }
 
     // ── Value resolution ──
 
     [Fact]
-    public async Task Value_From_Attribute()
+    public async Task Select_Value_From_Attribute()
     {
-        var helper = new OptionTagHelper();
-        helper.Value = "custom-value";
-        var context = CreateContext("rhx-option");
+        var helper = new OptionTagHelper { Value = "custom-value" };
         var output = CreateOutput("rhx-option", childContent: "Display Text");
+        await helper.ProcessAsync(SelectCtx(), output);
 
-        context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-value", "custom-value");
+        AssertAttribute(output, "value", "custom-value");
     }
 
     [Fact]
-    public async Task Value_From_Content_When_No_Attribute()
+    public async Task Select_Value_From_Content_When_No_Attribute()
     {
         var helper = new OptionTagHelper();
-        // No Value set
-        var context = CreateContext("rhx-option");
         var output = CreateOutput("rhx-option", childContent: "United States");
+        await helper.ProcessAsync(SelectCtx(), output);
 
-        context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-value", "United States");
+        AssertAttribute(output, "value", "United States");
     }
 
     // ── Selected state ──
 
     [Fact]
-    public async Task Selected_Adds_Class_And_Aria()
+    public async Task Selected_Adds_Native_Selected()
     {
-        var helper = new OptionTagHelper();
-        helper.Value = "us";
-        var context = CreateContext("rhx-option");
+        var helper = new OptionTagHelper { Value = "us" };
         var output = CreateOutput("rhx-option", childContent: "United States");
+        await helper.ProcessAsync(SelectCtx("us"), output);
 
-        context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "us" };
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.True(HasClass(output, "rhx-select__option--selected"));
-        AssertAttribute(output, "aria-selected", "true");
+        AssertAttribute(output, "selected", "selected");
     }
 
     [Fact]
-    public async Task Not_Selected_Has_Aria_False()
+    public async Task Not_Selected_Has_No_Selected_Attribute()
     {
-        var helper = new OptionTagHelper();
-        helper.Value = "ca";
-        var context = CreateContext("rhx-option");
+        var helper = new OptionTagHelper { Value = "ca" };
         var output = CreateOutput("rhx-option", childContent: "Canada");
+        await helper.ProcessAsync(SelectCtx("us"), output);
 
-        context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "us" };
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.False(HasClass(output, "rhx-select__option--selected"));
-        AssertAttribute(output, "aria-selected", "false");
+        AssertNoAttribute(output, "selected");
     }
 
     // ── Disabled ──
 
     [Fact]
-    public async Task Disabled_Adds_Class_And_Aria()
+    public async Task Disabled_Adds_Native_Disabled()
     {
-        var helper = new OptionTagHelper();
-        helper.Value = "mx";
-        helper.Disabled = true;
-        var context = CreateContext("rhx-option");
+        var helper = new OptionTagHelper { Value = "mx", Disabled = true };
         var output = CreateOutput("rhx-option", childContent: "Mexico");
+        await helper.ProcessAsync(SelectCtx(), output);
 
-        context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        AssertAttribute(output, "disabled", "disabled");
+    }
 
-        await helper.ProcessAsync(context, output);
+    // ── Combobox (datalist) ──
 
-        Assert.True(HasClass(output, "rhx-select__option--disabled"));
-        AssertAttribute(output, "aria-disabled", "true");
+    [Fact]
+    public async Task Combobox_Value_Is_Display_Text()
+    {
+        // In a datalist the input submits its literal text, so value == text (ignores code).
+        var helper = new OptionTagHelper { Value = "ca" };
+        var output = CreateOutput("rhx-option", childContent: "Canada");
+        await helper.ProcessAsync(ComboboxCtx(), output);
+
+        AssertAttribute(output, "value", "Canada");
+        AssertNoAttribute(output, "selected");
     }
 
     // ── Content ──
@@ -198,33 +111,25 @@ public class OptionTagHelperTests : TagHelperTestBase
     [Fact]
     public async Task Content_Renders_As_Encoded_Text()
     {
-        var helper = new OptionTagHelper();
-        helper.Value = "test";
-        var context = CreateContext("rhx-option");
+        var helper = new OptionTagHelper { Value = "test" };
         var output = CreateOutput("rhx-option", childContent: "Option & Text");
+        await helper.ProcessAsync(SelectCtx(), output);
 
-        context.Items["OptionClassPrefix"] = "select";
-        context.Items["SelectedValues"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("Option &amp; Text", content);
+        Assert.Contains("Option &amp; Text", output.Content.GetContent());
     }
 
     // ── Default prefix ──
 
     [Fact]
-    public async Task Defaults_To_Select_Prefix_Without_Context()
+    public async Task Defaults_To_Select_Option_Without_Context()
     {
-        var helper = new OptionTagHelper();
-        helper.Value = "test";
+        var helper = new OptionTagHelper { Value = "test" };
         var context = CreateContext("rhx-option");
         var output = CreateOutput("rhx-option", childContent: "Test");
 
-        // No context items set
         await helper.ProcessAsync(context, output);
 
-        Assert.True(HasClass(output, "rhx-select__option"));
+        Assert.Equal("option", output.TagName);
+        AssertAttribute(output, "value", "test");
     }
 }
