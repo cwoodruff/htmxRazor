@@ -14,9 +14,10 @@ public sealed class DrawerTests(DemoAppFactory app) : ComponentTestBase(app)
 
         var drawer = page.Locator("#end-drawer");
         await Assertions.Expect(drawer).ToHaveCountAsync(1);
-        await Assertions.Expect(drawer).ToHaveAttributeAsync("aria-hidden", "true");
-        await Assertions.Expect(drawer).Not.ToHaveClassAsync(
-            new System.Text.RegularExpressions.Regex(@"\brhx-drawer--open\b"));
+        // A closed native <dialog> has no [open] attribute and is not visible.
+        await Assertions.Expect(drawer).Not.ToHaveAttributeAsync(
+            "open", new System.Text.RegularExpressions.Regex(".*"));
+        await Assertions.Expect(drawer).Not.ToBeVisibleAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -24,13 +25,12 @@ public sealed class DrawerTests(DemoAppFactory app) : ComponentTestBase(app)
     {
         var page = await OpenAsync(browserName, Path);
 
-        await page.Locator("#panel-end-preview [data-rhx-drawer-open='end-drawer']").ClickAsync();
+        await page.Locator("#panel-end-preview [command='show-modal'][commandfor='end-drawer']").ClickAsync();
 
         var drawer = page.Locator("#end-drawer");
-        await Assertions.Expect(drawer).ToHaveClassAsync(
-            new System.Text.RegularExpressions.Regex(@"\brhx-drawer--open\b"));
-        await Assertions.Expect(drawer).ToHaveAttributeAsync("aria-hidden", "false");
-        await Assertions.Expect(drawer.Locator(".rhx-drawer__panel")).ToBeVisibleAsync();
+        await Assertions.Expect(drawer).ToHaveAttributeAsync(
+            "open", new System.Text.RegularExpressions.Regex(".*"));
+        await Assertions.Expect(drawer).ToBeVisibleAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -38,30 +38,28 @@ public sealed class DrawerTests(DemoAppFactory app) : ComponentTestBase(app)
     {
         var page = await OpenAsync(browserName, Path);
 
-        await page.Locator("#panel-end-preview [data-rhx-drawer-open='end-drawer']").ClickAsync();
+        await page.Locator("#panel-end-preview [commandfor='end-drawer']").First.ClickAsync();
         var drawer = page.Locator("#end-drawer");
-        await Assertions.Expect(drawer).ToHaveClassAsync(
-            new System.Text.RegularExpressions.Regex(@"\brhx-drawer--open\b"));
+        await Assertions.Expect(drawer).ToBeVisibleAsync();
 
         await drawer.Locator(".rhx-drawer__close").ClickAsync();
-        await Assertions.Expect(drawer).Not.ToHaveClassAsync(
-            new System.Text.RegularExpressions.Regex(@"\brhx-drawer--open\b"));
-        await Assertions.Expect(drawer).ToHaveAttributeAsync("aria-hidden", "true");
+        await Assertions.Expect(drawer).Not.ToHaveAttributeAsync(
+            "open", new System.Text.RegularExpressions.Regex(".*"));
+        await Assertions.Expect(drawer).Not.ToBeVisibleAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Close_trigger_with_target_id_closes_drawer(string browserName)
+    public async Task Close_command_button_closes_drawer(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        await page.Locator("#panel-end-preview [data-rhx-drawer-open='end-drawer']").ClickAsync();
+        await page.Locator("#panel-end-preview [commandfor='end-drawer']").First.ClickAsync();
         var drawer = page.Locator("#end-drawer");
-        await Assertions.Expect(drawer).ToHaveClassAsync(
-            new System.Text.RegularExpressions.Regex(@"\brhx-drawer--open\b"));
+        await Assertions.Expect(drawer).ToBeVisibleAsync();
 
-        await drawer.Locator("[data-rhx-drawer-close='end-drawer']").ClickAsync();
-        await Assertions.Expect(drawer).Not.ToHaveClassAsync(
-            new System.Text.RegularExpressions.Regex(@"\brhx-drawer--open\b"));
+        // A "Close" button uses command="close" commandfor="end-drawer" (header + footer both do).
+        await drawer.Locator("[command='close'][commandfor='end-drawer']").First.ClickAsync();
+        await Assertions.Expect(drawer).Not.ToBeVisibleAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -69,16 +67,13 @@ public sealed class DrawerTests(DemoAppFactory app) : ComponentTestBase(app)
     {
         var page = await OpenAsync(browserName, Path);
 
-        await page.Locator("#panel-end-preview [data-rhx-drawer-open='end-drawer']").ClickAsync();
+        await page.Locator("#panel-end-preview [commandfor='end-drawer']").First.ClickAsync();
         var drawer = page.Locator("#end-drawer");
-        await Assertions.Expect(drawer).ToHaveClassAsync(
-            new System.Text.RegularExpressions.Regex(@"\brhx-drawer--open\b"));
+        await Assertions.Expect(drawer).ToBeVisibleAsync();
 
-        // Focus inside the drawer so Escape bubbles to the drawer's keydown listener.
-        await drawer.Locator(".rhx-drawer__close").FocusAsync();
+        // A modal <dialog> closes on Escape natively.
         await page.Keyboard.PressAsync("Escape");
-        await Assertions.Expect(drawer).Not.ToHaveClassAsync(
-            new System.Text.RegularExpressions.Regex(@"\brhx-drawer--open\b"));
+        await Assertions.Expect(drawer).Not.ToBeVisibleAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -113,6 +108,5 @@ public sealed class DrawerTests(DemoAppFactory app) : ComponentTestBase(app)
         var drawer = page.Locator("#contained-drawer");
         await Assertions.Expect(drawer).ToHaveClassAsync(
             new System.Text.RegularExpressions.Regex(@"\brhx-drawer--contained\b"));
-        await Assertions.Expect(drawer).ToHaveAttributeAsync("data-rhx-contained", "");
     }
 }

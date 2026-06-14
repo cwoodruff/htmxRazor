@@ -53,6 +53,8 @@ public class OptimisticRatingTests : TagHelperTestBase
         helper.Process(context, output);
 
         Assert.True(HasClass(output, "rhx-rating"));
-        Assert.True(output.Attributes.TryGetAttribute("data-rhx-rating", out _));
+        Assert.True(output.Attributes.TryGetAttribute("data-rhx-optimistic", out _));
+        // Interactive ratings render a radiogroup of native radios (JS-free).
+        Assert.Contains("role=\"radiogroup\"", output.Content.GetContent());
     }
 }

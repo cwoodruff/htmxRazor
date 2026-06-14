@@ -1,19 +1,23 @@
+using System.Text.RegularExpressions;
 using htmxRazor.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace htmxRazor.Components.Actions;
 
 /// <summary>
-/// Captures trigger content for a dropdown menu. Wraps its child (typically an
-/// <c>&lt;rhx-button&gt;</c>) in a trigger wrapper with ARIA attributes and
-/// registers it to the parent dropdown's trigger slot.
+/// Captures trigger content for a dropdown menu. The child (typically an
+/// <c>&lt;rhx-button&gt;</c>) becomes the popover invoker: the native
+/// <see href="https://developer.mozilla.org/docs/Web/API/Popover_API">Popover API</see>
+/// attributes (<c>popovertarget</c>, <c>popovertargetaction</c>) plus
+/// <c>aria-haspopup</c>, <c>aria-controls</c> and the CSS Anchor Positioning
+/// <c>anchor-name</c> are injected directly onto the trigger button.
 /// </summary>
 /// <remarks>
 /// <para>
 /// This tag helper suppresses its own output — the content is rendered by the
-/// parent <see cref="DropdownTagHelper"/> in the correct position. ARIA attributes
-/// (<c>aria-haspopup</c>, <c>aria-expanded</c>, <c>aria-controls</c>) are placed
-/// on the wrapper div; JavaScript transfers them to the actual button element at init.
+/// parent <see cref="DropdownTagHelper"/> in the correct position. No JavaScript is
+/// used: the browser provides open/close, light-dismiss (click outside) and Escape
+/// for free via the Popover API.
 /// </para>
 /// </remarks>
 /// <example>
@@ -29,6 +33,10 @@ namespace htmxRazor.Components.Actions;
 [HtmlTargetElement("rhx-dropdown-trigger", ParentTag = "rhx-dropdown")]
 public class DropdownTriggerTagHelper : TagHelper
 {
+    // Matches the opening tag of the first <button ...> or <a ...> in the trigger content.
+    private static readonly Regex FirstControlTag =
+        new("<(button|a)\\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     /// <inheritdoc/>
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
@@ -46,34 +54,52 @@ public class DropdownTriggerTagHelper : TagHelper
         var dropdown = context.Items.TryGetValue(typeof(DropdownTagHelper), out var dd)
             ? dd as DropdownTagHelper
             : null;
-        var isOpen = dropdown?.Open ?? false;
         var isDisabled = dropdown?.Disabled ?? false;
 
-        // Read panel ID for aria-controls
+        // Read panel ID + anchor name set up by the parent dropdown.
         var panelId = context.Items.TryGetValue("DropdownPanelId", out var id)
             ? id as string
             : null;
+        var anchorName = context.Items.TryGetValue("DropdownAnchorName", out var an)
+            ? an as string
+            : null;
 
-        // Build trigger wrapper HTML
-        var html = new System.Text.StringBuilder();
-        html.Append("<div data-rhx-dropdown-trigger");
-        html.Append(" aria-haspopup=\"menu\"");
-        html.Append($" aria-expanded=\"{isOpen.ToString().ToLowerInvariant()}\"");
+        var triggerHtml = childContent.GetContent();
 
+        // Build the attributes that turn the inner control into a popover invoker.
+        var injected = new System.Text.StringBuilder();
         if (!string.IsNullOrEmpty(panelId))
         {
-            html.Append($" aria-controls=\"{panelId}\"");
+            injected.Append($" popovertarget=\"{panelId}\"");
+            injected.Append(" popovertargetaction=\"toggle\"");
+            injected.Append($" aria-controls=\"{panelId}\"");
         }
-
+        injected.Append(" aria-haspopup=\"menu\"");
         if (isDisabled)
         {
-            html.Append(" aria-disabled=\"true\"");
+            injected.Append(" aria-disabled=\"true\"");
+        }
+        if (!string.IsNullOrEmpty(anchorName))
+        {
+            injected.Append($" style=\"anchor-name:{anchorName}\"");
         }
 
-        html.Append('>');
+        // Inject the attributes into the opening tag of the first <button>/<a>.
+        var match = FirstControlTag.Match(triggerHtml);
+        string finalHtml;
+        if (match.Success)
+        {
+            var insertAt = match.Index + match.Length;
+            finalHtml = triggerHtml.Insert(insertAt, injected.ToString());
+        }
+        else
+        {
+            // Fallback: no recognizable control — wrap content in a button invoker.
+            finalHtml = $"<button type=\"button\" class=\"rhx-dropdown__trigger\"{injected}>{triggerHtml}</button>";
+        }
 
         // Register assembled HTML to trigger slot
-        slots.SetHtml("trigger", html.ToString() + childContent.GetContent() + "</div>");
+        slots.SetHtml("trigger", finalHtml);
 
         output.SuppressOutput();
     }

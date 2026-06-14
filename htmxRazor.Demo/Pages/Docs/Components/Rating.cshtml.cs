@@ -27,7 +27,7 @@ public class RatingModel : PageModel
     public string PresetValueCode => @"<rhx-rating name=""rating-pre"" rhx-label=""Rating"" value=""3"" />";
 
     public string HalfStarCode => @"<rhx-rating name=""rating-half"" rhx-label=""Detailed Rating""
-           value=""3.5"" rhx-precision=""0.5"" />";
+           value=""3.5"" rhx-precision=""0.5"" rhx-readonly=""true"" />";
 
     public string CustomMaxCode => @"<rhx-rating name=""rating-10"" rhx-label=""Extended Rating""
            rhx-max=""10"" value=""7"" />";

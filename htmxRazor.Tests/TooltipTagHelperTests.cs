@@ -5,213 +5,126 @@ namespace htmxRazor.Tests;
 
 public class TooltipTagHelperTests : TagHelperTestBase
 {
-    private TooltipTagHelper CreateHelper()
-    {
-        return new TooltipTagHelper();
-    }
+    private TooltipTagHelper CreateHelper() => new();
 
-    // ──────────────────────────────────────────────
-    //  Default rendering
-    // ──────────────────────────────────────────────
+    private static async Task<string> RenderAsync(TooltipTagHelper helper, string child = "<button>Save</button>")
+    {
+        var ctx = CreateContext("rhx-tooltip");
+        var output = CreateOutput("rhx-tooltip", childContent: child);
+        await helper.ProcessAsync(ctx, output);
+        return output.Content.GetContent();
+    }
 
     [Fact]
     public async Task Renders_Span_Element()
     {
         var helper = CreateHelper();
-        var context = CreateContext("rhx-tooltip");
+        helper.Content = "Save your changes";
         var output = CreateOutput("rhx-tooltip", childContent: "<button>Save</button>");
-
-        await helper.ProcessAsync(context, output);
-
+        await helper.ProcessAsync(CreateContext("rhx-tooltip"), output);
         Assert.Equal("span", output.TagName);
     }
 
     [Fact]
-    public async Task Renders_Data_Rhx_Tooltip_Attribute()
+    public async Task Has_Wrapper_Class_And_No_Js_Hooks()
     {
         var helper = CreateHelper();
         helper.Content = "Save your changes";
-        var context = CreateContext("rhx-tooltip");
         var output = CreateOutput("rhx-tooltip", childContent: "<button>Save</button>");
+        await helper.ProcessAsync(CreateContext("rhx-tooltip"), output);
 
-        await helper.ProcessAsync(context, output);
+        Assert.True(HasClass(output, "rhx-tooltip-wrap"));
+        AssertNoAttribute(output, "data-rhx-tooltip");
+        AssertNoAttribute(output, "data-rhx-tooltip-trigger");
+    }
 
-        AssertAttribute(output, "data-rhx-tooltip", "Save your changes");
+    [Fact]
+    public async Task Renders_Bubble_With_Content_And_Role()
+    {
+        var helper = CreateHelper();
+        helper.Content = "Save your changes";
+        var content = await RenderAsync(helper);
+
+        Assert.Contains("class=\"rhx-tooltip\"", content);
+        Assert.Contains("role=\"tooltip\"", content);
+        Assert.Contains("Save your changes", content);
     }
 
     [Fact]
     public async Task Default_Placement_Is_Top()
     {
         var helper = CreateHelper();
-        helper.Content = "Tip";
-        var context = CreateContext("rhx-tooltip");
-        var output = CreateOutput("rhx-tooltip", childContent: "text");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-tooltip-placement", "top");
+        helper.Content = "x";
+        var output = CreateOutput("rhx-tooltip", childContent: "<button>Save</button>");
+        await helper.ProcessAsync(CreateContext("rhx-tooltip"), output);
+        Assert.True(HasClass(output, "rhx-tooltip-wrap--top"));
     }
-
-    [Fact]
-    public async Task Default_Not_Disabled()
-    {
-        var helper = CreateHelper();
-        helper.Content = "Tip";
-        var context = CreateContext("rhx-tooltip");
-        var output = CreateOutput("rhx-tooltip", childContent: "text");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertNoAttribute(output, "data-rhx-tooltip-disabled");
-    }
-
-    [Fact]
-    public async Task Default_Trigger_Not_Rendered()
-    {
-        var helper = CreateHelper();
-        helper.Content = "Tip";
-        var context = CreateContext("rhx-tooltip");
-        var output = CreateOutput("rhx-tooltip", childContent: "text");
-
-        await helper.ProcessAsync(context, output);
-
-        // Default "hover focus" is not rendered as attribute
-        AssertNoAttribute(output, "data-rhx-tooltip-trigger");
-    }
-
-    [Fact]
-    public async Task Preserves_Child_Content()
-    {
-        var helper = CreateHelper();
-        helper.Content = "Tip";
-        var context = CreateContext("rhx-tooltip");
-        var output = CreateOutput("rhx-tooltip", childContent: "Save");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("Save", content);
-    }
-
-    // ──────────────────────────────────────────────
-    //  Placement
-    // ──────────────────────────────────────────────
 
     [Theory]
     [InlineData("top")]
     [InlineData("bottom")]
     [InlineData("left")]
     [InlineData("right")]
-    public async Task Custom_Placement(string placement)
+    public async Task Custom_Placement_Modifier(string placement)
     {
         var helper = CreateHelper();
-        helper.Content = "Tip";
+        helper.Content = "x";
         helper.Placement = placement;
-        var context = CreateContext("rhx-tooltip");
-        var output = CreateOutput("rhx-tooltip", childContent: "text");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-tooltip-placement", placement);
+        var output = CreateOutput("rhx-tooltip", childContent: "<button>Save</button>");
+        await helper.ProcessAsync(CreateContext("rhx-tooltip"), output);
+        Assert.True(HasClass(output, $"rhx-tooltip-wrap--{placement}"));
     }
 
     [Fact]
     public async Task Placement_Is_Case_Insensitive()
     {
         var helper = CreateHelper();
-        helper.Content = "Tip";
+        helper.Content = "x";
         helper.Placement = "Bottom";
-        var context = CreateContext("rhx-tooltip");
-        var output = CreateOutput("rhx-tooltip", childContent: "text");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-tooltip-placement", "bottom");
+        var output = CreateOutput("rhx-tooltip", childContent: "<button>Save</button>");
+        await helper.ProcessAsync(CreateContext("rhx-tooltip"), output);
+        Assert.True(HasClass(output, "rhx-tooltip-wrap--bottom"));
     }
 
-    // ──────────────────────────────────────────────
-    //  Disabled
-    // ──────────────────────────────────────────────
-
     [Fact]
-    public async Task Disabled_Sets_Attribute()
+    public async Task Disabled_Hides_Bubble()
     {
         var helper = CreateHelper();
-        helper.Content = "Tip";
+        helper.Content = "x";
         helper.Disabled = true;
-        var context = CreateContext("rhx-tooltip");
-        var output = CreateOutput("rhx-tooltip", childContent: "text");
+        var output = CreateOutput("rhx-tooltip", childContent: "<button>Save</button>");
+        await helper.ProcessAsync(CreateContext("rhx-tooltip"), output);
 
-        await helper.ProcessAsync(context, output);
-
-        Assert.True(output.Attributes.TryGetAttribute("data-rhx-tooltip-disabled", out _));
-    }
-
-    // ──────────────────────────────────────────────
-    //  Trigger
-    // ──────────────────────────────────────────────
-
-    [Fact]
-    public async Task Custom_Trigger_Sets_Attribute()
-    {
-        var helper = CreateHelper();
-        helper.Content = "Tip";
-        helper.Trigger = "click";
-        var context = CreateContext("rhx-tooltip");
-        var output = CreateOutput("rhx-tooltip", childContent: "text");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-tooltip-trigger", "click");
+        Assert.True(HasClass(output, "rhx-tooltip-wrap--disabled"));
+        Assert.DoesNotContain("class=\"rhx-tooltip\"", output.Content.GetContent());
     }
 
     [Fact]
-    public async Task Hover_Only_Trigger()
+    public async Task Preserves_Child_Content()
     {
         var helper = CreateHelper();
-        helper.Content = "Tip";
-        helper.Trigger = "hover";
-        var context = CreateContext("rhx-tooltip");
-        var output = CreateOutput("rhx-tooltip", childContent: "text");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-tooltip-trigger", "hover");
+        helper.Content = "x";
+        var content = await RenderAsync(helper, "<button>Save</button>");
+        Assert.Contains("Save", content);
     }
-
-    // ──────────────────────────────────────────────
-    //  Content encoding
-    // ──────────────────────────────────────────────
 
     [Fact]
     public async Task Content_Is_Html_Encoded()
     {
         var helper = CreateHelper();
-        helper.Content = "Use <b>bold</b>";
-        var context = CreateContext("rhx-tooltip");
-        var output = CreateOutput("rhx-tooltip", childContent: "text");
-
-        await helper.ProcessAsync(context, output);
-
-        var attr = GetAttribute(output, "data-rhx-tooltip") ?? "";
-        Assert.DoesNotContain("<b>", attr);
-        Assert.Contains("&lt;b&gt;", attr);
+        helper.Content = "<b>bold</b>";
+        var content = await RenderAsync(helper);
+        Assert.DoesNotContain("<b>bold</b>", content);
+        Assert.Contains("&lt;b&gt;", content);
     }
-
-    // ──────────────────────────────────────────────
-    //  Tag mode
-    // ──────────────────────────────────────────────
 
     [Fact]
     public async Task Uses_StartTagAndEndTag_Mode()
     {
         var helper = CreateHelper();
-        helper.Content = "Tip";
-        var context = CreateContext("rhx-tooltip");
-        var output = CreateOutput("rhx-tooltip", childContent: "text");
-
-        await helper.ProcessAsync(context, output);
-
+        helper.Content = "x";
+        var output = CreateOutput("rhx-tooltip", childContent: "<button>Save</button>");
+        await helper.ProcessAsync(CreateContext("rhx-tooltip"), output);
         Assert.Equal(Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, output.TagMode);
     }
 }

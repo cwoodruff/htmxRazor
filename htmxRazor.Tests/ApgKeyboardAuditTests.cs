@@ -298,7 +298,7 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Dropdown_Panel_Has_AriaHidden_When_Closed()
+    public async Task Dropdown_Panel_Is_Popover_When_Closed()
     {
         var helper = new DropdownTagHelper(CreateUrlHelperFactory());
         helper.ViewContext = CreateViewContext();
@@ -307,24 +307,25 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
+        // The menu is a native popover (auto): the browser shows/hides it; no aria-hidden hook.
         var content = output.Content.GetContent();
-        Assert.Contains("aria-hidden=\"true\"", content);
-        Assert.Contains("hidden", content);
+        Assert.Contains("popover=\"auto\"", content);
+        Assert.DoesNotContain("aria-hidden", content);
     }
 
     [Fact]
-    public async Task Dropdown_Panel_Not_Hidden_When_Open()
+    public async Task Dropdown_Panel_Is_Auto_Popover_Even_When_Open_Requested()
     {
         var helper = new DropdownTagHelper(CreateUrlHelperFactory());
         helper.ViewContext = CreateViewContext();
-        helper.Open = true;
+        helper.Open = true; // no-op: a popover can't be shown on load without JS
         var context = CreateContext("rhx-dropdown");
         var output = CreateOutput("rhx-dropdown", childContent: "");
 
         await helper.ProcessAsync(context, output);
 
         var content = output.Content.GetContent();
-        Assert.Contains("aria-hidden=\"false\"", content);
+        Assert.Contains("popover=\"auto\"", content);
     }
 
     [Fact]
@@ -345,7 +346,7 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Dropdown_Trigger_Has_AriaExpanded()
+    public async Task Dropdown_Trigger_Has_Popovertarget()
     {
         var triggerHelper = new DropdownTriggerTagHelper();
         var context = CreateContext("rhx-dropdown-trigger");
@@ -358,7 +359,8 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
 
         var slots = SlotRenderer.FromContext(context)!;
         var triggerHtml = HtmlContentToString(slots.Get("trigger")!);
-        Assert.Contains("aria-expanded=\"false\"", triggerHtml);
+        // The Popover API invoker drives open/close; aria-expanded is no longer hand-managed.
+        Assert.Contains("popovertarget", triggerHtml);
     }
 
     [Fact]

@@ -7,10 +7,17 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace htmxRazor.Components.Overlays;
 
 /// <summary>
-/// Renders a slide-out drawer panel from any edge of the viewport (or a containing element).
-/// Includes overlay, focus trap, ESC to close, and slide animation.
+/// Renders a slide-out drawer panel from any edge of the viewport using the native
+/// HTML <c>&lt;dialog&gt;</c> element. The browser provides the modal backdrop, focus
+/// trapping, light-dismiss, and ESC-to-close with zero JavaScript.
 /// </summary>
 /// <remarks>
+/// <para>
+/// The drawer is a modal <c>&lt;dialog&gt;</c>. Open it with an invoker button using the
+/// native command attributes: <c>&lt;button command="show-modal" commandfor="drawer-id"&gt;</c>.
+/// Close it with a button inside the drawer using <c>command="close" commandfor="drawer-id"</c>
+/// (or rely on the built-in header close button, backdrop click, or the Escape key).
+/// </para>
 /// <para>
 /// Child tag helpers (<c>&lt;rhx-drawer-footer&gt;</c>) register content into slots.
 /// Remaining child content becomes the drawer body.
@@ -18,10 +25,11 @@ namespace htmxRazor.Components.Overlays;
 /// </remarks>
 /// <example>
 /// <code>
+/// &lt;rhx-button command="show-modal" commandfor="nav-drawer"&gt;Open&lt;/rhx-button&gt;
 /// &lt;rhx-drawer id="nav-drawer" rhx-label="Navigation" rhx-placement="start"&gt;
 ///     &lt;nav&gt;...&lt;/nav&gt;
 ///     &lt;rhx-drawer-footer&gt;
-///         &lt;rhx-button&gt;Close&lt;/rhx-button&gt;
+///         &lt;rhx-button command="close" commandfor="nav-drawer"&gt;Close&lt;/rhx-button&gt;
 ///     &lt;/rhx-drawer-footer&gt;
 /// &lt;/rhx-drawer&gt;
 /// </code>
@@ -33,19 +41,12 @@ public class DrawerTagHelper : htmxRazorTagHelperBase
     protected override string BlockName => "drawer";
 
     /// <summary>
-    /// Whether the drawer is initially open.
+    /// Whether the drawer is initially open. Renders the <c>open</c> attribute on the
+    /// <c>&lt;dialog&gt;</c>. Note: a server-rendered <c>open</c> dialog is non-modal
+    /// (no backdrop / focus trap) until reopened via the <c>show-modal</c> command.
     /// </summary>
     [HtmlAttributeName("rhx-open")]
     public bool Open { get; set; }
-
-    /// <summary>
-    /// CSS selector of the element to receive focus after an htmx swap.
-    /// Defaults to "first" so focus moves to the first focusable element
-    /// in swapped drawer content, addressing WCAG 2.4.3 Focus Order.
-    /// Set to "none" to disable.
-    /// </summary>
-    [HtmlAttributeName("rhx-focus-after-swap")]
-    public new string? FocusAfterSwap { get; set; } = "first";
 
     /// <summary>
     /// The title text displayed in the drawer header.
@@ -83,7 +84,9 @@ public class DrawerTagHelper : htmxRazorTagHelperBase
         var slots = SlotRenderer.CreateForContext(context);
         var childContent = await output.GetChildContentAsync();
 
-        output.TagName = "div";
+        // The drawer is a native modal <dialog>. The browser provides the backdrop,
+        // focus trap, light-dismiss, and Escape-to-close — no JavaScript required.
+        output.TagName = "dialog";
         output.TagMode = TagMode.StartTagAndEndTag;
 
         var placement = Placement.ToLowerInvariant();
@@ -93,31 +96,20 @@ public class DrawerTagHelper : htmxRazorTagHelperBase
             .AddIf(GetModifierClass("contained"), Contained);
         ApplyBaseAttributes(output, css);
 
-        output.Attributes.SetAttribute("data-rhx-drawer", "");
+        // Kept for CSS placement hooks and test/selectors.
         output.Attributes.SetAttribute("data-rhx-placement", placement);
 
-        if (!Open)
-            output.Attributes.SetAttribute("aria-hidden", "true");
+        if (Open)
+            output.Attributes.SetAttribute("open", "open");
 
         if (!string.IsNullOrWhiteSpace(Label))
             output.Attributes.SetAttribute("aria-label", Label);
 
-        if (Contained)
-            output.Attributes.SetAttribute("data-rhx-contained", "");
-
-        if (!string.IsNullOrWhiteSpace(FocusAfterSwap) && FocusAfterSwap != "none")
-            output.Attributes.SetAttribute("data-rhx-focus-after-swap", FocusAfterSwap);
-
         RenderHtmxAttributes(output);
 
-        // Assemble inner HTML
+        // Assemble inner HTML — the <dialog> itself is the panel; no overlay
+        // element is needed (the native ::backdrop handles that).
         output.Content.Clear();
-
-        // Overlay
-        output.Content.AppendHtml($"<div class=\"{GetElementClass("overlay")}\"></div>");
-
-        // Panel
-        output.Content.AppendHtml($"<div class=\"{GetElementClass("panel")}\" role=\"dialog\">");
 
         // Header
         if (!NoHeader)
@@ -128,8 +120,12 @@ public class DrawerTagHelper : htmxRazorTagHelperBase
                 output.Content.AppendHtml(
                     $"<h2 class=\"{GetElementClass("title")}\">{Enc(Label)}</h2>");
             }
+
+            // Native invoker command closes the owning dialog with no JavaScript.
+            var commandfor = string.IsNullOrWhiteSpace(Id) ? "" : $" commandfor=\"{Enc(Id)}\"";
             output.Content.AppendHtml(
-                $"<button class=\"{GetElementClass("close")}\" type=\"button\" aria-label=\"Close\">" +
+                $"<button class=\"{GetElementClass("close")}\" type=\"button\" " +
+                $"command=\"close\"{commandfor} aria-label=\"Close\">" +
                 "&times;</button>");
             output.Content.AppendHtml("</header>");
         }
@@ -146,8 +142,6 @@ public class DrawerTagHelper : htmxRazorTagHelperBase
             output.Content.AppendHtml(slots.Get("footer")!);
             output.Content.AppendHtml("</footer>");
         }
-
-        output.Content.AppendHtml("</div>"); // close panel
     }
 
     private static string Enc(string? value) => WebUtility.HtmlEncode(value ?? "") ?? "";

@@ -9,10 +9,8 @@ public class DropdownsModel : PageModel
 {
     public List<ComponentProperty> Properties { get; } = new()
     {
-        new("rhx-open", "bool", "false", "Whether the dropdown is initially open"),
-        new("rhx-placement", "string", "bottom-start", "Menu position: bottom-start, bottom-end, top-start, top-end"),
+        new("rhx-placement", "string", "bottom-start", "Menu position: bottom-start, bottom-end, bottom, top-start, top-end, top"),
         new("rhx-disabled", "bool", "false", "Disables the dropdown trigger"),
-        new("rhx-stay-open", "bool", "false", "Keep menu open after item selection (useful for checkboxes)"),
         new("aria-label", "string", "-", "Accessible label for the dropdown menu"),
     };
 
@@ -63,7 +61,7 @@ public class DropdownsModel : PageModel
     <rhx-dropdown-item>Item B</rhx-dropdown-item>
 </rhx-dropdown>";
 
-    public string CheckboxCode => @"<rhx-dropdown rhx-stay-open=""true"">
+    public string CheckboxCode => @"<rhx-dropdown>
     <rhx-dropdown-trigger>
         <rhx-button rhx-variant=""neutral"" rhx-appearance=""outlined"">
             Columns &#9662;
@@ -128,7 +126,6 @@ public class DropdownsModel : PageModel
     <rhx-dropdown-item>Unreachable</rhx-dropdown-item>
 </rhx-dropdown>
 
-<rhx-dropdown rhx-open=""true"">
     <rhx-dropdown-trigger>
         <rhx-button rhx-variant=""success"" rhx-appearance=""outlined"">
             Open &#9662;

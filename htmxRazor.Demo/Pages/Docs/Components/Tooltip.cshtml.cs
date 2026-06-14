@@ -10,7 +10,6 @@ public class TooltipModel : PageModel
     {
         new("rhx-content", "string", "-", "The tooltip text"),
         new("rhx-placement", "string", "top", "Position: top, bottom, left, right"),
-        new("rhx-trigger", "string", "hover", "Trigger mode: hover, click"),
         new("rhx-disabled", "bool", "false", "Whether the tooltip is disabled"),
     };
 
@@ -42,8 +41,9 @@ public class TooltipModel : PageModel
     <rhx-button rhx-variant=""neutral"" rhx-appearance=""outlined"">Right</rhx-button>
 </rhx-tooltip>";
 
-    public string ClickTriggerCode => @"<rhx-tooltip rhx-content=""Click to toggle this tooltip"" rhx-trigger=""click"">
-    <rhx-button rhx-variant=""brand"" rhx-appearance=""outlined"">Click Me</rhx-button>
+    public string FocusTriggerCode => @"<!-- Shows on hover and on keyboard focus (CSS :focus-within) -->
+<rhx-tooltip rhx-content=""Shown on hover or focus"">
+    <rhx-button rhx-variant=""brand"" rhx-appearance=""outlined"">Focus Me</rhx-button>
 </rhx-tooltip>";
 
     public string DisabledCode => @"<rhx-tooltip rhx-content=""This tooltip is disabled"" rhx-disabled=""true"">

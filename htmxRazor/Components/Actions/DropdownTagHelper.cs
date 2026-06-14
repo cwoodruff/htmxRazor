@@ -12,8 +12,14 @@ namespace htmxRazor.Components.Actions;
 /// </summary>
 /// <remarks>
 /// <para>
-/// JavaScript (<c>rhx-dropdown.js</c>) handles open/close toggling, keyboard
-/// navigation, click-outside dismissal, viewport flip detection, and focus management.
+/// The component is JavaScript-free. Open/close, light-dismiss (click outside) and
+/// Escape are provided by the native
+/// <see href="https://developer.mozilla.org/docs/Web/API/Popover_API">Popover API</see>:
+/// the trigger button carries <c>popovertarget</c>/<c>popovertargetaction="toggle"</c>
+/// and the menu carries the <c>popover</c> attribute. Placement uses
+/// <see href="https://developer.mozilla.org/docs/Web/CSS/anchor-name">CSS Anchor Positioning</see>
+/// (the trigger sets <c>anchor-name</c>, the menu sets <c>position-anchor</c> +
+/// <c>position-area</c>), with a stacked-below fallback when anchor positioning is unsupported.
 /// </para>
 /// </remarks>
 /// <example>
@@ -35,31 +41,26 @@ public class DropdownTagHelper : htmxRazorTagHelperBase
     protected override string BlockName => "dropdown";
 
     /// <summary>
-    /// Whether the dropdown panel is initially open.
+    /// Whether the dropdown panel is initially open. When true the menu renders with the
+    /// <c>open</c> attribute on its popover so it is shown on load (manual popover).
     /// </summary>
     [HtmlAttributeName("rhx-open")]
     public bool Open { get; set; }
 
     /// <summary>
     /// The preferred placement of the dropdown panel relative to the trigger.
-    /// Options: bottom-start (default), bottom-end, top-start, top-end.
-    /// CSS and JS handle actual positioning; JS flips when the panel would overflow the viewport.
+    /// Options: bottom-start (default), bottom-end, bottom, top-start, top-end, top.
+    /// Maps to a CSS <c>position-area</c>; the browser flips automatically via
+    /// <c>position-try-fallbacks</c> when the panel would overflow the viewport.
     /// </summary>
     [HtmlAttributeName("rhx-placement")]
     public string Placement { get; set; } = "bottom-start";
 
     /// <summary>
-    /// Whether the dropdown is disabled. Prevents opening and dims the trigger.
+    /// Whether the dropdown is disabled. Dims the trigger and prevents opening.
     /// </summary>
     [HtmlAttributeName("rhx-disabled")]
     public bool Disabled { get; set; }
-
-    /// <summary>
-    /// When true, the dropdown stays open after an item is selected.
-    /// Useful for checkbox menus or multi-action panels.
-    /// </summary>
-    [HtmlAttributeName("rhx-stay-open")]
-    public bool StayOpenOnSelect { get; set; }
 
     /// <summary>
     /// Accessible label for the dropdown menu panel.
@@ -72,6 +73,19 @@ public class DropdownTagHelper : htmxRazorTagHelperBase
     /// </summary>
     public DropdownTagHelper(IUrlHelperFactory urlHelperFactory) : base(urlHelperFactory) { }
 
+    /// <summary>
+    /// Maps an <c>rhx-placement</c> value to a CSS <c>position-area</c> value.
+    /// </summary>
+    private static string PlacementToPositionArea(string placement) => placement switch
+    {
+        "bottom-end" => "bottom span-left",
+        "bottom" => "bottom",
+        "top-start" => "top span-right",
+        "top-end" => "top span-left",
+        "top" => "top",
+        _ => "bottom span-right", // bottom-start (default)
+    };
+
     /// <inheritdoc/>
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
@@ -79,13 +93,18 @@ public class DropdownTagHelper : htmxRazorTagHelperBase
         var slots = SlotRenderer.CreateForContext(context);
         context.Items[typeof(DropdownTagHelper)] = this;
 
-        // ── Generate unique panel ID ──
+        // ── Generate unique panel ID + anchor name ──
         var panelId = !string.IsNullOrWhiteSpace(Id)
             ? $"{Id}-panel"
             : $"rhx-dropdown-{context.UniqueId}";
-        context.Items["DropdownPanelId"] = panelId;
+        var anchorName = $"--rhx-dropdown-anchor-{context.UniqueId}";
 
-        // ── Process children ──
+        context.Items["DropdownPanelId"] = panelId;
+        context.Items["DropdownAnchorName"] = anchorName;
+
+        var placement = Placement.ToLowerInvariant();
+
+        // ── Process children (populates trigger slot + item/divider content) ──
         var childContent = await output.GetChildContentAsync();
 
         // ── Render outer container ──
@@ -93,24 +112,11 @@ public class DropdownTagHelper : htmxRazorTagHelperBase
         output.TagMode = TagMode.StartTagAndEndTag;
 
         var css = CreateCssBuilder()
-            .AddIf(GetModifierClass("open"), Open)
             .AddIf(GetModifierClass("disabled"), Disabled);
         ApplyBaseAttributes(output, css);
 
-        // ── Data attributes for JS ──
-        output.Attributes.SetAttribute("data-rhx-dropdown", "");
-        output.Attributes.SetAttribute("data-rhx-placement", Placement.ToLowerInvariant());
-
-        if (StayOpenOnSelect)
-        {
-            output.Attributes.SetAttribute("data-rhx-stay-open", "");
-        }
-
-        // ── ARIA ──
-        if (!string.IsNullOrWhiteSpace(AriaLabel))
-        {
-            // aria-label goes on the panel, not the container
-        }
+        // Placement is exposed for styling/testing hooks (no JS reads it).
+        output.Attributes.SetAttribute("data-rhx-placement", placement);
 
         // ── htmx (rare on container but supported) ──
         RenderHtmxAttributes(output);
@@ -118,22 +124,36 @@ public class DropdownTagHelper : htmxRazorTagHelperBase
         // ── Assemble inner HTML ──
         output.Content.Clear();
 
-        // Trigger from slot
+        // Trigger from slot (carries popovertarget + anchor-name)
         if (slots.Has("trigger"))
         {
             output.Content.AppendHtml(slots.Get("trigger")!);
         }
 
-        // Panel wrapper around child content (items/dividers)
-        var ariaHiddenValue = Open ? "false" : "true";
-        var hiddenAttr = Open ? "" : " hidden";
+        // ── Menu (popover) ──
+        // An "auto" popover gives native light-dismiss (outside click) + Escape, opened by the
+        // trigger's popovertarget invoker. NOTE: a popover cannot be shown on initial load
+        // declaratively (the `open` attribute applies to <dialog>/<details>, not popovers), so
+        // there is no JS-free "initially open" dropdown — `rhx-open` is accepted but no-ops.
+        var positionArea = PlacementToPositionArea(placement);
 
-        output.Content.AppendHtml(
-            $"<div class=\"{GetElementClass("panel")}\" " +
-            $"id=\"{panelId}\" " +
-            $"role=\"menu\"" +
-            (!string.IsNullOrWhiteSpace(AriaLabel) ? $" aria-label=\"{AriaLabel}\"" : "") +
-            $" aria-hidden=\"{ariaHiddenValue}\"{hiddenAttr}>");
+        var menuStyle =
+            $"position-anchor:{anchorName};position-area:{positionArea};";
+
+        var menu = new System.Text.StringBuilder();
+        menu.Append($"<div class=\"{GetElementClass("panel")}\"");
+        menu.Append($" id=\"{panelId}\"");
+        menu.Append(" popover=\"auto\"");
+        menu.Append(" role=\"menu\"");
+        if (!string.IsNullOrWhiteSpace(AriaLabel))
+        {
+            menu.Append($" aria-label=\"{AriaLabel}\"");
+        }
+        menu.Append($" data-rhx-placement=\"{placement}\"");
+        menu.Append($" style=\"{menuStyle}\"");
+        menu.Append('>');
+
+        output.Content.AppendHtml(menu.ToString());
         output.Content.AppendHtml(childContent);
         output.Content.AppendHtml("</div>");
     }

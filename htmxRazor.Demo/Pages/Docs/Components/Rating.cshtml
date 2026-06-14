@@ -51,13 +51,13 @@
 
     <!-- Half-star Precision -->
     <div class="docs-example">
-        <h3>Half-star Precision</h3>
+        <h3>Half-star Precision (readonly display)</h3>
         <rhx-tab-group>
             <rhx-tab rhx-panel="half-preview" rhx-active="true">Preview</rhx-tab>
             <rhx-tab rhx-panel="half-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="half-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <rhx-rating name="rating-half" rhx-label="Detailed Rating" value="3.5" rhx-precision="0.5" />
+                    <rhx-rating name="rating-half" rhx-label="Detailed Rating" value="3.5" rhx-precision="0.5" rhx-readonly="true" />
                 </div>
             </rhx-tab-panel>
             <rhx-tab-panel rhx-name="half-code">
@@ -197,9 +197,10 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Uses <code>role="radiogroup"</code> with individual star buttons acting as radio inputs.</li>
-        <li>Each star has an <code>aria-label</code> describing its value (e.g., "3 out of 5 stars").</li>
-        <li>Keyboard arrow keys navigate between star values.</li>
-        <li>Readonly mode uses <code>aria-readonly="true"</code> and removes interactive elements.</li>
+        <li>Interactive ratings use a <code>role="radiogroup"</code> wrapper containing native radio inputs and labels — no JavaScript.</li>
+        <li>Each star label has an <code>aria-label</code> describing its value (e.g., "3 of 5 stars").</li>
+        <li>Native radios provide click selection, keyboard navigation (arrow keys) and form submission for free.</li>
+        <li>Readonly and disabled ratings render static stars plus a hidden input, with the value also exposed via <code>role="img"</code> / <code>aria-label</code>.</li>
+        <li>Half-star precision (<code>rhx-precision="0.5"</code>) applies only to readonly/disabled display; interactive ratings always select whole stars.</li>
     </ul>
 </section>

@@ -1,102 +1,91 @@
 /* ================================================================
-   htmxRazor Dropdown Component
+   htmxRazor Dropdown Component  (JS-free: Popover API + Anchor Positioning)
    BEM:  rhx-dropdown  /  rhx-dropdown__{panel,item,item-label,
          item-check,divider}
-         rhx-dropdown--{open,disabled}
+         rhx-dropdown--disabled
          rhx-dropdown__item--{checkbox,checked,disabled}
    ================================================================ */
 
 @layer rhx.components {
 /* ── Container ── */
 .rhx-dropdown {
-  position: relative;
   display: inline-block;
 }
 
-/* ── Trigger wrapper ── */
-[data-rhx-dropdown-trigger] {
-  display: inline-flex;
-}
-
 /* ══════════════════════════════════════════════════════════════
-   PANEL
+   PANEL (popover)
    ══════════════════════════════════════════════════════════════ */
 
+/*
+ * The panel is a native popover: it lives in the top layer when open.
+ * The browser handles open/close (via popovertarget), light-dismiss and
+ * Escape. We only style visibility through :popover-open and placement
+ * through CSS Anchor Positioning.
+ */
 .rhx-dropdown__panel {
-  position: absolute;
-  z-index: var(--rhx-z-dropdown);
-  min-width: 10rem;
+  /* Reset default popover UA styles (border/margin/padding/inset) */
+  margin: 0;
   padding: var(--rhx-space-xs) 0;
-  background: var(--rhx-color-surface);
+  inset: auto; /* let anchor positioning / fallback drive placement */
   border: var(--rhx-border-width) solid var(--rhx-color-border);
+
+  min-width: 10rem;
+  background: var(--rhx-color-surface);
   border-radius: var(--rhx-radius-md);
   box-shadow: var(--rhx-shadow-lg);
   overflow-y: auto;
   max-height: 20rem;
+  z-index: var(--rhx-z-dropdown);
+}
+
+/* Closed popovers are display:none by the UA; this keeps intent explicit. */
+.rhx-dropdown__panel:not(:popover-open) {
+  display: none;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PLACEMENT (CSS-based positioning)
+   PLACEMENT — CSS Anchor Positioning
+   The trigger button carries `anchor-name` (inline style from the
+   tag helper). The panel sets `position-anchor` + `position-area`
+   (also inline, per-instance). Here we add the shared margins and the
+   automatic flip fallbacks.
    ══════════════════════════════════════════════════════════════ */
 
-/* Default: bottom-start */
-.rhx-dropdown__panel,
-[data-rhx-placement="bottom-start"] > .rhx-dropdown__panel {
-  top: 100%;
-  left: 0;
-  margin-top: var(--rhx-space-xs);
+@supports (position-area: bottom) {
+  .rhx-dropdown__panel {
+    position: fixed; /* anchored to the trigger via position-anchor */
+    margin: var(--rhx-space-xs); /* gap between trigger and panel */
+    /* Flip to the opposite side, then opposite inline edge, if it overflows. */
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  }
 }
 
-[data-rhx-placement="bottom-end"] > .rhx-dropdown__panel {
-  top: 100%;
-  left: auto;
-  right: 0;
-  margin-top: var(--rhx-space-xs);
-}
+/* ── Fallback: no anchor positioning support → stack directly below trigger ── */
+@supports not (position-area: bottom) {
+  .rhx-dropdown {
+    position: relative;
+  }
 
-[data-rhx-placement="bottom"] > .rhx-dropdown__panel {
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-top: var(--rhx-space-xs);
-}
+  .rhx-dropdown__panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: var(--rhx-space-xs);
+  }
 
-[data-rhx-placement="top-start"] > .rhx-dropdown__panel {
-  bottom: 100%;
-  left: 0;
-  top: auto;
-  margin-bottom: var(--rhx-space-xs);
-}
+  .rhx-dropdown__panel[data-rhx-placement="bottom-end"] {
+    left: auto;
+    right: 0;
+  }
 
-[data-rhx-placement="top-end"] > .rhx-dropdown__panel {
-  bottom: 100%;
-  left: auto;
-  right: 0;
-  top: auto;
-  margin-bottom: var(--rhx-space-xs);
-}
-
-[data-rhx-placement="top"] > .rhx-dropdown__panel {
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  top: auto;
-  margin-bottom: var(--rhx-space-xs);
-}
-
-/* ── Flip state (set by JS when viewport collision detected) ── */
-[data-rhx-flipped][data-rhx-placement^="bottom"] > .rhx-dropdown__panel {
-  top: auto;
-  bottom: 100%;
-  margin-top: 0;
-  margin-bottom: var(--rhx-space-xs);
-}
-
-[data-rhx-flipped][data-rhx-placement^="top"] > .rhx-dropdown__panel {
-  bottom: auto;
-  top: 100%;
-  margin-bottom: 0;
-  margin-top: var(--rhx-space-xs);
+  .rhx-dropdown__panel[data-rhx-placement="top-start"],
+  .rhx-dropdown__panel[data-rhx-placement="top-end"],
+  .rhx-dropdown__panel[data-rhx-placement="top"] {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: var(--rhx-space-xs);
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -184,7 +173,7 @@
    DISABLED CONTAINER
    ══════════════════════════════════════════════════════════════ */
 
-.rhx-dropdown--disabled [data-rhx-dropdown-trigger] {
+.rhx-dropdown--disabled {
   opacity: 0.5;
   pointer-events: none;
 }

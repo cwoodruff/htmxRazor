@@ -1,23 +1,22 @@
 /* ═══════════════════════════════════════════════════════════════
-   htmxRazor Tooltip Component
-   The wrapper [data-rhx-tooltip] is transparent (display: contents).
-   The popup .rhx-tooltip is created/positioned by JS.
+   htmxRazor Tooltip Component — pure CSS (no JavaScript)
+   The wrapper (.rhx-tooltip-wrap) holds the trigger + the bubble
+   (.rhx-tooltip); the bubble shows on :hover / :focus-within.
    ═══════════════════════════════════════════════════════════════ */
 
 @layer rhx.components {
-/* ── Tooltip wrapper (tag helper output) ── */
-[data-rhx-tooltip] {
-  display: contents;
+/* ── Wrapper ── */
+.rhx-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   TOOLTIP POPUP (injected by JS)
-   ══════════════════════════════════════════════════════════════ */
-
+/* ── Bubble ── */
 .rhx-tooltip {
-  position: fixed;
+  position: absolute;
   z-index: var(--rhx-z-tooltip, 9000);
   max-width: 20rem;
+  width: max-content;
   padding: var(--rhx-space-xs) var(--rhx-space-sm);
   background: var(--rhx-color-neutral-900);
   color: #ffffff;
@@ -29,7 +28,49 @@
   white-space: normal;
   word-wrap: break-word;
   opacity: 0;
-  transition: opacity var(--rhx-transition-fast) ease;
+  visibility: hidden;
+  transition: opacity var(--rhx-transition-fast) ease,
+              visibility var(--rhx-transition-fast) ease;
+}
+
+/* ── Show on hover / keyboard focus ── */
+.rhx-tooltip-wrap:hover > .rhx-tooltip,
+.rhx-tooltip-wrap:focus-within > .rhx-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.rhx-tooltip-wrap--disabled > .rhx-tooltip {
+  display: none;
+}
+
+/* ── Placement ── */
+.rhx-tooltip-wrap--top > .rhx-tooltip {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: var(--rhx-space-2xs, 0.375rem);
+}
+
+.rhx-tooltip-wrap--bottom > .rhx-tooltip {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: var(--rhx-space-2xs, 0.375rem);
+}
+
+.rhx-tooltip-wrap--left > .rhx-tooltip {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: var(--rhx-space-2xs, 0.375rem);
+}
+
+.rhx-tooltip-wrap--right > .rhx-tooltip {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: var(--rhx-space-2xs, 0.375rem);
 }
 
 /* ── Dark theme: invert tooltip colors ── */
@@ -38,65 +79,7 @@
   color: var(--rhx-color-neutral-900);
 }
 
-[data-rhx-theme="dark"] .rhx-tooltip__arrow {
-  background: var(--rhx-color-neutral-100);
-}
-
-.rhx-tooltip--visible {
-  opacity: 1;
-}
-
-/* ── Arrow ── */
-.rhx-tooltip__arrow {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: var(--rhx-color-neutral-900);
-  transform: rotate(45deg);
-}
-
-/* Arrow placement */
-.rhx-tooltip[data-placement="top"] .rhx-tooltip__arrow {
-  bottom: -4px;
-  left: 50%;
-  margin-left: -4px;
-}
-
-.rhx-tooltip[data-placement="bottom"] .rhx-tooltip__arrow {
-  top: -4px;
-  left: 50%;
-  margin-left: -4px;
-}
-
-.rhx-tooltip[data-placement="left"] .rhx-tooltip__arrow {
-  right: -4px;
-  top: 50%;
-  margin-top: -4px;
-}
-
-.rhx-tooltip[data-placement="right"] .rhx-tooltip__arrow {
-  left: -4px;
-  top: 50%;
-  margin-top: -4px;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   CSS ANCHOR POSITIONING (modern browsers)
-   When supported, the browser handles positioning natively.
-   JS sets anchor-name/position-anchor inline; these rules provide
-   the fallback flip behavior and proper display.
-   ══════════════════════════════════════════════════════════════ */
-
-@supports (anchor-name: --x) {
-  .rhx-tooltip {
-    position-try-fallbacks: flip-block, flip-inline;
-  }
-}
-
-/* ══════════════════════════════════════════════════════════════
-   REDUCED MOTION
-   ══════════════════════════════════════════════════════════════ */
-
+/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .rhx-tooltip {
     transition-duration: 0.01ms;

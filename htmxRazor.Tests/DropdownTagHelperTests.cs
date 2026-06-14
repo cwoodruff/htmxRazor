@@ -41,7 +41,7 @@ public class DropdownTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Dropdown_Has_DataAttribute()
+    public async Task Dropdown_Menu_Has_Popover_Attribute()
     {
         var helper = CreateDropdownHelper();
         var context = CreateContext("rhx-dropdown");
@@ -49,7 +49,9 @@ public class DropdownTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        Assert.NotNull(output.Attributes["data-rhx-dropdown"]);
+        var content = output.Content.GetContent();
+        // Closed dropdown uses an "auto" popover for native light-dismiss.
+        Assert.Contains("popover=\"auto\"", content);
     }
 
     [Fact]
@@ -78,20 +80,23 @@ public class DropdownTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Dropdown_Open_Adds_Modifier_Class()
+    public async Task Dropdown_Open_Still_Auto_Popover_No_JsFree_Open_On_Load()
     {
         var helper = CreateDropdownHelper();
-        helper.Open = true;
+        helper.Open = true; // no-op: popovers can't be shown on load without JS
         var context = CreateContext("rhx-dropdown");
         var output = CreateOutput("rhx-dropdown", childContent: "");
 
         await helper.ProcessAsync(context, output);
 
-        Assert.True(HasClass(output, "rhx-dropdown--open"));
+        var content = output.Content.GetContent();
+        Assert.Contains("popover=\"auto\"", content);
+        Assert.DoesNotContain("popover=\"manual\"", content);
+        Assert.DoesNotContain(" open>", content);
     }
 
     [Fact]
-    public async Task Dropdown_Closed_Has_No_Open_Modifier()
+    public async Task Dropdown_Closed_Uses_Auto_Popover_Without_Open()
     {
         var helper = CreateDropdownHelper();
         var context = CreateContext("rhx-dropdown");
@@ -99,7 +104,9 @@ public class DropdownTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        Assert.False(HasClass(output, "rhx-dropdown--open"));
+        var content = output.Content.GetContent();
+        Assert.Contains("popover=\"auto\"", content);
+        Assert.DoesNotContain(" open>", content);
     }
 
     [Fact]
@@ -116,31 +123,6 @@ public class DropdownTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Dropdown_StayOpen_Sets_DataAttribute()
-    {
-        var helper = CreateDropdownHelper();
-        helper.StayOpenOnSelect = true;
-        var context = CreateContext("rhx-dropdown");
-        var output = CreateOutput("rhx-dropdown", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.NotNull(output.Attributes["data-rhx-stay-open"]);
-    }
-
-    [Fact]
-    public async Task Dropdown_No_StayOpen_No_DataAttribute()
-    {
-        var helper = CreateDropdownHelper();
-        var context = CreateContext("rhx-dropdown");
-        var output = CreateOutput("rhx-dropdown", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.Null(output.Attributes["data-rhx-stay-open"]);
-    }
-
-    [Fact]
     public async Task Dropdown_Panel_Has_Role_Menu()
     {
         var helper = CreateDropdownHelper();
@@ -154,32 +136,18 @@ public class DropdownTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Dropdown_Closed_Panel_Has_AriaHidden_True()
+    public async Task Dropdown_Panel_Sets_Anchor_Positioning_Style()
     {
         var helper = CreateDropdownHelper();
+        helper.Placement = "bottom-end";
         var context = CreateContext("rhx-dropdown");
         var output = CreateOutput("rhx-dropdown", childContent: "");
 
         await helper.ProcessAsync(context, output);
 
         var content = output.Content.GetContent();
-        Assert.Contains("aria-hidden=\"true\"", content);
-        Assert.Contains("hidden", content);
-    }
-
-    [Fact]
-    public async Task Dropdown_Open_Panel_Has_AriaHidden_False()
-    {
-        var helper = CreateDropdownHelper();
-        helper.Open = true;
-        var context = CreateContext("rhx-dropdown");
-        var output = CreateOutput("rhx-dropdown", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("aria-hidden=\"false\"", content);
-        Assert.DoesNotContain(" hidden>", content);
+        Assert.Contains("position-anchor:--rhx-dropdown-anchor-", content);
+        Assert.Contains("position-area:bottom span-left", content);
     }
 
     [Fact]
@@ -542,31 +510,25 @@ public class DropdownTagHelperTests : TagHelperTestBase
     }
 
     // ══════════════════════════════════════════════
-    //  Keyboard Interaction Contract (documentation)
+    //  Interaction Contract (documentation)
     // ══════════════════════════════════════════════
     //
-    // The following keyboard behaviors are implemented in rhx-dropdown.js
-    // and tested via browser/integration tests (out of scope for xUnit):
+    // The dropdown is JavaScript-free and relies on the native Popover API.
+    // The following behaviors are provided by the browser and verified via
+    // Playwright (out of scope for xUnit):
     //
-    // Trigger:
-    //   Click        → Toggle open/close
-    //   ArrowDown    → Open dropdown, focus first item
-    //   ArrowUp      → Open dropdown, focus first item
-    //   Escape       → Close dropdown (when open)
+    // Trigger (popovertarget invoker):
+    //   Click   → Toggle the menu popover open/close
     //
-    // Menu items:
-    //   ArrowDown    → Focus next item (wraps to first)
-    //   ArrowUp      → Focus previous item (wraps to last)
-    //   Home         → Focus first item
-    //   End          → Focus last item
-    //   Enter/Space  → Activate item (select or toggle checkbox)
-    //   Escape       → Close dropdown, return focus to trigger
-    //   Tab          → Close dropdown
+    // Menu (popover="auto"):
+    //   Escape        → Close the menu
+    //   Click outside → Close the menu (light-dismiss)
+    //   Tab           → Move focus between menu items
+    //   Enter/Space   → Activate the focused item (links/buttons)
     //
-    // Checkbox items:
-    //   Enter/Space  → Toggle aria-checked, update check mark, stay open
-    //
-    // Other:
-    //   Click outside → Close dropdown
-    //   Item click    → Activate item (close unless stay-open)
+    // Dropped vs. the previous JS implementation:
+    //   - APG arrow-key navigation between items (Tab still works).
+    //   - "Stay open on select" / interactive checkbox toggling (the Popover
+    //     API light-dismisses on outside click; checkbox items render their
+    //     initial state but no longer toggle without JS).
 }

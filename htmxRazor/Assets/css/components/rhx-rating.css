@@ -1,5 +1,5 @@
 /* ──────────────────────────────────────────────
-   rhx-rating — Interactive star rating
+   rhx-rating — Star rating (JS-free, reversed-radio pattern)
    ────────────────────────────────────────────── */
 
 @layer rhx.components {
@@ -17,21 +17,36 @@
     color: var(--rhx-color-text);
 }
 
-/* ── Stars container ── */
+/* ── Stars container ──
+   Interactive radiogroups use row-reverse so that, although the radios are
+   emitted Max..1 in source order, the visual order is 1..Max left-to-right. */
 
 .rhx-rating__stars {
-    display: flex;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
     gap: var(--rhx-space-xs);
 }
 
-/* ── Individual star ── */
+/* The visually-hidden radio input. .rhx-sr-only handles the hiding; this is
+   here so the selector exists and to keep the radio out of the layout flow. */
+.rhx-rating__input {
+    position: absolute;
+}
+
+/* ── Star (label in interactive mode, span in display mode) ── */
 
 .rhx-rating__star {
     display: inline-flex;
     position: relative;
-    cursor: pointer;
+    margin: 0;
     color: var(--rhx-color-border);
     transition: color 0.1s ease, transform 0.1s ease;
+}
+
+/* Interactive stars are clickable labels. */
+.rhx-rating .rhx-rating__stars[role="radiogroup"] .rhx-rating__star {
+    cursor: pointer;
 }
 
 .rhx-rating__star svg {
@@ -42,94 +57,95 @@
     stroke-width: 0.5;
 }
 
-/* Filled star */
+/* ──────────────────────────────────────────────
+   Interactive fill logic (reversed-radio pattern)
+   ──────────────────────────────────────────────
+   Because of row-reverse, a label that visually appears to the LEFT of the
+   checked star is a *following* sibling in source order. So the checked
+   radio's own label plus all following-sibling labels = the filled stars. */
+
+.rhx-rating__input:checked ~ .rhx-rating__star {
+    color: var(--rhx-color-warning-500, #eab308);
+}
+
+/* The label immediately after the checked input is that input's own star. */
+.rhx-rating__input:checked + .rhx-rating__star {
+    color: var(--rhx-color-warning-500, #eab308);
+}
+
+/* ── Hover preview ──
+   While the group is hovered, reset all fills, then light up the hovered star
+   and every following-sibling star (visually left of it). */
+.rhx-rating__stars[role="radiogroup"]:hover .rhx-rating__input:checked ~ .rhx-rating__star,
+.rhx-rating__stars[role="radiogroup"]:hover .rhx-rating__input:checked + .rhx-rating__star {
+    color: var(--rhx-color-border);
+}
+
+.rhx-rating__stars[role="radiogroup"] .rhx-rating__star:hover,
+.rhx-rating__stars[role="radiogroup"] .rhx-rating__star:hover ~ .rhx-rating__star {
+    color: var(--rhx-color-warning-500, #eab308);
+    transform: scale(1.1);
+}
+
+/* ── Focus ring on the checked radio's label ── */
+.rhx-rating__input:focus-visible + .rhx-rating__star {
+    outline: 2px solid var(--rhx-color-focus-ring, var(--rhx-color-brand-500));
+    outline-offset: 2px;
+    border-radius: var(--rhx-radius-sm);
+}
+
+/* ──────────────────────────────────────────────
+   Display-only fill (readonly / disabled)
+   ────────────────────────────────────────────── */
+
 .rhx-rating__star--filled {
     color: var(--rhx-color-warning-500, #eab308);
 }
 
-/* Half star — clip technique with overflow */
+/* Half star — base SVG is empty (border colored); a clipped warning-colored
+   overlay covers the left 50%. The overlay uses the same star glyph rendered
+   as a mask so only the star shape is painted. */
 .rhx-rating__star--half {
     color: var(--rhx-color-border);
 }
 
-.rhx-rating__star--half::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 50%;
-    height: 100%;
-    overflow: hidden;
-    z-index: 1;
-}
-
 .rhx-rating__star--half svg {
     position: relative;
-}
-
-/* Use a CSS approach for half-fill: clip the filled color */
-.rhx-rating__star--half {
-    background: linear-gradient(
-        to right,
-        var(--rhx-color-warning-500, #eab308) 50%,
-        var(--rhx-color-border) 50%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* Override for SVG fill via a different approach: use two overlapping stars */
-.rhx-rating__star--half svg {
-    fill: var(--rhx-color-border);
+    z-index: 0;
 }
 
 .rhx-rating__star--half::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 50%;
     height: 100%;
     overflow: hidden;
     z-index: 1;
     pointer-events: none;
+    background-color: var(--rhx-color-warning-500, #eab308);
+    -webkit-mask: var(--rhx-rating-star-glyph) left center / auto 100% no-repeat;
+    mask: var(--rhx-rating-star-glyph) left center / auto 100% no-repeat;
 }
 
-/* Hover preview */
-.rhx-rating:not(.rhx-rating--disabled):not(.rhx-rating--readonly) .rhx-rating__star:hover,
-.rhx-rating:not(.rhx-rating--disabled):not(.rhx-rating--readonly) .rhx-rating__star:hover ~ .rhx-rating__star {
-    transform: scale(1.1);
+/* Star glyph used as the half-fill mask (matches the inline SVG polygon). */
+.rhx-rating {
+    --rhx-rating-star-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpolygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' fill='black'/%3E%3C/svg%3E");
 }
 
-.rhx-rating:not(.rhx-rating--disabled):not(.rhx-rating--readonly) .rhx-rating__star[data-hover="true"] {
-    color: var(--rhx-color-warning-500, #eab308);
-}
-
-/* ── Focus ring ── */
-
-.rhx-rating[role="slider"]:focus-visible {
-    outline: 2px solid var(--rhx-color-brand-500);
-    outline-offset: 4px;
-    border-radius: var(--rhx-radius-sm);
-}
-
-/* ── Hint ── */
+/* ── Error ── */
 
 .rhx-rating__hint {
     font-size: var(--rhx-font-size-xs);
     color: var(--rhx-color-text-muted);
 }
 
-/* ── Error ── */
-
 .rhx-rating__error {
     font-size: var(--rhx-font-size-xs);
     color: var(--rhx-color-danger-500);
 }
 
-.rhx-rating--error .rhx-rating__star,
-.rhx-rating[data-rhx-invalid] .rhx-rating__star {
+.rhx-rating--error .rhx-rating__star {
     color: var(--rhx-color-danger-500);
 }
 

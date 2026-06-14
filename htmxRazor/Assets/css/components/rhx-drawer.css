@@ -1,90 +1,108 @@
 /* ══════════════════════════════════════════════
-   rhx-drawer — Slide-out drawer panel
+   rhx-drawer — Slide-out drawer panel (native <dialog>)
+   No JavaScript: the browser provides open/close,
+   backdrop, focus trap, light-dismiss, and Escape.
    ══════════════════════════════════════════════ */
 
 @layer rhx.components {
+
+/* ── Panel (the <dialog> itself) ── */
 .rhx-drawer {
     position: fixed;
-    inset: 0;
     z-index: var(--rhx-z-drawer, 1000);
-    pointer-events: none;
-    visibility: hidden;
-    transition: visibility 0s 0.25s;
+    margin: 0;
+    padding: 0;
+    border: none;
+    max-width: none;
+    max-height: none;
+    background: var(--rhx-color-surface);
+    color: var(--rhx-color-text);
+    box-shadow: var(--rhx-shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1));
+    overflow: hidden;
+
+    /* Closed dialogs are display:none; allow-discrete lets us animate in/out. */
+    transition:
+        transform 0.25s ease,
+        overlay 0.25s ease allow-discrete,
+        display 0.25s ease allow-discrete;
 }
 
-.rhx-drawer--contained {
-    position: absolute;
-}
-
-/* ── Overlay ── */
-.rhx-drawer__overlay {
-    position: absolute;
-    inset: 0;
-    background: var(--rhx-color-overlay);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-/* ── Panel ── */
-.rhx-drawer__panel {
-    position: absolute;
+/* The panel is a flex column when open. */
+.rhx-drawer[open] {
     display: flex;
     flex-direction: column;
-    background: var(--rhx-color-surface);
-    box-shadow: var(--rhx-shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1));
-    transition: transform 0.25s ease;
-    overflow: hidden;
+}
+
+/* ── Backdrop (native top-layer pseudo-element) ── */
+.rhx-drawer::backdrop {
+    background: var(--rhx-color-overlay);
+    opacity: 0;
+    transition:
+        opacity 0.2s ease,
+        overlay 0.2s ease allow-discrete,
+        display 0.2s ease allow-discrete;
+}
+
+.rhx-drawer[open]::backdrop {
+    opacity: 1;
 }
 
 /* ── Placement: End (default, right side) ── */
-.rhx-drawer--end > .rhx-drawer__panel {
+.rhx-drawer--end {
     top: 0;
     right: 0;
     bottom: 0;
+    left: auto;
     width: min(90vw, 24rem);
+    height: 100%;
     transform: translateX(100%);
 }
 
 /* ── Placement: Start (left side) ── */
-.rhx-drawer--start > .rhx-drawer__panel {
+.rhx-drawer--start {
     top: 0;
     left: 0;
     bottom: 0;
+    right: auto;
     width: min(90vw, 24rem);
+    height: 100%;
     transform: translateX(-100%);
 }
 
 /* ── Placement: Top ── */
-.rhx-drawer--top > .rhx-drawer__panel {
+.rhx-drawer--top {
     top: 0;
     left: 0;
     right: 0;
+    bottom: auto;
+    width: 100%;
     height: min(90vh, 20rem);
     transform: translateY(-100%);
 }
 
 /* ── Placement: Bottom ── */
-.rhx-drawer--bottom > .rhx-drawer__panel {
+.rhx-drawer--bottom {
     bottom: 0;
     left: 0;
     right: 0;
+    top: auto;
+    width: 100%;
     height: min(90vh, 20rem);
     transform: translateY(100%);
 }
 
-/* ── Open state ── */
-.rhx-drawer--open {
-    pointer-events: auto;
-    visibility: visible;
-    transition: visibility 0s 0s;
-}
-
-.rhx-drawer--open > .rhx-drawer__overlay {
-    opacity: 1;
-}
-
-.rhx-drawer--open > .rhx-drawer__panel {
+/* ── Open state: slide into place ── */
+.rhx-drawer[open] {
     transform: translate(0, 0);
+}
+
+/* ── @starting-style: initial transform before the open transition runs ── */
+@starting-style {
+    .rhx-drawer--end[open]   { transform: translateX(100%); }
+    .rhx-drawer--start[open] { transform: translateX(-100%); }
+    .rhx-drawer--top[open]   { transform: translateY(-100%); }
+    .rhx-drawer--bottom[open]{ transform: translateY(100%); }
+    .rhx-drawer[open]::backdrop { opacity: 0; }
 }
 
 /* ── Header ── */
@@ -151,8 +169,8 @@
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-    .rhx-drawer__panel,
-    .rhx-drawer__overlay {
+    .rhx-drawer,
+    .rhx-drawer::backdrop {
         transition: none;
     }
 }

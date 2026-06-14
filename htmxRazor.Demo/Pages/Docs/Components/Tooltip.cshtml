@@ -68,22 +68,23 @@
         </rhx-tab-group>
     </div>
 
-    <!-- Click Trigger -->
+    <!-- Keyboard focus -->
     <div class="docs-example">
-        <h3>Click Trigger</h3>
+        <h3>Keyboard focus</h3>
+        <p>Tooltips show on hover <em>and</em> on keyboard focus (pure CSS <code>:focus-within</code>) — Tab to the button.</p>
         <rhx-tab-group>
-            <rhx-tab rhx-panel="click-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="click-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="click-preview" rhx-active="true">
+            <rhx-tab rhx-panel="focus-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="focus-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="focus-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <rhx-tooltip rhx-content="Click to toggle this tooltip" rhx-trigger="click">
-                        <rhx-button rhx-variant="brand" rhx-appearance="outlined">Click Me</rhx-button>
+                    <rhx-tooltip rhx-content="Shown on hover or focus">
+                        <rhx-button rhx-variant="brand" rhx-appearance="outlined">Focus Me</rhx-button>
                     </rhx-tooltip>
                 </div>
             </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="click-code">
+            <rhx-tab-panel rhx-name="focus-code">
                 <div class="docs-code">
-                    <pre><code>@Model.ClickTriggerCode</code></pre>
+                    <pre><code>@Model.FocusTriggerCode</code></pre>
                 </div>
             </rhx-tab-panel>
         </rhx-tab-group>

@@ -87,7 +87,7 @@
             <rhx-tab rhx-panel="checkbox-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="checkbox-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <rhx-dropdown rhx-stay-open="true">
+                    <rhx-dropdown>
                         <rhx-dropdown-trigger>
                             <rhx-button rhx-variant="neutral" rhx-appearance="outlined">
                                 Columns &#9662;
@@ -196,13 +196,13 @@
                         <rhx-dropdown-item>Unreachable</rhx-dropdown-item>
                     </rhx-dropdown>
 
-                    <rhx-dropdown rhx-open="true">
+                    <rhx-dropdown>
                         <rhx-dropdown-trigger>
                             <rhx-button rhx-variant="success" rhx-appearance="outlined">
-                                Open &#9662;
+                                Enabled &#9662;
                             </rhx-button>
                         </rhx-dropdown-trigger>
-                        <rhx-dropdown-item>Already visible</rhx-dropdown-item>
+                        <rhx-dropdown-item>First item</rhx-dropdown-item>
                         <rhx-dropdown-item>Second item</rhx-dropdown-item>
                     </rhx-dropdown>
                 </div>
@@ -229,11 +229,11 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>The trigger button receives <code>aria-haspopup="menu"</code> and <code>aria-expanded</code> reflecting menu state.</li>
+        <li>Built on the native <strong>Popover API</strong>: the trigger carries <code>popovertarget</code> and <code>aria-haspopup="menu"</code>; the menu uses the <code>popover</code> attribute. No JavaScript is required.</li>
+        <li>The browser provides open/close, light-dismiss (click outside) and <kbd>Escape</kbd> for free.</li>
         <li>The menu uses <code>role="menu"</code> with items using <code>role="menuitem"</code> or <code>role="menuitemcheckbox"</code>.</li>
-        <li>Arrow keys navigate between items; <kbd>Enter</kbd> or <kbd>Space</kbd> activates the focused item.</li>
-        <li><kbd>Escape</kbd> closes the menu and returns focus to the trigger.</li>
-        <li>Disabled items receive <code>aria-disabled="true"</code> and are skipped during keyboard navigation.</li>
+        <li><kbd>Tab</kbd> moves focus between items; <kbd>Enter</kbd> or <kbd>Space</kbd> activates the focused item.</li>
+        <li>Disabled items receive <code>aria-disabled="true"</code> (links) or the <code>disabled</code> attribute (buttons).</li>
         <li>Link items render as <code>&lt;a&gt;</code> elements with <code>role="menuitem"</code>.</li>
     </ul>
 </section>

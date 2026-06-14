@@ -9,7 +9,7 @@ public class DrawerModel : PageModel
 {
     public List<ComponentProperty> Properties { get; } = new()
     {
-        new("id", "string", "-", "Element ID used for open/close triggers"),
+        new("id", "string", "-", "Element ID targeted by invoker buttons (commandfor)"),
         new("rhx-label", "string", "-", "Title text displayed in the drawer header"),
         new("rhx-placement", "string", "end", "Slide direction: start, end, top, bottom"),
         new("rhx-contained", "bool", "false", "Position relative to parent instead of viewport"),
@@ -17,7 +17,7 @@ public class DrawerModel : PageModel
     };
 
     public string EndCode => @"<rhx-button rhx-variant=""brand""
-            data-rhx-drawer-open=""end-drawer"">
+            command=""show-modal"" commandfor=""end-drawer"">
     Open End Drawer
 </rhx-button>
 
@@ -26,14 +26,14 @@ public class DrawerModel : PageModel
     <p>Check back later for updates.</p>
     <rhx-drawer-footer>
         <rhx-button rhx-variant=""ghost""
-                    data-rhx-drawer-close=""end-drawer"">
+                    command=""close"" commandfor=""end-drawer"">
             Close
         </rhx-button>
     </rhx-drawer-footer>
 </rhx-drawer>";
 
     public string StartCode => @"<rhx-button rhx-variant=""outline""
-            data-rhx-drawer-open=""start-drawer"">
+            command=""show-modal"" commandfor=""start-drawer"">
     Open Start Drawer
 </rhx-button>
 
@@ -48,11 +48,11 @@ public class DrawerModel : PageModel
 </rhx-drawer>";
 
     public string TopBottomCode => @"<rhx-button rhx-variant=""outline""
-            data-rhx-drawer-open=""top-drawer"">
+            command=""show-modal"" commandfor=""top-drawer"">
     Open Top Drawer
 </rhx-button>
 <rhx-button rhx-variant=""outline""
-            data-rhx-drawer-open=""bottom-drawer"">
+            command=""show-modal"" commandfor=""bottom-drawer"">
     Open Bottom Drawer
 </rhx-button>
 
@@ -66,11 +66,11 @@ public class DrawerModel : PageModel
     <p>We use cookies to improve your experience.</p>
     <rhx-drawer-footer>
         <rhx-button rhx-variant=""ghost""
-                    data-rhx-drawer-close=""bottom-drawer"">
+                    command=""close"" commandfor=""bottom-drawer"">
             Decline
         </rhx-button>
         <rhx-button rhx-variant=""brand""
-                    data-rhx-drawer-close=""bottom-drawer"">
+                    command=""close"" commandfor=""bottom-drawer"">
             Accept
         </rhx-button>
     </rhx-drawer-footer>
@@ -81,7 +81,7 @@ public class DrawerModel : PageModel
      border-radius: var(--rhx-radius-md); overflow: hidden;"">
     <div style=""padding: var(--rhx-space-lg);"">
         <rhx-button rhx-variant=""outline"" rhx-size=""small""
-                    data-rhx-drawer-open=""contained-drawer"">
+                    command=""show-modal"" commandfor=""contained-drawer"">
             Toggle Sidebar
         </rhx-button>
         <p>Main content area. The drawer opens within this container.</p>
@@ -98,7 +98,7 @@ public class DrawerModel : PageModel
     public string HtmxCode => @"<rhx-button rhx-variant=""brand""
             hx-get=""/Docs/Components/Drawer?handler=UserProfile""
             hx-target=""#profile-drawer .rhx-drawer__body""
-            data-rhx-drawer-open=""profile-drawer"">
+            command=""show-modal"" commandfor=""profile-drawer"">
     View Profile
 </rhx-button>
 

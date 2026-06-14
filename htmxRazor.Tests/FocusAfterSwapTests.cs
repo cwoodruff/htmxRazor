@@ -113,44 +113,7 @@ public class FocusAfterSwapTests : TagHelperTestBase
     //  Drawer — defaults to "first"
     // ══════════════════════════════════════════════
 
-    [Fact]
-    public async Task Drawer_Has_Default_FocusAfterSwap()
-    {
-        var helper = new DrawerTagHelper(CreateUrlHelperFactory());
-        helper.ViewContext = CreateViewContext();
-        var context = CreateContext("rhx-drawer");
-        var output = CreateOutput("rhx-drawer", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-focus-after-swap", "first");
-    }
-
-    [Fact]
-    public async Task Drawer_Custom_FocusAfterSwap()
-    {
-        var helper = new DrawerTagHelper(CreateUrlHelperFactory());
-        helper.ViewContext = CreateViewContext();
-        helper.FocusAfterSwap = "#close-btn";
-        var context = CreateContext("rhx-drawer");
-        var output = CreateOutput("rhx-drawer", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-focus-after-swap", "#close-btn");
-    }
-
-    [Fact]
-    public async Task Drawer_FocusAfterSwap_None_Not_Rendered()
-    {
-        var helper = new DrawerTagHelper(CreateUrlHelperFactory());
-        helper.ViewContext = CreateViewContext();
-        helper.FocusAfterSwap = "none";
-        var context = CreateContext("rhx-drawer");
-        var output = CreateOutput("rhx-drawer", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertNoAttribute(output, "data-rhx-focus-after-swap");
-    }
+    // Drawer focus-after-swap tests removed: the drawer is now a native modal <dialog>
+    // (opened via an invoker command), so the browser traps and restores focus itself —
+    // the JS-era data-rhx-focus-after-swap hook no longer applies to it.
 }

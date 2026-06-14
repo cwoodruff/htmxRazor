@@ -22,7 +22,7 @@ public class DrawerTagHelperTests : TagHelperTestBase
     // ══════════════════════════════════════════════
 
     [Fact]
-    public async Task Renders_Div_Element()
+    public async Task Renders_Dialog_Element()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-drawer");
@@ -30,7 +30,7 @@ public class DrawerTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        Assert.Equal("div", output.TagName);
+        Assert.Equal("dialog", output.TagName);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class DrawerTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Has_Data_Attribute()
+    public async Task Has_Placement_Data_Attribute()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-drawer");
@@ -54,7 +54,19 @@ public class DrawerTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "data-rhx-drawer", "");
+        AssertAttribute(output, "data-rhx-placement", "end");
+    }
+
+    [Fact]
+    public async Task No_Legacy_Js_Hook_Attribute()
+    {
+        var helper = CreateHelper();
+        var context = CreateContext("rhx-drawer");
+        var output = CreateOutput("rhx-drawer", childContent: "");
+
+        await helper.ProcessAsync(context, output);
+
+        AssertNoAttribute(output, "data-rhx-drawer");
     }
 
     [Fact]
@@ -108,33 +120,6 @@ public class DrawerTagHelperTests : TagHelperTestBase
         await helper.ProcessAsync(context, output);
 
         Assert.True(HasClass(output, "rhx-drawer--bottom"));
-    }
-
-    [Fact]
-    public async Task Contains_Overlay()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-drawer");
-        var output = CreateOutput("rhx-drawer", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-drawer__overlay", content);
-    }
-
-    [Fact]
-    public async Task Contains_Panel_With_Dialog_Role()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-drawer");
-        var output = CreateOutput("rhx-drawer", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-drawer__panel", content);
-        Assert.Contains("role=\"dialog\"", content);
     }
 
     [Fact]
@@ -197,6 +182,21 @@ public class DrawerTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
+    public async Task Close_Button_Uses_Close_Command()
+    {
+        var helper = CreateHelper();
+        helper.Id = "nav";
+        var context = CreateContext("rhx-drawer");
+        var output = CreateOutput("rhx-drawer", childContent: "");
+
+        await helper.ProcessAsync(context, output);
+
+        var content = output.Content.GetContent();
+        Assert.Contains("command=\"close\"", content);
+        Assert.Contains("commandfor=\"nav\"", content);
+    }
+
+    [Fact]
     public async Task NoHeader_Suppresses_Header()
     {
         var helper = CreateHelper();
@@ -229,7 +229,7 @@ public class DrawerTagHelperTests : TagHelperTestBase
     // ══════════════════════════════════════════════
 
     [Fact]
-    public async Task Closed_Has_AriaHidden_True()
+    public async Task Closed_Has_No_Open_Attribute()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-drawer");
@@ -237,11 +237,11 @@ public class DrawerTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "aria-hidden", "true");
+        AssertNoAttribute(output, "open");
     }
 
     [Fact]
-    public async Task Open_No_AriaHidden()
+    public async Task Open_Has_Open_Attribute()
     {
         var helper = CreateHelper();
         helper.Open = true;
@@ -250,7 +250,7 @@ public class DrawerTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertNoAttribute(output, "aria-hidden");
+        AssertAttribute(output, "open", "open");
     }
 
     [Fact]
@@ -281,7 +281,6 @@ public class DrawerTagHelperTests : TagHelperTestBase
         await helper.ProcessAsync(context, output);
 
         Assert.True(HasClass(output, "rhx-drawer--contained"));
-        AssertAttribute(output, "data-rhx-contained", "");
     }
 
     // ══════════════════════════════════════════════

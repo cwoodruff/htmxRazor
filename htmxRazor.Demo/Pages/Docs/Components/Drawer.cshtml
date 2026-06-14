@@ -19,12 +19,12 @@
             <rhx-tab rhx-panel="end-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="end-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <rhx-button rhx-variant="brand" data-rhx-drawer-open="end-drawer">Open End Drawer</rhx-button>
+                    <rhx-button rhx-variant="brand" command="show-modal" commandfor="end-drawer">Open End Drawer</rhx-button>
                     <rhx-drawer id="end-drawer" rhx-label="Notifications">
                         <p>You have no new notifications.</p>
                         <p>Check back later for updates.</p>
                         <rhx-drawer-footer>
-                            <rhx-button rhx-variant="ghost" data-rhx-drawer-close="end-drawer">Close</rhx-button>
+                            <rhx-button rhx-variant="ghost" command="close" commandfor="end-drawer">Close</rhx-button>
                         </rhx-drawer-footer>
                     </rhx-drawer>
                 </div>
@@ -45,7 +45,7 @@
             <rhx-tab rhx-panel="start-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="start-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <rhx-button rhx-variant="outline" data-rhx-drawer-open="start-drawer">Open Start Drawer</rhx-button>
+                    <rhx-button rhx-variant="outline" command="show-modal" commandfor="start-drawer">Open Start Drawer</rhx-button>
                     <rhx-drawer id="start-drawer" rhx-label="Navigation" rhx-placement="start">
                         <nav style="display: flex; flex-direction: column; gap: var(--rhx-space-sm);">
                             <a href="#" style="color: var(--rhx-color-brand-500); font-weight: var(--rhx-font-weight-medium);">Dashboard</a>
@@ -72,8 +72,8 @@
             <rhx-tab rhx-panel="topbottom-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="topbottom-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <rhx-button rhx-variant="outline" data-rhx-drawer-open="top-drawer">Open Top Drawer</rhx-button>
-                    <rhx-button rhx-variant="outline" data-rhx-drawer-open="bottom-drawer">Open Bottom Drawer</rhx-button>
+                    <rhx-button rhx-variant="outline" command="show-modal" commandfor="top-drawer">Open Top Drawer</rhx-button>
+                    <rhx-button rhx-variant="outline" command="show-modal" commandfor="bottom-drawer">Open Bottom Drawer</rhx-button>
 
                     <rhx-drawer id="top-drawer" rhx-label="Alert Banner" rhx-placement="top">
                         <p>This drawer slides down from the top of the viewport.</p>
@@ -82,8 +82,8 @@
                     <rhx-drawer id="bottom-drawer" rhx-label="Cookie Consent" rhx-placement="bottom">
                         <p>We use cookies to improve your experience.</p>
                         <rhx-drawer-footer>
-                            <rhx-button rhx-variant="ghost" data-rhx-drawer-close="bottom-drawer">Decline</rhx-button>
-                            <rhx-button rhx-variant="brand" data-rhx-drawer-close="bottom-drawer">Accept</rhx-button>
+                            <rhx-button rhx-variant="ghost" command="close" commandfor="bottom-drawer">Decline</rhx-button>
+                            <rhx-button rhx-variant="brand" command="close" commandfor="bottom-drawer">Accept</rhx-button>
                         </rhx-drawer-footer>
                     </rhx-drawer>
                 </div>
@@ -106,7 +106,7 @@
                 <div class="docs-preview">
                     <div style="position: relative; height: 300px; border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-md); overflow: hidden;">
                         <div style="padding: var(--rhx-space-lg);">
-                            <rhx-button rhx-variant="outline" rhx-size="small" data-rhx-drawer-open="contained-drawer">Toggle Sidebar</rhx-button>
+                            <rhx-button rhx-variant="outline" rhx-size="small" command="show-modal" commandfor="contained-drawer">Toggle Sidebar</rhx-button>
                             <p style="margin-top: var(--rhx-space-md);">Main content area. The drawer opens within this container.</p>
                         </div>
 
@@ -139,7 +139,7 @@
                     <rhx-button rhx-variant="brand"
                                 hx-get="/Docs/Components/Drawer?handler=UserProfile"
                                 hx-target="#profile-drawer .rhx-drawer__body"
-                                data-rhx-drawer-open="profile-drawer">
+                                command="show-modal" commandfor="profile-drawer">
                         View Profile
                     </rhx-button>
 
@@ -164,10 +164,11 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Uses <code>role="dialog"</code> for screen reader announcement.</li>
-        <li>Focus is trapped within the drawer while it is open.</li>
-        <li>ESC key closes the drawer and returns focus to the trigger element.</li>
+        <li>Built on the native <code>&lt;dialog&gt;</code> element opened as a modal, giving implicit dialog semantics.</li>
+        <li>The browser traps focus within the drawer while it is open and restores focus to the invoker on close.</li>
+        <li>The ESC key closes the drawer natively.</li>
         <li><code>aria-label</code> is set from the <code>rhx-label</code> attribute.</li>
-        <li>Backdrop overlay prevents interaction with background content.</li>
+        <li>The native top-layer <code>::backdrop</code> blocks interaction with background content and light-dismisses on click.</li>
+        <li>No JavaScript: open with <code>command="show-modal" commandfor="id"</code>, close with <code>command="close" commandfor="id"</code>.</li>
     </ul>
 </section>
