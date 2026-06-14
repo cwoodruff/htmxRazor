@@ -80,7 +80,7 @@ public class InputTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public void Has_Data_Attribute()
+    public void Renders_Native_Input()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-input");
@@ -89,7 +89,7 @@ public class InputTagHelperTests : TagHelperTestBase
         helper.ViewContext = CreateViewContext();
         helper.Process(context, output);
 
-        AssertAttribute(output, "data-rhx-input", "");
+        Assert.Contains("rhx-input__native", output.Content.GetContent());
     }
 
     // ── Inner HTML structure ──
@@ -518,11 +518,12 @@ public class InputTagHelperTests : TagHelperTestBase
         Assert.Contains(" autofocus", content);
     }
 
-    // ── Clear button ──
+    // ── Clear button (native type="search") ──
 
     [Fact]
-    public void WithClear_Renders_Clear_Button()
+    public void WithClear_Uses_Native_Search_Type()
     {
+        // The native search input renders the browser's own clear "✕" — no custom button/JS.
         var helper = CreateHelper();
         helper.WithClear = true;
         var context = CreateContext("rhx-input");
@@ -532,12 +533,12 @@ public class InputTagHelperTests : TagHelperTestBase
         helper.Process(context, output);
 
         var content = output.Content.GetContent();
-        Assert.Contains("rhx-input__clear", content);
-        Assert.Contains("aria-label=\"Clear\"", content);
+        Assert.Contains("type=\"search\"", content);
+        Assert.DoesNotContain("rhx-input__clear", content);
     }
 
     [Fact]
-    public void No_WithClear_Omits_Clear_Button()
+    public void No_WithClear_Stays_Text_Type()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-input");
@@ -547,7 +548,8 @@ public class InputTagHelperTests : TagHelperTestBase
         helper.Process(context, output);
 
         var content = output.Content.GetContent();
-        Assert.DoesNotContain("rhx-input__clear", content);
+        Assert.Contains("type=\"text\"", content);
+        Assert.DoesNotContain("type=\"search\"", content);
     }
 
     // ── Password toggle ──

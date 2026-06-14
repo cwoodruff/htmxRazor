@@ -39,23 +39,27 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-/* ── Native input ── */
+/* ── Native input ── (the browser's own spinners are shown by default) */
 .rhx-number-input__native {
-  width: 4rem;
-  padding: var(--rhx-space-sm) var(--rhx-space-xs);
+  width: 100%;
+  padding: var(--rhx-space-sm) var(--rhx-space-md);
   font-family: inherit;
   font-size: var(--rhx-font-size-md);
   line-height: var(--rhx-line-height-normal);
   color: var(--rhx-color-text);
-  text-align: center;
   background: transparent;
   border: none;
   outline: none;
-  -moz-appearance: textfield;
 }
 
-.rhx-number-input__native::-webkit-inner-spin-button,
-.rhx-number-input__native::-webkit-outer-spin-button {
+/* ── No steppers ── hide the browser's native spinners */
+.rhx-number-input--no-steppers .rhx-number-input__native {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.rhx-number-input--no-steppers .rhx-number-input__native::-webkit-inner-spin-button,
+.rhx-number-input--no-steppers .rhx-number-input__native::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }

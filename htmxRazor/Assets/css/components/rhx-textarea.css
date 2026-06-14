@@ -64,9 +64,12 @@
   resize: none;
 }
 
+/* Autosize: grow to fit content with zero JS where supported. Firefox lacks
+   field-sizing today, so rhx-textarea-autosize.js is the temporary fallback. */
 .rhx-textarea--resize-auto .rhx-textarea__native {
   resize: none;
   overflow: hidden;
+  field-sizing: content;
 }
 
 /* ── Hint ── */

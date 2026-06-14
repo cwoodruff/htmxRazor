@@ -1,8 +1,11 @@
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 using PlaywrightTests.Infrastructure;
 
 namespace PlaywrightTests.ComponentTests;
 
+// rhx-number-input renders a native <input type="number"> (no JS). The browser provides the
+// increment/decrement spinners; --no-steppers hides them via CSS.
 public sealed class NumberInputTests(DemoAppFactory app) : ComponentTestBase(app)
 {
     private const string Path = "/Docs/Components/NumberInput";
@@ -14,7 +17,6 @@ public sealed class NumberInputTests(DemoAppFactory app) : ComponentTestBase(app
 
         var wrapper = page.Locator("#panel-basic-preview div.rhx-number-input");
         await Assertions.Expect(wrapper).ToHaveCountAsync(1);
-        await Assertions.Expect(wrapper).ToHaveAttributeAsync("data-rhx-number-input", "");
 
         var native = wrapper.Locator("input[type='number']");
         await Assertions.Expect(native).ToHaveAttributeAsync("name", "quantity");
@@ -25,25 +27,21 @@ public sealed class NumberInputTests(DemoAppFactory app) : ComponentTestBase(app
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Stepper_buttons_increment_and_decrement_value(string browserName)
+    public async Task Native_step_up_and_down_change_the_value(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var wrapper = page.Locator("#panel-basic-preview div.rhx-number-input");
-        var native = wrapper.Locator("input[type='number']");
-        var increment = wrapper.Locator("button.rhx-number-input__increment");
-        var decrement = wrapper.Locator("button.rhx-number-input__decrement");
-
+        var native = page.Locator("#panel-basic-preview input[type='number'][name='quantity']");
         await Assertions.Expect(native).ToHaveValueAsync("1");
 
-        await increment.ClickAsync();
+        // The browser's native spinner behavior (stepUp/stepDown) — no custom JS buttons.
+        await native.EvaluateAsync("el => el.stepUp()");
+        await native.DispatchEventAsync("change");
         await Assertions.Expect(native).ToHaveValueAsync("2");
 
-        await increment.ClickAsync();
-        await Assertions.Expect(native).ToHaveValueAsync("3");
-
-        await decrement.ClickAsync();
-        await Assertions.Expect(native).ToHaveValueAsync("2");
+        await native.EvaluateAsync("el => el.stepDown()");
+        await native.DispatchEventAsync("change");
+        await Assertions.Expect(native).ToHaveValueAsync("1");
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -67,34 +65,20 @@ public sealed class NumberInputTests(DemoAppFactory app) : ComponentTestBase(app
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task No_steppers_modifier_hides_stepper_buttons(string browserName)
+    public async Task No_steppers_modifier_is_applied(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var wrapper = page.Locator("#panel-nosteppers-preview div.rhx-number-input");
-        await Assertions.Expect(wrapper).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("rhx-number-input--no-steppers"));
-
-        await Assertions.Expect(
-            wrapper.Locator("button.rhx-number-input__increment")
-        ).ToHaveCountAsync(0);
-        await Assertions.Expect(
-            wrapper.Locator("button.rhx-number-input__decrement")
-        ).ToHaveCountAsync(0);
+        await Assertions.Expect(wrapper).ToHaveClassAsync(new Regex("rhx-number-input--no-steppers"));
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Disabled_number_input_disables_field_and_steppers(string browserName)
+    public async Task Disabled_number_input_disables_field(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var wrapper = page.Locator("#panel-states-preview div.rhx-number-input");
-        var native = wrapper.Locator("input[type='number']");
+        var native = page.Locator("#panel-states-preview div.rhx-number-input input[type='number']");
         await Assertions.Expect(native).ToBeDisabledAsync();
-        await Assertions.Expect(
-            wrapper.Locator("button.rhx-number-input__increment")
-        ).ToBeDisabledAsync();
-        await Assertions.Expect(
-            wrapper.Locator("button.rhx-number-input__decrement")
-        ).ToBeDisabledAsync();
     }
 }

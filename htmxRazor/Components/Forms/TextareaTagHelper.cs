@@ -36,7 +36,8 @@ public class TextareaTagHelper : FormControlTagHelperBase
 
     /// <summary>
     /// Resize behavior. Options: none, vertical, auto. Default: vertical.
-    /// When "auto", the textarea grows to fit content via JavaScript.
+    /// "auto" grows the textarea to fit content via CSS <c>field-sizing: content</c>, with a
+    /// tiny temporary JS fallback (<c>rhx-textarea-autosize.js</c>) for browsers without it.
     /// </summary>
     [HtmlAttributeName("rhx-resize")]
     public string Resize { get; set; } = "vertical";
@@ -85,7 +86,6 @@ public class TextareaTagHelper : FormControlTagHelperBase
             .AddIf(GetModifierClass("error"), hasError);
 
         ApplyWrapperAttributes(output, css);
-        output.Attributes.SetAttribute("data-rhx-textarea", "");
 
         // ── Build inner HTML ──
         var sb = new StringBuilder();
@@ -138,8 +138,10 @@ public class TextareaTagHelper : FormControlTagHelperBase
         if (resolvedRequired)
             sb.Append(" aria-required=\"true\"");
 
+        // Autosize: the CSS modifier sets `field-sizing: content` (zero-JS where supported);
+        // data-rhx-autosize is the hook for the temporary Firefox fallback shim.
         if (resize == "auto")
-            sb.Append(" data-rhx-auto-resize");
+            sb.Append(" data-rhx-autosize");
 
         // htmx attributes on native textarea
         sb.Append(BuildHtmxAttributeString());

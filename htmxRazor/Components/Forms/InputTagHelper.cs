@@ -39,11 +39,18 @@ public class InputTagHelper : FormControlTagHelperBase
     [HtmlAttributeName("rhx-type")]
     public string? Type { get; set; }
 
-    /// <summary>Show a clear button when the input has a value.</summary>
+    /// <summary>
+    /// Show a clear button when the input has a value. Implemented with the native
+    /// <c>type="search"</c> clear affordance (no JavaScript); applies to plain text inputs.
+    /// </summary>
     [HtmlAttributeName("rhx-with-clear")]
     public bool WithClear { get; set; }
 
-    /// <summary>Show a password visibility toggle button. Only effective when type is password.</summary>
+    /// <summary>
+    /// Show a password visibility toggle button. Only effective when type is password.
+    /// Backed by a tiny sanctioned JS holdout (<c>rhx-password-toggle.js</c>) since toggling
+    /// an input's type has no HTML/CSS/htmx equivalent.
+    /// </summary>
     [HtmlAttributeName("rhx-password-toggle")]
     public bool PasswordToggle { get; set; }
 
@@ -100,6 +107,10 @@ public class InputTagHelper : FormControlTagHelperBase
         output.TagMode = TagMode.StartTagAndEndTag;
 
         var resolvedType = ResolveType();
+        // A clear button is the browser's native job: type="search" renders a built-in
+        // clear "✕" with no JavaScript. Only applies to plain text inputs.
+        if (WithClear && resolvedType == "text")
+            resolvedType = "search";
         var resolvedName = ResolveName();
         var resolvedId = ResolveId();
         var resolvedValue = ResolveValue();
@@ -119,7 +130,6 @@ public class InputTagHelper : FormControlTagHelperBase
             .AddIf(GetModifierClass("error"), hasError);
 
         ApplyWrapperAttributes(output, css);
-        output.Attributes.SetAttribute("data-rhx-input", "");
 
         // ── Build inner HTML ──
         var sb = new StringBuilder();
@@ -198,16 +208,7 @@ public class InputTagHelper : FormControlTagHelperBase
 
         sb.Append(" />");
 
-        // Clear button
-        if (WithClear)
-        {
-            sb.Append($"<button class=\"{GetElementClass("clear")}\" type=\"button\" aria-label=\"Clear\" hidden>");
-            sb.Append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">");
-            sb.Append("<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"></line>");
-            sb.Append("</svg></button>");
-        }
-
-        // Password toggle
+        // Password toggle — backed by the tiny sanctioned holdout (rhx-password-toggle.js).
         if (PasswordToggle && resolvedType == "password")
         {
             sb.Append($"<button class=\"{GetElementClass("toggle")}\" type=\"button\" aria-label=\"Show password\" data-rhx-input-toggle>");

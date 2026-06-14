@@ -38,7 +38,7 @@ public class NumberInputTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public void Has_Data_Attribute()
+    public void Renders_Native_Number_Input()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-number-input");
@@ -47,7 +47,9 @@ public class NumberInputTagHelperTests : TagHelperTestBase
         helper.ViewContext = CreateViewContext();
         helper.Process(context, output);
 
-        AssertAttribute(output, "data-rhx-number-input", "");
+        var content = output.Content.GetContent();
+        Assert.Contains("rhx-number-input__native", content);
+        Assert.Contains("type=\"number\"", content);
     }
 
     // ── Structure ──
@@ -82,29 +84,10 @@ public class NumberInputTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public void Contains_Stepper_Buttons()
+    public void Uses_Native_Spinners_No_Custom_Buttons()
     {
+        // The browser's own number spinners replace the old custom +/- buttons (no JS).
         var helper = CreateHelper();
-        var context = CreateContext("rhx-number-input");
-        var output = CreateOutput("rhx-number-input");
-
-        helper.ViewContext = CreateViewContext();
-        helper.Process(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-number-input__decrement", content);
-        Assert.Contains("rhx-number-input__increment", content);
-        Assert.Contains("aria-label=\"Decrease\"", content);
-        Assert.Contains("aria-label=\"Increase\"", content);
-    }
-
-    // ── No steppers ──
-
-    [Fact]
-    public void NoSteppers_Hides_Buttons()
-    {
-        var helper = CreateHelper();
-        helper.NoSteppers = true;
         var context = CreateContext("rhx-number-input");
         var output = CreateOutput("rhx-number-input");
 
@@ -114,6 +97,22 @@ public class NumberInputTagHelperTests : TagHelperTestBase
         var content = output.Content.GetContent();
         Assert.DoesNotContain("rhx-number-input__decrement", content);
         Assert.DoesNotContain("rhx-number-input__increment", content);
+    }
+
+    // ── No steppers ──
+
+    [Fact]
+    public void NoSteppers_Adds_Modifier()
+    {
+        // --no-steppers hides the browser's native spinners via CSS.
+        var helper = CreateHelper();
+        helper.NoSteppers = true;
+        var context = CreateContext("rhx-number-input");
+        var output = CreateOutput("rhx-number-input");
+
+        helper.ViewContext = CreateViewContext();
+        helper.Process(context, output);
+
         Assert.True(HasClass(output, "rhx-number-input--no-steppers"));
     }
 

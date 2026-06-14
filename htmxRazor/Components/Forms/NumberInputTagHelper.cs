@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace htmxRazor.Components.Forms;
 
 /// <summary>
-/// Renders a number input with optional custom increment/decrement stepper buttons,
-/// label, hint, and error display. Supports model binding via <c>rhx-for</c>.
+/// Renders a native <c>&lt;input type="number"&gt;</c> with label, hint, and error display —
+/// no JavaScript. The browser provides the increment/decrement spinners; <c>rhx-no-steppers</c>
+/// hides them. Supports model binding via <c>rhx-for</c>.
 /// </summary>
 /// <example>
 /// <code>
@@ -38,7 +39,7 @@ public class NumberInputTagHelper : FormControlTagHelperBase
     [HtmlAttributeName("rhx-step")]
     public string? Step { get; set; }
 
-    /// <summary>Hide the increment/decrement stepper buttons.</summary>
+    /// <summary>Hide the browser's native increment/decrement spinners (via the --no-steppers CSS modifier).</summary>
     [HtmlAttributeName("rhx-no-steppers")]
     public bool NoSteppers { get; set; }
 
@@ -77,7 +78,6 @@ public class NumberInputTagHelper : FormControlTagHelperBase
             .AddIf(GetModifierClass("no-steppers"), NoSteppers);
 
         ApplyWrapperAttributes(output, css);
-        output.Attributes.SetAttribute("data-rhx-number-input", "");
 
         // ── Build inner HTML ──
         var sb = new StringBuilder();
@@ -88,15 +88,8 @@ public class NumberInputTagHelper : FormControlTagHelperBase
         // Control wrapper
         sb.Append($"<div class=\"{GetElementClass("control")}\">");
 
-        // Decrement button
-        if (!NoSteppers)
-        {
-            sb.Append($"<button class=\"{GetElementClass("decrement")}\" type=\"button\" aria-label=\"Decrease\" tabindex=\"-1\"");
-            if (Disabled || Readonly) sb.Append(" disabled");
-            sb.Append(">\u2212</button>");
-        }
-
-        // Native input
+        // Native input \u2014 the browser provides increment/decrement spinners (no JavaScript).
+        // rhx-no-steppers hides those spinners via the --no-steppers CSS modifier.
         sb.Append($"<input class=\"{GetElementClass("native")}\" type=\"number\"");
         sb.Append($" id=\"{Enc(resolvedId)}\"");
 
@@ -141,14 +134,6 @@ public class NumberInputTagHelper : FormControlTagHelperBase
         sb.Append(BuildValidationAttributeString());
 
         sb.Append(" />");
-
-        // Increment button
-        if (!NoSteppers)
-        {
-            sb.Append($"<button class=\"{GetElementClass("increment")}\" type=\"button\" aria-label=\"Increase\" tabindex=\"-1\"");
-            if (Disabled || Readonly) sb.Append(" disabled");
-            sb.Append(">+</button>");
-        }
 
         sb.Append("</div>"); // close control
 

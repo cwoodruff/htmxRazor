@@ -38,7 +38,7 @@ public class TextareaTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public void Has_Data_Attribute()
+    public void Renders_Native_Textarea()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-textarea");
@@ -47,7 +47,7 @@ public class TextareaTagHelperTests : TagHelperTestBase
         helper.ViewContext = CreateViewContext();
         helper.Process(context, output);
 
-        AssertAttribute(output, "data-rhx-textarea", "");
+        Assert.Contains("rhx-textarea__native", output.Content.GetContent());
     }
 
     // ── Structure ──
@@ -221,7 +221,7 @@ public class TextareaTagHelperTests : TagHelperTestBase
 
         Assert.True(HasClass(output, "rhx-textarea--resize-auto"));
         var content = output.Content.GetContent();
-        Assert.Contains("data-rhx-auto-resize", content);
+        Assert.Contains("data-rhx-autosize", content);
     }
 
     // ── Label ──
