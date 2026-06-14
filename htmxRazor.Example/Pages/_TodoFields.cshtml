@@ -8,10 +8,10 @@
 
 <div>
     <label class="field-label">Priority</label>
-    <rhx-select name="priority">
-        <rhx-option value="Low" selected="@(t?.Priority == TodoPriority.Low ? "selected" : null)">Low</rhx-option>
-        <rhx-option value="Medium" selected="@(t == null || t.Priority == TodoPriority.Medium ? "selected" : null)">Medium</rhx-option>
-        <rhx-option value="High" selected="@(t?.Priority == TodoPriority.High ? "selected" : null)">High</rhx-option>
+    <rhx-select name="priority" value="@((t?.Priority ?? TodoPriority.Medium).ToString())">
+        <rhx-option value="Low">Low</rhx-option>
+        <rhx-option value="Medium">Medium</rhx-option>
+        <rhx-option value="High">High</rhx-option>
     </rhx-select>
 </div>
 
