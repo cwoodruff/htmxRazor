@@ -57,11 +57,8 @@ public class RelativeTimeTagHelper : TagHelper
         var iso = date.ToString("yyyy-MM-dd'T'HH:mm:sszzz");
         output.Attributes.SetAttribute("datetime", iso);
 
-        // Data attributes for JS auto-updating
-        output.Attributes.SetAttribute("data-rhx-relative-time", iso);
-        output.Attributes.SetAttribute("data-rhx-relative-format", Format.ToLowerInvariant());
-        output.Attributes.SetAttribute("data-rhx-relative-numeric", Numeric.ToLowerInvariant());
-
+        // The relative text is rendered server-side. To refresh it on long-lived pages,
+        // wrap the element with htmx polling (e.g. hx-trigger="every 60s") — no JS required.
         var text = RelativeTimeFormatter.Format(date, now, Format.ToLowerInvariant(), Numeric.ToLowerInvariant());
         output.Content.SetContent(text);
     }

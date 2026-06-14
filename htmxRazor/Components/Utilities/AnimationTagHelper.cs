@@ -75,26 +75,22 @@ public class AnimationTagHelper : htmxRazorTagHelperBase
             .AddIf(GetModifierClass("playing"), Play);
         ApplyBaseAttributes(output, css);
 
-        output.Attributes.SetAttribute("data-rhx-animation", Name);
-        output.Attributes.SetAttribute("data-rhx-duration", Duration.ToString());
-        output.Attributes.SetAttribute("data-rhx-delay", Delay.ToString());
+        // Emit the CSS animation shorthand directly so the animation runs on render
+        // (and on htmx swap) with no JavaScript. The @keyframes (rhx-{name}) ship in CSS.
+        var direction = string.IsNullOrWhiteSpace(Direction) ? "normal" : Direction.ToLowerInvariant();
+        var easing = string.IsNullOrWhiteSpace(Easing) ? "ease" : Easing;
+        var iterations = string.IsNullOrWhiteSpace(Iterations) ? "1" : Iterations;
+        var fill = string.IsNullOrWhiteSpace(Fill) ? "both" : Fill.ToLowerInvariant();
 
-        if (!string.IsNullOrWhiteSpace(Direction) &&
-            !Direction.Equals("normal", StringComparison.OrdinalIgnoreCase))
-            output.Attributes.SetAttribute("data-rhx-direction", Direction.ToLowerInvariant());
-
-        if (!string.IsNullOrWhiteSpace(Easing))
-            output.Attributes.SetAttribute("data-rhx-easing", Easing);
-
-        if (!string.IsNullOrWhiteSpace(Iterations) &&
-            !Iterations.Equals("1", StringComparison.Ordinal))
-            output.Attributes.SetAttribute("data-rhx-iterations", Iterations);
-
-        if (!Fill.Equals("both", StringComparison.OrdinalIgnoreCase))
-            output.Attributes.SetAttribute("data-rhx-fill", Fill.ToLowerInvariant());
-
+        var animation = $"animation: rhx-{Name} {Duration}ms {easing} {Delay}ms {iterations} {direction} {fill}";
         if (!Play)
-            output.Attributes.SetAttribute("data-rhx-paused", "");
+            animation += "; animation-play-state: paused";
+
+        var existingStyle = output.Attributes["style"]?.Value?.ToString();
+        var style = string.IsNullOrWhiteSpace(existingStyle)
+            ? animation
+            : existingStyle.TrimEnd(';', ' ') + "; " + animation;
+        output.Attributes.SetAttribute("style", style);
 
         RenderHtmxAttributes(output);
     }

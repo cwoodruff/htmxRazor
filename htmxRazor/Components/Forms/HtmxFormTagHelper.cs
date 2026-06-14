@@ -166,17 +166,19 @@ public class HtmxFormTagHelper : htmxRazorTagHelperBase
         if (!string.IsNullOrWhiteSpace(Indicator))
             HxIndicator = Indicator;
 
-        // Data attributes for JS behavior
-        output.Attributes.SetAttribute("data-rhx-htmx-form", "");
+        // Reset on success via htmx's own hx-on (no custom JS).
         if (ResetOnSuccess)
-            output.Attributes.SetAttribute("data-rhx-reset-on-success", "true");
+            output.Attributes.SetAttribute(
+                "hx-on::after-request", "if(event.detail.successful)this.reset()");
 
         RenderHtmxAttributes(output);
 
-        // Render child content + error container
+        // Render child content + error container. No `hidden` attribute: CSS hides the
+        // container while :empty and styles it once htmx swaps an error message in. The
+        // submitting state is htmx's built-in .htmx-request class.
         var childContent = await output.GetChildContentAsync();
         output.Content.AppendHtml(childContent);
         output.Content.AppendHtml(
-            "<div class=\"rhx-htmx-form__error-container\" aria-live=\"polite\" hidden></div>");
+            "<div class=\"rhx-htmx-form__error-container\" aria-live=\"polite\"></div>");
     }
 }

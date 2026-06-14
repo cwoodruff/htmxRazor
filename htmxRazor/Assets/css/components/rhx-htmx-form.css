@@ -12,7 +12,12 @@
     margin-top: var(--rhx-space-md);
 }
 
-.rhx-htmx-form__error-container:not([hidden]) {
+/* Hidden until htmx swaps an error message in; styled once it has content. No JS. */
+.rhx-htmx-form__error-container:empty {
+    display: none;
+}
+
+.rhx-htmx-form__error-container:not(:empty) {
     padding: var(--rhx-space-md);
     background: var(--rhx-color-danger-50);
     border: 1px solid var(--rhx-color-danger-200);
@@ -20,14 +25,15 @@
     color: var(--rhx-color-danger-700);
 }
 
-.rhx-htmx-form--submitting {
+/* Submitting state uses htmx's built-in .htmx-request class on the form. */
+.rhx-htmx-form.htmx-request {
     opacity: 0.7;
     pointer-events: none;
 }
 
 /* ── Dark theme ── */
 
-[data-rhx-theme="dark"] .rhx-htmx-form__error-container:not([hidden]) {
+[data-rhx-theme="dark"] .rhx-htmx-form__error-container:not(:empty) {
     background: var(--rhx-color-danger-950);
     border-color: var(--rhx-color-danger-800);
     color: var(--rhx-color-danger-200);
