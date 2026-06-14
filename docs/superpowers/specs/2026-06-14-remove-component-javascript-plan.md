@@ -199,8 +199,13 @@ This must be stated in the library README and is a prerequisite for Phases 2-3.
   exists and (for the temporary ones) the platform feature whose cross-browser support retires
   it. Stand up a feature-detection note for the modern CSS/HTML features. Pick the 3 hardest
   components and prototype them end-to-end to validate the approach before committing.
-- **Phase 1 — Free wins (Remove/Server/Native-static).** animation, animated-image,
-  optimistic, relative-time, qr-code (server-side), htmx-form, wizard. Delete JS; verify.
+- **Phase 1 — Free wins (Remove/Server/Native-static). ✅ DONE (2026-06-14).** Removed JS for
+  all 7: animation (server-emitted CSS `animation`), relative-time (server text), optimistic
+  (htmx `.htmx-request` CSS), htmx-form (`.htmx-request` + CSS `:empty` + `hx-on` reset),
+  wizard, animated-image (CSS poster/hover model), and qr-code (ported the client encoder to a
+  dependency-free C# `QrCodeGenerator` rendering inline SVG, proven byte-for-byte equivalent to
+  the JS across 5 inputs × 4 EC levels). Component scripts: 39 → 32. Verified: solution builds,
+  1921 unit tests pass, QR + AnimatedImage E2E (24) pass on chromium/firefox/webkit.
 - **Phase 2 — CSS-only.** tooltip, drawer, dropdown, popover, popup, tabs, rating,
   comparison, split-panel, scroller, callout, slider, carousel. Delete JS + `rhx-position.js`.
 - **Phase 3 — Native form controls.** select, combobox, date/time/datetime/range, color,
