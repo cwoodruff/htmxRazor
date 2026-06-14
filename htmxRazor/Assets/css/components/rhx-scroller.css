@@ -1,142 +1,121 @@
 /* ══════════════════════════════════════════════
-   rhx-scroller — Scroll container with shadow indicators
+   rhx-scroller — Native overflow scroll container
+   with fade edges and prev/next scroll buttons
    ══════════════════════════════════════════════ */
 
 @layer rhx.components {
 .rhx-scroller {
     position: relative;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: var(--rhx-space-xs);
     min-width: 0;
 }
 
-/* ── Content wrapper ── */
+/* Vertical scrollers stack the buttons above/below the viewport. */
+.rhx-scroller--vertical {
+    flex-direction: column;
+}
 
-.rhx-scroller__content {
+/* ── Scrollable viewport ── */
+
+.rhx-scroller__viewport {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    /* Gradient fade edges hint at off-screen content. The mask is applied on the
+       scroll axis only; it follows the content rather than the scrollbar. */
 }
 
-.rhx-scroller--horizontal > .rhx-scroller__content {
+.rhx-scroller--horizontal > .rhx-scroller__viewport {
     overflow-x: auto;
     overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
 }
 
-.rhx-scroller--vertical > .rhx-scroller__content {
+.rhx-scroller--vertical > .rhx-scroller__viewport {
     overflow-x: hidden;
     overflow-y: auto;
     height: 100%;
+    scroll-snap-type: y proximity;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
 }
 
-.rhx-scroller--both > .rhx-scroller__content {
+.rhx-scroller--both > .rhx-scroller__viewport {
     overflow: auto;
     height: 100%;
 }
 
-/* Hide scrollbar for cleaner appearance (optional, keep functional) */
-.rhx-scroller__content::-webkit-scrollbar {
+/* ── Scrollbar chrome (thin, neutral, functional) ── */
+
+.rhx-scroller__viewport::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
 
-.rhx-scroller__content::-webkit-scrollbar-track {
+.rhx-scroller__viewport::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.rhx-scroller__content::-webkit-scrollbar-thumb {
+.rhx-scroller__viewport::-webkit-scrollbar-thumb {
     background: var(--rhx-color-neutral-300);
     border-radius: var(--rhx-radius-full);
 }
 
-.rhx-scroller__content::-webkit-scrollbar-thumb:hover {
+.rhx-scroller__viewport::-webkit-scrollbar-thumb:hover {
     background: var(--rhx-color-neutral-400);
 }
 
-/* ── Shadow overlays ── */
+/* ── Prev / Next buttons (driven by the shared scroll-buttons shim) ── */
 
-.rhx-scroller__shadow {
-    position: absolute;
-    pointer-events: none;
-    z-index: 1;
-    opacity: 0;
-    transition: opacity var(--rhx-transition-normal);
-}
-
-.rhx-scroller__shadow--active {
-    opacity: 1;
-}
-
-/* ── Horizontal shadows ── */
-
-.rhx-scroller--horizontal > .rhx-scroller__shadow--start,
-.rhx-scroller--both > .rhx-scroller__shadow--start {
-    top: 0;
-    bottom: 0;
-    left: 0;
+.rhx-scroller__btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 2rem;
-    background: linear-gradient(
-        to right,
-        var(--rhx-color-surface, #fff),
-        transparent
-    );
-}
-
-.rhx-scroller--horizontal > .rhx-scroller__shadow--end,
-.rhx-scroller--both > .rhx-scroller__shadow--end {
-    top: 0;
-    bottom: 0;
-    right: 0;
-    width: 2rem;
-    background: linear-gradient(
-        to left,
-        var(--rhx-color-surface, #fff),
-        transparent
-    );
-}
-
-/* ── Vertical shadows ── */
-
-.rhx-scroller--vertical > .rhx-scroller__shadow--start {
-    top: 0;
-    left: 0;
-    right: 0;
     height: 2rem;
-    background: linear-gradient(
-        to bottom,
-        var(--rhx-color-surface, #fff),
-        transparent
-    );
+    padding: 0;
+    border: var(--rhx-border-width) solid var(--rhx-color-border);
+    border-radius: var(--rhx-radius-full);
+    background: var(--rhx-color-surface, #fff);
+    color: var(--rhx-color-text, currentColor);
+    font-size: var(--rhx-font-size-md);
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: var(--rhx-shadow-sm);
+    transition: background var(--rhx-transition-fast),
+                border-color var(--rhx-transition-fast),
+                color var(--rhx-transition-fast);
 }
 
-.rhx-scroller--vertical > .rhx-scroller__shadow--end {
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2rem;
-    background: linear-gradient(
-        to top,
-        var(--rhx-color-surface, #fff),
-        transparent
-    );
+.rhx-scroller__btn:hover {
+    background: var(--rhx-color-neutral-100);
+    border-color: var(--rhx-color-neutral-400);
 }
 
-/* ── Both: vertical top/bottom shadows (horizontal handled above) ── */
-
-.rhx-scroller--both > .rhx-scroller__shadow--start {
-    /* horizontal start shadow already covered; for "both" we only do left/right */
+.rhx-scroller__btn:focus-visible {
+    outline: var(--rhx-focus-ring-width, 2px) solid var(--rhx-color-focus, var(--rhx-color-primary));
+    outline-offset: 2px;
 }
 
-.rhx-scroller--both > .rhx-scroller__shadow--end {
-    /* horizontal end shadow already covered; for "both" we only do left/right */
+.rhx-scroller__btn:active {
+    background: var(--rhx-color-neutral-200);
 }
 
 /* ── Reduced motion ── */
 
 @media (prefers-reduced-motion: reduce) {
-    .rhx-scroller__content {
+    .rhx-scroller__viewport {
         scroll-behavior: auto;
     }
 
-    .rhx-scroller__shadow {
+    .rhx-scroller__btn {
         transition: none;
     }
 }

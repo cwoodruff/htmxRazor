@@ -1,5 +1,7 @@
 /* ═══════════════════════════════════════════
-   rhx-carousel
+   rhx-carousel — CSS scroll-snap carousel
+   Scrolling / swiping / keyboard = pure CSS.
+   Prev/next buttons use the shared scroll-button shim.
    ═══════════════════════════════════════════ */
 
 @layer rhx.components {
@@ -7,67 +9,35 @@
     position: relative;
 }
 
-/* ── Viewport ── */
+/* ── Viewport (scroll-snap container) ── */
 .rhx-carousel__viewport {
-    overflow: hidden;
-}
-
-/* ── Track ── */
-.rhx-carousel__track {
     display: flex;
-    transition: transform 0.4s ease;
-    will-change: transform;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
 }
 
-.rhx-carousel--vertical .rhx-carousel__track {
-    flex-direction: column;
+/* Hide scrollbar (WebKit/Blink) — native swipe/trackpad still works */
+.rhx-carousel__viewport::-webkit-scrollbar {
+    display: none;
 }
 
-/* ── Slide item ── */
-.rhx-carousel__item {
-    flex: 0 0 100%;
+/* ── Slide ── */
+.rhx-carousel__slide {
+    flex: 0 0 calc(100% / var(--rhx-carousel-per-page, 1));
     min-width: 0;
+    scroll-snap-align: center;
     overflow: hidden;
 }
 
-/* ── Dragging state ── */
-.rhx-carousel--dragging .rhx-carousel__track {
-    transition: none;
-    user-select: none;
-}
-
-[data-rhx-mouse-dragging] .rhx-carousel__viewport {
-    cursor: grab;
-}
-
-.rhx-carousel--dragging .rhx-carousel__viewport {
-    cursor: grabbing;
-}
-
-/* Prevent image drag during carousel drag */
-.rhx-carousel__item img {
-    pointer-events: none;
-}
-
-.rhx-carousel:not(.rhx-carousel--dragging) .rhx-carousel__item img {
-    pointer-events: auto;
-}
-
-/* ── Navigation arrows ── */
-.rhx-carousel__navigation {
+/* ── Navigation buttons (driven by rhx-scroll-buttons.js shim) ── */
+.rhx-carousel__nav {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    pointer-events: none;
-    padding: 0 var(--rhx-space-sm);
-}
-
-.rhx-carousel__nav-button {
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -78,80 +48,40 @@
     background: var(--rhx-color-surface);
     color: var(--rhx-color-text);
     cursor: pointer;
-    pointer-events: auto;
     box-shadow: var(--rhx-shadow-sm);
     transition: background-color 0.15s ease, opacity 0.15s ease;
     padding: 0;
 }
 
-.rhx-carousel__nav-button:hover {
+.rhx-carousel__nav--prev {
+    left: var(--rhx-space-sm);
+}
+
+.rhx-carousel__nav--next {
+    right: var(--rhx-space-sm);
+}
+
+.rhx-carousel__nav:hover {
     background: var(--rhx-color-hover);
 }
 
-.rhx-carousel__nav-button:focus-visible {
+.rhx-carousel__nav:focus-visible {
     outline: 2px solid var(--rhx-color-brand-500);
     outline-offset: 2px;
 }
 
-.rhx-carousel__nav-button:disabled {
-    opacity: 0.35;
-    cursor: default;
-    pointer-events: none;
-}
-
-.rhx-carousel__nav-button svg {
+.rhx-carousel__nav svg {
     width: 1.25rem;
     height: 1.25rem;
 }
 
-/* Vertical navigation */
-.rhx-carousel--vertical .rhx-carousel__navigation {
-    flex-direction: column;
-    padding: var(--rhx-space-sm) 0;
-}
-
-/* ── Pagination dots ── */
-.rhx-carousel__pagination {
-    display: flex;
-    justify-content: center;
-    gap: var(--rhx-space-xs);
-    padding: var(--rhx-space-md) 0;
-}
-
-.rhx-carousel__dot {
-    width: 0.625rem;
-    height: 0.625rem;
-    border-radius: var(--rhx-radius-full);
-    border: var(--rhx-border-width) solid var(--rhx-color-border);
-    background: var(--rhx-color-active);
-    cursor: pointer;
-    padding: 0;
-    transition: background-color 0.15s ease, transform 0.15s ease;
-}
-
-.rhx-carousel__dot:hover {
-    background: var(--rhx-color-neutral-400);
-}
-
-.rhx-carousel__dot[aria-selected="true"] {
-    background: var(--rhx-color-brand-500);
-    border-color: var(--rhx-color-brand-500);
-    transform: scale(1.25);
-}
-
-.rhx-carousel__dot:focus-visible {
-    outline: 2px solid var(--rhx-color-brand-500);
-    outline-offset: 2px;
-}
-
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-    .rhx-carousel__track {
-        transition-duration: 0.01ms;
+    .rhx-carousel__viewport {
+        scroll-behavior: auto;
     }
 
-    .rhx-carousel__dot,
-    .rhx-carousel__nav-button {
+    .rhx-carousel__nav {
         transition-duration: 0.01ms;
     }
 }

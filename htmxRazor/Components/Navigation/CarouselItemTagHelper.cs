@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace htmxRazor.Components.Navigation;
 
 /// <summary>
-/// Renders a single slide within an <c>&lt;rhx-carousel&gt;</c>.
-/// Automatically registers itself with the parent carousel for counting
-/// and receives a sequential index used by JavaScript for ARIA labels.
+/// Renders a single scroll-snap slide within an <c>&lt;rhx-carousel&gt;</c>.
+/// Automatically registers itself with the parent carousel for counting and
+/// receives a sequential index used for ARIA labels.
 /// </summary>
 /// <example>
 /// <code>
@@ -41,7 +41,7 @@ public class CarouselItemTagHelper : htmxRazorTagHelperBase
         output.TagName = "div";
         output.TagMode = TagMode.StartTagAndEndTag;
 
-        var css = new CssClassBuilder(GetElementClass("item"));
+        var css = new CssClassBuilder(GetElementClass("slide"));
         if (!string.IsNullOrWhiteSpace(CssClass))
             css.Add(CssClass);
         output.Attributes.SetAttribute("class", css.Build());

@@ -45,7 +45,7 @@ public class ScrollerTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Has_Data_Attribute()
+    public async Task Has_Scrollable_Scope_Attribute()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-scroller");
@@ -53,11 +53,11 @@ public class ScrollerTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "data-rhx-scroller", "");
+        AssertAttribute(output, "data-rhx-scrollable", "");
     }
 
     [Fact]
-    public async Task Contains_Content_Wrapper()
+    public async Task Contains_Viewport_With_Hook()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-scroller");
@@ -66,11 +66,12 @@ public class ScrollerTagHelperTests : TagHelperTestBase
         await helper.ProcessAsync(context, output);
 
         var content = output.Content.GetContent();
-        Assert.Contains("rhx-scroller__content", content);
+        Assert.Contains("rhx-scroller__viewport", content);
+        Assert.Contains("data-rhx-scroll-viewport", content);
     }
 
     [Fact]
-    public async Task Contains_Start_Shadow()
+    public async Task Contains_Prev_Button()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-scroller");
@@ -79,11 +80,12 @@ public class ScrollerTagHelperTests : TagHelperTestBase
         await helper.ProcessAsync(context, output);
 
         var content = output.Content.GetContent();
-        Assert.Contains("rhx-scroller__shadow--start", content);
+        Assert.Contains("rhx-scroller__btn--prev", content);
+        Assert.Contains("data-rhx-scroll-prev", content);
     }
 
     [Fact]
-    public async Task Contains_End_Shadow()
+    public async Task Contains_Next_Button()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-scroller");
@@ -92,11 +94,12 @@ public class ScrollerTagHelperTests : TagHelperTestBase
         await helper.ProcessAsync(context, output);
 
         var content = output.Content.GetContent();
-        Assert.Contains("rhx-scroller__shadow--end", content);
+        Assert.Contains("rhx-scroller__btn--next", content);
+        Assert.Contains("data-rhx-scroll-next", content);
     }
 
     [Fact]
-    public async Task Shadows_Have_AriaHidden()
+    public async Task Buttons_Have_AriaLabels()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-scroller");
@@ -105,23 +108,37 @@ public class ScrollerTagHelperTests : TagHelperTestBase
         await helper.ProcessAsync(context, output);
 
         var content = output.Content.GetContent();
-        // Both shadows should have aria-hidden
-        var count = content.Split("aria-hidden=\"true\"").Length - 1;
+        Assert.Contains("aria-label=\"Scroll back\"", content);
+        Assert.Contains("aria-label=\"Scroll forward\"", content);
+    }
+
+    [Fact]
+    public async Task Buttons_Are_Type_Button()
+    {
+        var helper = CreateHelper();
+        var context = CreateContext("rhx-scroller");
+        var output = CreateOutput("rhx-scroller", childContent: "");
+
+        await helper.ProcessAsync(context, output);
+
+        var content = output.Content.GetContent();
+        var count = content.Split("type=\"button\"").Length - 1;
         Assert.Equal(2, count);
     }
 
     [Fact]
-    public async Task Shadows_Have_Base_And_Direction_Classes()
+    public async Task Renders_No_Custom_Scroller_Script_Hook()
     {
+        // The legacy per-component JS hook must be gone; only the shared shim hooks remain.
         var helper = CreateHelper();
         var context = CreateContext("rhx-scroller");
         var output = CreateOutput("rhx-scroller", childContent: "");
 
         await helper.ProcessAsync(context, output);
 
+        Assert.False(output.Attributes.ContainsName("data-rhx-scroller"));
         var content = output.Content.GetContent();
-        Assert.Contains("rhx-scroller__shadow rhx-scroller__shadow--start", content);
-        Assert.Contains("rhx-scroller__shadow rhx-scroller__shadow--end", content);
+        Assert.DoesNotContain("rhx-scroller__shadow", content);
     }
 
     // ══════════════════════════════════════════════
@@ -153,6 +170,21 @@ public class ScrollerTagHelperTests : TagHelperTestBase
 
         Assert.True(HasClass(output, "rhx-scroller--vertical"));
         AssertAttribute(output, "data-rhx-orientation", "vertical");
+    }
+
+    [Fact]
+    public async Task Vertical_Uses_Vertical_Aria_Labels()
+    {
+        var helper = CreateHelper();
+        helper.Orientation = "vertical";
+        var context = CreateContext("rhx-scroller");
+        var output = CreateOutput("rhx-scroller", childContent: "");
+
+        await helper.ProcessAsync(context, output);
+
+        var content = output.Content.GetContent();
+        Assert.Contains("aria-label=\"Scroll up\"", content);
+        Assert.Contains("aria-label=\"Scroll down\"", content);
     }
 
     [Fact]
@@ -188,7 +220,7 @@ public class ScrollerTagHelperTests : TagHelperTestBase
     // ══════════════════════════════════════════════
 
     [Fact]
-    public async Task Content_Before_Shadows()
+    public async Task Prev_Before_Viewport_Before_Next()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-scroller");
@@ -197,24 +229,27 @@ public class ScrollerTagHelperTests : TagHelperTestBase
         await helper.ProcessAsync(context, output);
 
         var html = output.Content.GetContent();
-        var contentIdx = html.IndexOf("rhx-scroller__content");
-        var shadowIdx = html.IndexOf("rhx-scroller__shadow");
-        Assert.True(contentIdx < shadowIdx);
+        var prevIdx = html.IndexOf("data-rhx-scroll-prev");
+        var viewportIdx = html.IndexOf("data-rhx-scroll-viewport");
+        var nextIdx = html.IndexOf("data-rhx-scroll-next");
+        Assert.True(prevIdx < viewportIdx);
+        Assert.True(viewportIdx < nextIdx);
     }
 
     [Fact]
-    public async Task Start_Shadow_Before_End_Shadow()
+    public async Task Child_Content_Inside_Viewport()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-scroller");
-        var output = CreateOutput("rhx-scroller", childContent: "");
+        var output = CreateOutput("rhx-scroller", childContent: "inner-content");
 
         await helper.ProcessAsync(context, output);
 
         var html = output.Content.GetContent();
-        var startIdx = html.IndexOf("rhx-scroller__shadow--start");
-        var endIdx = html.IndexOf("rhx-scroller__shadow--end");
-        Assert.True(startIdx < endIdx);
+        // Child content lands after the viewport opening tag.
+        var viewportIdx = html.IndexOf("data-rhx-scroll-viewport");
+        var contentIdx = html.IndexOf("inner-content");
+        Assert.True(contentIdx > viewportIdx, "child content should be inside the viewport");
     }
 
     // ══════════════════════════════════════════════
@@ -245,7 +280,7 @@ public class ScrollerTagHelperTests : TagHelperTestBase
         var helper = CreateHelper();
         helper.HxGet = "/api/items";
         helper.HxTrigger = "revealed";
-        helper.HxTarget = "find .rhx-scroller__content";
+        helper.HxTarget = "find .rhx-scroller__viewport";
         var context = CreateContext("rhx-scroller");
         var output = CreateOutput("rhx-scroller", childContent: "");
 
@@ -253,6 +288,6 @@ public class ScrollerTagHelperTests : TagHelperTestBase
 
         AssertAttribute(output, "hx-get", "/api/items");
         AssertAttribute(output, "hx-trigger", "revealed");
-        AssertAttribute(output, "hx-target", "find .rhx-scroller__content");
+        AssertAttribute(output, "hx-target", "find .rhx-scroller__viewport");
     }
 }

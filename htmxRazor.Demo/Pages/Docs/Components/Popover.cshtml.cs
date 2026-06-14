@@ -9,68 +9,57 @@ public class PopoverModel : PageModel
 {
     public List<ComponentProperty> Properties { get; } = new()
     {
-        new("rhx-trigger", "string", "-", "CSS selector of the trigger element"),
-        new("rhx-trigger-event", "string", "click", "Trigger event: click, hover"),
-        new("rhx-placement", "string", "bottom", "Position: top, bottom, left, right"),
+        new("id", "string", "auto", "Popover id; the trigger points at it via popovertarget"),
+        new("rhx-placement", "string", "bottom", "Position: top, bottom, left, right (+ -start/-end)"),
         new("rhx-arrow", "bool", "true", "Show a directional arrow"),
     };
 
-    public string ClickTriggerCode => @"<button class=""rhx-button rhx-button--brand"" id=""pop-click-trigger"">
+    public string ClickTriggerCode => @"<button class=""rhx-button rhx-button--brand""
+        popovertarget=""pop-click"" style=""anchor-name: --pop-click"">
     Show Popover
 </button>
-<rhx-popover rhx-trigger=""#pop-click-trigger"" rhx-placement=""bottom"">
+<rhx-popover id=""pop-click"" rhx-placement=""bottom"">
     <h4>Popover Title</h4>
     <p>This is a rich content popover. It supports
        <strong>HTML</strong>, images, and interactive elements.</p>
 </rhx-popover>";
 
-    public string HoverTriggerCode => @"<button class=""rhx-button rhx-button--neutral"" id=""pop-hover-trigger"">
-    Hover Me
+    public string HoverTriggerCode => @"<button class=""rhx-button rhx-button--neutral""
+        popovertarget=""pop-up"" style=""anchor-name: --pop-up"">
+    Open above
 </button>
-<rhx-popover rhx-trigger=""#pop-hover-trigger""
-             rhx-trigger-event=""hover""
-             rhx-placement=""top"">
-    <p>This popover appears on hover.</p>
+<rhx-popover id=""pop-up"" rhx-placement=""top"">
+    <p>This popover opens above its trigger.</p>
 </rhx-popover>";
 
-    public string PlacementsCode => @"<button id=""pop-top"">Top</button>
-<rhx-popover rhx-trigger=""#pop-top"" rhx-placement=""top"">
-    <p>Top placement</p>
-</rhx-popover>
+    public string PlacementsCode => @"<button popovertarget=""pop-top"" style=""anchor-name: --pop-top"">Top</button>
+<rhx-popover id=""pop-top"" rhx-placement=""top""><p>Top placement</p></rhx-popover>
 
-<button id=""pop-bottom"">Bottom</button>
-<rhx-popover rhx-trigger=""#pop-bottom"" rhx-placement=""bottom"">
-    <p>Bottom placement</p>
-</rhx-popover>
+<button popovertarget=""pop-bottom"" style=""anchor-name: --pop-bottom"">Bottom</button>
+<rhx-popover id=""pop-bottom"" rhx-placement=""bottom""><p>Bottom placement</p></rhx-popover>
 
-<button id=""pop-left"">Left</button>
-<rhx-popover rhx-trigger=""#pop-left"" rhx-placement=""left"">
-    <p>Left placement</p>
-</rhx-popover>
+<button popovertarget=""pop-left"" style=""anchor-name: --pop-left"">Left</button>
+<rhx-popover id=""pop-left"" rhx-placement=""left""><p>Left placement</p></rhx-popover>
 
-<button id=""pop-right"">Right</button>
-<rhx-popover rhx-trigger=""#pop-right"" rhx-placement=""right"">
-    <p>Right placement</p>
-</rhx-popover>";
+<button popovertarget=""pop-right"" style=""anchor-name: --pop-right"">Right</button>
+<rhx-popover id=""pop-right"" rhx-placement=""right""><p>Right placement</p></rhx-popover>";
 
-    public string NoArrowCode => @"<button class=""rhx-button rhx-button--brand"" id=""pop-noarrow"">
+    public string NoArrowCode => @"<button class=""rhx-button rhx-button--brand""
+        popovertarget=""pop-noarrow"" style=""anchor-name: --pop-noarrow"">
     No Arrow
 </button>
-<rhx-popover rhx-trigger=""#pop-noarrow""
-             rhx-placement=""bottom""
-             rhx-arrow=""false"">
+<rhx-popover id=""pop-noarrow"" rhx-placement=""bottom"" rhx-arrow=""false"">
     <p>This popover has no directional arrow.</p>
 </rhx-popover>";
 
-    public string HtmxCode => @"<button class=""rhx-button rhx-button--brand"" id=""user-card-trigger""
+    public string HtmxCode => @"<button class=""rhx-button rhx-button--brand""
+        popovertarget=""user-popover"" style=""anchor-name: --user-popover""
         hx-get=""/Docs/Components/Popover?handler=UserCard""
         hx-target=""#user-popover .rhx-popover__content""
         hx-trigger=""click once"">
     Load User Card
 </button>
-<rhx-popover id=""user-popover""
-             rhx-trigger=""#user-card-trigger""
-             rhx-placement=""bottom"">
+<rhx-popover id=""user-popover"" rhx-placement=""bottom"">
     <p>Loading...</p>
 </rhx-popover>";
 

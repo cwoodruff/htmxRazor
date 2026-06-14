@@ -5,7 +5,7 @@
     ViewData["Title"] = "Scroller";
     ViewData["ComponentName"] = "Scroller";
     ViewData["ComponentTag"] = "rhx-scroller";
-    ViewData["ComponentDescription"] = "Scrollable container with overflow shadows for horizontal, vertical, or both directions.";
+    ViewData["ComponentDescription"] = "Native overflow scroll container with fade edges and prev/next buttons for horizontal, vertical, or both directions.";
 }
 
 <section class="docs-component-section">
@@ -162,8 +162,9 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>The scroller container uses native browser scrolling, so standard scroll behaviors and assistive technology support apply.</li>
-        <li>Overflow shadows are purely visual indicators rendered via CSS gradients — they do not affect the accessibility tree.</li>
+        <li>The viewport uses native browser overflow scrolling, so standard scrolling, swiping, and keyboard scroll behaviors and assistive technology support apply with zero JavaScript.</li>
+        <li>Gradient fade edges are purely visual hints rendered via a CSS mask — they do not affect the accessibility tree.</li>
+        <li>The prev/next buttons are real <code>&lt;button&gt;</code> elements with descriptive <code>aria-label</code>s and are keyboard operable.</li>
         <li>Ensure scrollable content is reachable via keyboard; focusable elements inside the scroller can be tabbed to naturally.</li>
         <li>Consider providing an <code>aria-label</code> on the scroller when the scrollable region contains a distinct content group.</li>
     </ul>

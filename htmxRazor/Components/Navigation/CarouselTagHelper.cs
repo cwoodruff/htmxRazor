@@ -6,12 +6,15 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace htmxRazor.Components.Navigation;
 
 /// <summary>
-/// Renders an accessible carousel/slider with optional navigation arrows,
-/// pagination dots, autoplay, touch/mouse dragging, and loop support.
+/// Renders an accessible CSS scroll-snap carousel/slider with optional
+/// previous/next navigation buttons. Scrolling, swiping (trackpad/touch),
+/// and keyboard navigation are pure CSS — no per-component JavaScript.
+/// The prev/next buttons are handled by the shared scroll-button shim
+/// (<c>rhx-scroll-buttons.js</c>) via the <c>data-rhx-scroll-*</c> contract.
 /// </summary>
 /// <example>
 /// <code>
-/// &lt;rhx-carousel rhx-loop="true" rhx-pagination="true"&gt;
+/// &lt;rhx-carousel&gt;
 ///     &lt;rhx-carousel-item&gt;Slide 1&lt;/rhx-carousel-item&gt;
 ///     &lt;rhx-carousel-item&gt;Slide 2&lt;/rhx-carousel-item&gt;
 /// &lt;/rhx-carousel&gt;
@@ -20,62 +23,23 @@ namespace htmxRazor.Components.Navigation;
 [HtmlTargetElement("rhx-carousel")]
 public class CarouselTagHelper : htmxRazorTagHelperBase
 {
+    /// <summary>Context key used to share the slides-per-page value with child slides.</summary>
+    internal const string SlidesPerPageKey = "CarouselSlidesPerPage";
+
     /// <inheritdoc/>
     protected override string BlockName => "carousel";
 
     /// <summary>
-    /// Whether the carousel loops (wraps around at the ends).
-    /// </summary>
-    [HtmlAttributeName("rhx-loop")]
-    public bool Loop { get; set; }
-
-    /// <summary>
-    /// Whether to show previous/next navigation arrows. Default: true.
+    /// Whether to show previous/next navigation buttons. Default: true.
     /// </summary>
     [HtmlAttributeName("rhx-navigation")]
     public bool Navigation { get; set; } = true;
-
-    /// <summary>
-    /// Whether to show pagination dots. Default: true.
-    /// </summary>
-    [HtmlAttributeName("rhx-pagination")]
-    public bool Pagination { get; set; } = true;
-
-    /// <summary>
-    /// Whether the carousel auto-advances slides.
-    /// </summary>
-    [HtmlAttributeName("rhx-autoplay")]
-    public bool Autoplay { get; set; }
-
-    /// <summary>
-    /// Autoplay interval in milliseconds. Default: 5000.
-    /// </summary>
-    [HtmlAttributeName("rhx-autoplay-interval")]
-    public int AutoplayInterval { get; set; } = 5000;
 
     /// <summary>
     /// Number of slides visible at once. Default: 1.
     /// </summary>
     [HtmlAttributeName("rhx-slides-per-page")]
     public int SlidesPerPage { get; set; } = 1;
-
-    /// <summary>
-    /// Number of slides to advance per navigation action. Default: 1.
-    /// </summary>
-    [HtmlAttributeName("rhx-slides-per-move")]
-    public int SlidesPerMove { get; set; } = 1;
-
-    /// <summary>
-    /// Carousel orientation: horizontal (default) or vertical.
-    /// </summary>
-    [HtmlAttributeName("rhx-orientation")]
-    public string Orientation { get; set; } = "horizontal";
-
-    /// <summary>
-    /// Whether to enable mouse dragging. Default: true.
-    /// </summary>
-    [HtmlAttributeName("rhx-mouse-dragging")]
-    public bool MouseDragging { get; set; } = true;
 
     /// <summary>
     /// Accessible label for the carousel region.
@@ -98,6 +62,10 @@ public class CarouselTagHelper : htmxRazorTagHelperBase
 
         context.Items[typeof(CarouselTagHelper)] = this;
 
+        // Share slides-per-page with child slides so they can size their flex-basis.
+        var perPage = SlidesPerPage < 1 ? 1 : SlidesPerPage;
+        context.Items[SlidesPerPageKey] = perPage;
+
         // Process children — CarouselItemTagHelpers register themselves
         var childContent = await output.GetChildContentAsync();
         var slideCount = slideList.Count;
@@ -106,23 +74,12 @@ public class CarouselTagHelper : htmxRazorTagHelperBase
         output.TagName = "div";
         output.TagMode = TagMode.StartTagAndEndTag;
 
-        var orientation = Orientation.ToLowerInvariant();
-        var css = CreateCssBuilder()
-            .AddIf(GetModifierClass("vertical"), orientation == "vertical");
+        var css = CreateCssBuilder();
         ApplyBaseAttributes(output, css);
 
-        // Data attributes for JS
-        output.Attributes.SetAttribute("data-rhx-carousel", "");
+        // Scroll-snap shim contract hook
+        output.Attributes.SetAttribute("data-rhx-scrollable", "");
         output.Attributes.SetAttribute("data-rhx-slide-count", slideCount.ToString());
-        if (Loop)
-            output.Attributes.SetAttribute("data-rhx-loop", "true");
-        if (Autoplay)
-            output.Attributes.SetAttribute("data-rhx-autoplay", AutoplayInterval.ToString());
-        output.Attributes.SetAttribute("data-rhx-slides-per-page", SlidesPerPage.ToString());
-        output.Attributes.SetAttribute("data-rhx-slides-per-move", SlidesPerMove.ToString());
-        output.Attributes.SetAttribute("data-rhx-orientation", orientation);
-        if (MouseDragging)
-            output.Attributes.SetAttribute("data-rhx-mouse-dragging", "true");
 
         // ARIA
         output.Attributes.SetAttribute("role", "region");
@@ -135,49 +92,37 @@ public class CarouselTagHelper : htmxRazorTagHelperBase
         // Assemble inner HTML
         output.Content.Clear();
 
-        // Viewport > Track > slides
-        output.Content.AppendHtml($"<div class=\"{GetElementClass("viewport")}\">");
-        output.Content.AppendHtml($"<div class=\"{GetElementClass("track")}\" aria-live=\"polite\">");
-        output.Content.AppendHtml(childContent);
-        output.Content.AppendHtml("</div></div>");
+        var showNav = Navigation && slideCount > 1;
 
-        // Navigation arrows
-        if (Navigation && slideCount > 1)
+        // Prev button (handled by the shared scroll-button shim)
+        if (showNav)
         {
             var chevronLeft = IconRegistry.Get("chevron-left") ?? "";
-            var chevronRight = IconRegistry.Get("chevron-right") ?? "";
-
-            output.Content.AppendHtml($"<div class=\"{GetElementClass("navigation")}\">");
             output.Content.AppendHtml(
-                $"<button class=\"{GetElementClass("nav-button")} {GetElementClass("nav-button")}--prev\" " +
-                "type=\"button\" aria-label=\"Previous slide\">" +
+                $"<button class=\"{GetElementClass("nav")} {GetElementClass("nav")}--prev\" " +
+                "type=\"button\" data-rhx-scroll-prev aria-label=\"Previous slide\">" +
                 "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" " +
                 $"stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">{chevronLeft}</svg>" +
                 "</button>");
+        }
+
+        // Scroll-snap viewport (directly contains the slides)
+        var perPageStyle = perPage > 1 ? $" style=\"--rhx-carousel-per-page: {perPage};\"" : "";
+        output.Content.AppendHtml(
+            $"<div class=\"{GetElementClass("viewport")}\" data-rhx-scroll-viewport aria-live=\"polite\"{perPageStyle}>");
+        output.Content.AppendHtml(childContent);
+        output.Content.AppendHtml("</div>");
+
+        // Next button (handled by the shared scroll-button shim)
+        if (showNav)
+        {
+            var chevronRight = IconRegistry.Get("chevron-right") ?? "";
             output.Content.AppendHtml(
-                $"<button class=\"{GetElementClass("nav-button")} {GetElementClass("nav-button")}--next\" " +
-                "type=\"button\" aria-label=\"Next slide\">" +
+                $"<button class=\"{GetElementClass("nav")} {GetElementClass("nav")}--next\" " +
+                "type=\"button\" data-rhx-scroll-next aria-label=\"Next slide\">" +
                 "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" " +
                 $"stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">{chevronRight}</svg>" +
                 "</button>");
-            output.Content.AppendHtml("</div>");
-        }
-
-        // Pagination dots
-        if (Pagination && slideCount > 1)
-        {
-            output.Content.AppendHtml($"<div class=\"{GetElementClass("pagination")}\" role=\"tablist\">");
-            for (var i = 1; i <= slideCount; i++)
-            {
-                var selected = i == 1 ? "true" : "false";
-                var tabindex = i == 1 ? "0" : "-1";
-                output.Content.AppendHtml(
-                    $"<button class=\"{GetElementClass("dot")}\" role=\"tab\" " +
-                    $"aria-label=\"Slide {i}\" aria-selected=\"{selected}\" tabindex=\"{tabindex}\">" +
-                    "</button>");
-            }
-            output.Content.AppendHtml("</div>");
         }
     }
-
 }

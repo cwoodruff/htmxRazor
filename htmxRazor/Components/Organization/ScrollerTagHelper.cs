@@ -5,15 +5,19 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace htmxRazor.Components.Organization;
 
 /// <summary>
-/// Renders a scroll container with gradient shadow indicators that appear when
-/// content overflows, signaling to the user that more content is available
-/// in the scroll direction.
+/// Renders a scroll container with native CSS overflow scrolling, gradient fade
+/// edges, and prev/next scroll buttons. Scrolling, swiping, and keyboard
+/// navigation are handled entirely by the browser; only the prev/next buttons
+/// rely on the shared <c>rhx-scroll-buttons</c> shim.
 /// </summary>
 /// <remarks>
 /// <para>
-/// The component wraps child content in a scrollable <c>&lt;div&gt;</c> and adds
-/// start/end shadow overlays. JavaScript observes the scroll position to toggle
-/// shadow visibility classes automatically.
+/// The component wraps child content in a scrollable viewport
+/// (<c>overflow-x</c> or <c>overflow-y: auto</c> depending on orientation) and
+/// adds start/end gradient fades plus prev/next buttons. The viewport carries
+/// the <c>data-rhx-scroll-viewport</c> hook and the root carries
+/// <c>data-rhx-scrollable</c> so the shared scroll-button shim can drive the
+/// buttons. No per-component JavaScript is used.
 /// </para>
 /// </remarks>
 /// <example>
@@ -57,27 +61,42 @@ public class ScrollerTagHelper : htmxRazorTagHelperBase
             .Add(GetModifierClass(orientation));
         ApplyBaseAttributes(output, css);
 
-        output.Attributes.SetAttribute("data-rhx-scroller", "");
         output.Attributes.SetAttribute("data-rhx-orientation", orientation);
+        // Scope hook for the shared scroll-button shim.
+        output.Attributes.SetAttribute("data-rhx-scrollable", "");
 
         RenderHtmxAttributes(output);
+
+        // Orientation drives the button axis labels and arrow glyphs.
+        var vertical = orientation == "vertical";
+        var prevLabel = vertical ? "Scroll up" : "Scroll back";
+        var nextLabel = vertical ? "Scroll down" : "Scroll forward";
+        var prevGlyph = vertical ? "↑" : "←"; // ↑ / ←
+        var nextGlyph = vertical ? "↓" : "→"; // ↓ / →
+
+        var btnClass = GetElementClass("btn");
+        var viewportClass = GetElementClass("viewport");
 
         // Assemble inner HTML
         output.Content.Clear();
 
-        // Scrollable content wrapper — vertical/both need explicit height to enable scrolling
-        var contentStyle = (orientation == "vertical" || orientation == "both")
+        // Prev button
+        output.Content.AppendHtml(
+            $"<button type=\"button\" class=\"{btnClass} {btnClass}--prev\" data-rhx-scroll-prev aria-label=\"{prevLabel}\">" +
+            $"<span aria-hidden=\"true\">{prevGlyph}</span></button>");
+
+        // Scrollable viewport — vertical/both need an explicit height to enable scrolling.
+        var viewportStyle = (orientation == "vertical" || orientation == "both")
             ? " style=\"height:100%\""
             : "";
-        output.Content.AppendHtml($"<div class=\"{GetElementClass("content")}\"{contentStyle}>");
+        output.Content.AppendHtml(
+            $"<div class=\"{viewportClass}\" data-rhx-scroll-viewport{viewportStyle}>");
         output.Content.AppendHtml(childContent);
         output.Content.AppendHtml("</div>");
 
-        // Shadow indicators
-        var shadowClass = GetElementClass("shadow");
+        // Next button
         output.Content.AppendHtml(
-            $"<div class=\"{shadowClass} {shadowClass}--start\" aria-hidden=\"true\"></div>");
-        output.Content.AppendHtml(
-            $"<div class=\"{shadowClass} {shadowClass}--end\" aria-hidden=\"true\"></div>");
+            $"<button type=\"button\" class=\"{btnClass} {btnClass}--next\" data-rhx-scroll-next aria-label=\"{nextLabel}\">" +
+            $"<span aria-hidden=\"true\">{nextGlyph}</span></button>");
     }
 }

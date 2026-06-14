@@ -5,7 +5,7 @@
     ViewData["Title"] = "Popover";
     ViewData["ComponentName"] = "Popover";
     ViewData["ComponentTag"] = "rhx-popover";
-    ViewData["ComponentDescription"] = "Rich content popup anchored to a trigger with placement and arrow options.";
+    ViewData["ComponentDescription"] = "Rich content popover using the native Popover API — open/close, light-dismiss, and Escape with no JavaScript. The trigger points at it via popovertarget; anchor-name positions it.";
 }
 
 <section class="docs-component-section">
@@ -13,14 +13,14 @@
 
     <!-- Click Trigger -->
     <div class="docs-example">
-        <h3>Click Trigger</h3>
+        <h3>Trigger</h3>
         <rhx-tab-group>
             <rhx-tab rhx-panel="click-preview" rhx-active="true">Preview</rhx-tab>
             <rhx-tab rhx-panel="click-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="click-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <button class="rhx-button rhx-button--brand" id="pop-click-trigger">Show Popover</button>
-                    <rhx-popover rhx-trigger="#pop-click-trigger" rhx-placement="bottom">
+                    <button class="rhx-button rhx-button--brand" popovertarget="pop-click" style="anchor-name: --pop-click">Show Popover</button>
+                    <rhx-popover id="pop-click" rhx-placement="bottom">
                         <h4 style="margin: 0 0 var(--rhx-space-sm) 0; font-weight: var(--rhx-font-weight-bold);">Popover Title</h4>
                         <p style="margin: 0; color: var(--rhx-color-text-muted);">
                             This is a rich content popover. It supports <strong>HTML</strong>, images, and interactive elements.
@@ -36,17 +36,17 @@
         </rhx-tab-group>
     </div>
 
-    <!-- Hover Trigger -->
+    <!-- Top placement -->
     <div class="docs-example">
-        <h3>Hover Trigger</h3>
+        <h3>Top placement</h3>
         <rhx-tab-group>
             <rhx-tab rhx-panel="hover-preview" rhx-active="true">Preview</rhx-tab>
             <rhx-tab rhx-panel="hover-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="hover-preview" rhx-active="true">
-                <div class="docs-preview">
-                    <button class="rhx-button rhx-button--neutral" id="pop-hover-trigger">Hover Me</button>
-                    <rhx-popover rhx-trigger="#pop-hover-trigger" rhx-trigger-event="hover" rhx-placement="top">
-                        <p style="margin: 0;">This popover appears on hover and disappears when the pointer leaves.</p>
+                <div class="docs-preview" style="padding-top: var(--rhx-space-3xl);">
+                    <button class="rhx-button rhx-button--neutral" popovertarget="pop-up" style="anchor-name: --pop-up">Open above</button>
+                    <rhx-popover id="pop-up" rhx-placement="top">
+                        <p style="margin: 0;">This popover opens above its trigger.</p>
                     </rhx-popover>
                 </div>
             </rhx-tab-panel>
@@ -66,25 +66,17 @@
             <rhx-tab rhx-panel="placements-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="placements-preview" rhx-active="true">
                 <div class="docs-preview" style="gap: var(--rhx-space-md); flex-wrap: wrap; justify-content: center; padding: var(--rhx-space-xl);">
-                    <button class="rhx-button rhx-button--neutral rhx-button--outlined" id="pop-top-trigger">Top</button>
-                    <rhx-popover rhx-trigger="#pop-top-trigger" rhx-placement="top">
-                        <p style="margin: 0;">Top placement</p>
-                    </rhx-popover>
+                    <button class="rhx-button rhx-button--neutral rhx-button--outlined" popovertarget="pop-top" style="anchor-name: --pop-top">Top</button>
+                    <rhx-popover id="pop-top" rhx-placement="top"><p style="margin: 0;">Top placement</p></rhx-popover>
 
-                    <button class="rhx-button rhx-button--neutral rhx-button--outlined" id="pop-bottom-trigger">Bottom</button>
-                    <rhx-popover rhx-trigger="#pop-bottom-trigger" rhx-placement="bottom">
-                        <p style="margin: 0;">Bottom placement</p>
-                    </rhx-popover>
+                    <button class="rhx-button rhx-button--neutral rhx-button--outlined" popovertarget="pop-bottom" style="anchor-name: --pop-bottom">Bottom</button>
+                    <rhx-popover id="pop-bottom" rhx-placement="bottom"><p style="margin: 0;">Bottom placement</p></rhx-popover>
 
-                    <button class="rhx-button rhx-button--neutral rhx-button--outlined" id="pop-left-trigger">Left</button>
-                    <rhx-popover rhx-trigger="#pop-left-trigger" rhx-placement="left">
-                        <p style="margin: 0;">Left placement</p>
-                    </rhx-popover>
+                    <button class="rhx-button rhx-button--neutral rhx-button--outlined" popovertarget="pop-left" style="anchor-name: --pop-left">Left</button>
+                    <rhx-popover id="pop-left" rhx-placement="left"><p style="margin: 0;">Left placement</p></rhx-popover>
 
-                    <button class="rhx-button rhx-button--neutral rhx-button--outlined" id="pop-right-trigger">Right</button>
-                    <rhx-popover rhx-trigger="#pop-right-trigger" rhx-placement="right">
-                        <p style="margin: 0;">Right placement</p>
-                    </rhx-popover>
+                    <button class="rhx-button rhx-button--neutral rhx-button--outlined" popovertarget="pop-right" style="anchor-name: --pop-right">Right</button>
+                    <rhx-popover id="pop-right" rhx-placement="right"><p style="margin: 0;">Right placement</p></rhx-popover>
                 </div>
             </rhx-tab-panel>
             <rhx-tab-panel rhx-name="placements-code">
@@ -103,8 +95,8 @@
             <rhx-tab rhx-panel="noarrow-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="noarrow-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <button class="rhx-button rhx-button--brand" id="pop-noarrow-trigger">No Arrow</button>
-                    <rhx-popover rhx-trigger="#pop-noarrow-trigger" rhx-placement="bottom" rhx-arrow="false">
+                    <button class="rhx-button rhx-button--brand" popovertarget="pop-noarrow" style="anchor-name: --pop-noarrow">No Arrow</button>
+                    <rhx-popover id="pop-noarrow" rhx-placement="bottom" rhx-arrow="false">
                         <p style="margin: 0;">This popover has no directional arrow.</p>
                     </rhx-popover>
                 </div>
@@ -125,13 +117,14 @@
             <rhx-tab rhx-panel="htmx-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="htmx-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <button class="rhx-button rhx-button--brand" id="user-card-trigger"
+                    <button class="rhx-button rhx-button--brand"
+                            popovertarget="user-popover" style="anchor-name: --user-popover"
                             hx-get="/Docs/Components/Popover?handler=UserCard"
                             hx-target="#user-popover .rhx-popover__content"
                             hx-trigger="click once">
                         Load User Card
                     </button>
-                    <rhx-popover id="user-popover" rhx-trigger="#user-card-trigger" rhx-placement="bottom">
+                    <rhx-popover id="user-popover" rhx-placement="bottom">
                         <p style="color: var(--rhx-color-text-muted);">Loading...</p>
                     </rhx-popover>
                 </div>
@@ -152,9 +145,8 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Popover has an appropriate role for its content and is linked to its trigger via <code>aria-controls</code>.</li>
-        <li>Focus is managed: when opened, focus moves into the popover; when closed, focus returns to the trigger.</li>
-        <li>Pressing <code>Escape</code> closes the popover and returns focus to the trigger.</li>
-        <li>Click-triggered popovers toggle with the trigger's <code>aria-expanded</code> attribute.</li>
+        <li>Rendered as a native <code>popover</code>; the browser manages the top layer, light-dismiss, and <code>Escape</code> to close.</li>
+        <li>The trigger is linked via the native <code>popovertarget</code> attribute — no ARIA wiring needed.</li>
+        <li>Give the trigger an <code>anchor-name</code> matching the popover id so it positions next to the trigger.</li>
     </ul>
 </section>

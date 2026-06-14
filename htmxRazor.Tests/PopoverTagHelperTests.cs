@@ -10,55 +10,63 @@ public class PopoverTagHelperTests : TagHelperTestBase
         return new PopoverTagHelper { ViewContext = CreateViewContext() };
     }
 
-    // ══════════════════════════════════════════════
-    //  Structure
-    // ══════════════════════════════════════════════
+    private static async Task<TagHelperOutputAccess> RenderAsync(PopoverTagHelper helper)
+    {
+        var ctx = CreateContext("rhx-popover");
+        var output = CreateOutput("rhx-popover", childContent: "Content");
+        await helper.ProcessAsync(ctx, output);
+        return new TagHelperOutputAccess(output);
+    }
+
+    private sealed class TagHelperOutputAccess
+    {
+        public Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput Output { get; }
+        public string Content { get; }
+        public string Style { get; }
+        public TagHelperOutputAccess(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput o)
+        {
+            Output = o;
+            Content = o.Content.GetContent();
+            Style = o.Attributes.TryGetAttribute("style", out var s) ? s.Value?.ToString() ?? "" : "";
+        }
+    }
+
+    // ── Structure ──
 
     [Fact]
     public async Task Renders_Div_Element()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
         var output = CreateOutput("rhx-popover", childContent: "<p>Content</p>");
-
-        await helper.ProcessAsync(context, output);
-
+        await CreateHelper().ProcessAsync(CreateContext("rhx-popover"), output);
         Assert.Equal("div", output.TagName);
     }
 
     [Fact]
     public async Task Has_Block_Class()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
         var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
+        await CreateHelper().ProcessAsync(CreateContext("rhx-popover"), output);
         Assert.True(HasClass(output, "rhx-popover"));
     }
 
     [Fact]
-    public async Task Has_Data_Popover_Attribute()
+    public async Task Is_Native_Popover()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
         var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.True(output.Attributes.TryGetAttribute("data-rhx-popover", out _));
+        await CreateHelper().ProcessAsync(CreateContext("rhx-popover"), output);
+        AssertAttribute(output, "popover", "auto");
+        // No JS-era hooks.
+        AssertNoAttribute(output, "data-rhx-popover");
+        AssertNoAttribute(output, "data-rhx-trigger");
+        AssertNoAttribute(output, "hidden");
+        AssertNoAttribute(output, "aria-hidden");
     }
 
     [Fact]
     public async Task Has_Generated_Id()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
         var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
+        await CreateHelper().ProcessAsync(CreateContext("rhx-popover"), output);
         var id = GetAttribute(output, "id");
         Assert.NotNull(id);
         Assert.StartsWith("rhx-popover-", id);
@@ -69,12 +77,12 @@ public class PopoverTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.Id = "my-popover";
-        var context = CreateContext("rhx-popover");
         var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
+        await helper.ProcessAsync(CreateContext("rhx-popover"), output);
         AssertAttribute(output, "id", "my-popover");
+        // The anchor name follows the id so the trigger can position against it.
+        var style = GetAttribute(output, "style") ?? "";
+        Assert.Contains("position-anchor:--my-popover", style);
     }
 
     [Fact]
@@ -82,43 +90,26 @@ public class PopoverTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.CssClass = "custom-pop";
-        var context = CreateContext("rhx-popover");
         var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
+        await helper.ProcessAsync(CreateContext("rhx-popover"), output);
         Assert.True(HasClass(output, "rhx-popover"));
         Assert.True(HasClass(output, "custom-pop"));
     }
 
-    // ══════════════════════════════════════════════
-    //  Content wrapper
-    // ══════════════════════════════════════════════
+    // ── Content / arrow ──
 
     [Fact]
     public async Task Content_Wrapped_In_Content_Div()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Hello");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-popover__content", content);
+        var r = await RenderAsync(CreateHelper());
+        Assert.Contains("rhx-popover__content", r.Content);
     }
 
     [Fact]
     public async Task Arrow_Rendered_By_Default()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-popover__arrow", content);
+        var r = await RenderAsync(CreateHelper());
+        Assert.Contains("rhx-popover__arrow", r.Content);
     }
 
     [Fact]
@@ -126,233 +117,37 @@ public class PopoverTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.Arrow = false;
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.DoesNotContain("rhx-popover__arrow", content);
+        var r = await RenderAsync(helper);
+        Assert.DoesNotContain("rhx-popover__arrow", r.Content);
     }
 
-    // ══════════════════════════════════════════════
-    //  Default state (closed)
-    // ══════════════════════════════════════════════
+    // ── Placement → position-area ──
 
     [Fact]
-    public async Task Default_Hidden()
+    public async Task Default_Placement_Bottom()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.True(output.Attributes.TryGetAttribute("hidden", out _));
+        var r = await RenderAsync(CreateHelper());
+        Assert.Contains("position-area:bottom", r.Style);
     }
 
     [Fact]
-    public async Task Default_Aria_Hidden()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "aria-hidden", "true");
-    }
-
-    [Fact]
-    public async Task Default_No_Open_Modifier()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.False(HasClass(output, "rhx-popover--open"));
-    }
-
-    // ══════════════════════════════════════════════
-    //  Open state
-    // ══════════════════════════════════════════════
-
-    [Fact]
-    public async Task Open_Has_Modifier()
-    {
-        var helper = CreateHelper();
-        helper.Open = true;
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.True(HasClass(output, "rhx-popover--open"));
-    }
-
-    [Fact]
-    public async Task Open_Not_Hidden()
-    {
-        var helper = CreateHelper();
-        helper.Open = true;
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertNoAttribute(output, "hidden");
-        AssertNoAttribute(output, "aria-hidden");
-    }
-
-    // ══════════════════════════════════════════════
-    //  Trigger
-    // ══════════════════════════════════════════════
-
-    [Fact]
-    public async Task Trigger_Selector()
-    {
-        var helper = CreateHelper();
-        helper.Trigger = "#my-button";
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-trigger", "#my-button");
-    }
-
-    [Fact]
-    public async Task Trigger_Previous()
-    {
-        var helper = CreateHelper();
-        helper.Trigger = "previous";
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-trigger", "previous");
-    }
-
-    // ══════════════════════════════════════════════
-    //  Placement
-    // ══════════════════════════════════════════════
-
-    [Fact]
-    public async Task Default_Placement()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-placement", "bottom");
-    }
-
-    [Fact]
-    public async Task Custom_Placement()
+    public async Task Custom_Placement_Maps_To_Position_Area()
     {
         var helper = CreateHelper();
         helper.Placement = "top-start";
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-placement", "top-start");
+        var r = await RenderAsync(helper);
+        Assert.Contains("position-area:top span-right", r.Style);
     }
 
-    // ══════════════════════════════════════════════
-    //  Distance
-    // ══════════════════════════════════════════════
+    // ── htmx ──
 
     [Fact]
-    public async Task Default_Distance_Not_Rendered()
+    public async Task Renders_Htmx_Attributes()
     {
         var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
+        helper.HxGet = "/api/card";
         var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertNoAttribute(output, "data-rhx-distance");
-    }
-
-    [Fact]
-    public async Task Custom_Distance()
-    {
-        var helper = CreateHelper();
-        helper.Distance = 16;
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-distance", "16");
-    }
-
-    // ══════════════════════════════════════════════
-    //  Trigger event
-    // ══════════════════════════════════════════════
-
-    [Fact]
-    public async Task Default_Trigger_Event_Not_Rendered()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        // Default "click" is not rendered
-        AssertNoAttribute(output, "data-rhx-trigger-event");
-    }
-
-    [Fact]
-    public async Task Hover_Trigger_Event()
-    {
-        var helper = CreateHelper();
-        helper.TriggerEvent = "hover";
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-trigger-event", "hover");
-    }
-
-    [Fact]
-    public async Task Focus_Trigger_Event()
-    {
-        var helper = CreateHelper();
-        helper.TriggerEvent = "focus";
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-trigger-event", "focus");
-    }
-
-    // ══════════════════════════════════════════════
-    //  htmx
-    // ══════════════════════════════════════════════
-
-    [Fact]
-    public async Task Htmx_Attributes_Rendered()
-    {
-        var helper = CreateHelper();
-        helper.HxGet = "/api/popover-content";
-        helper.HxTarget = "this";
-        var context = CreateContext("rhx-popover");
-        var output = CreateOutput("rhx-popover", childContent: "Content");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "hx-get", "/api/popover-content");
-        AssertAttribute(output, "hx-target", "this");
+        await helper.ProcessAsync(CreateContext("rhx-popover"), output);
+        AssertAttribute(output, "hx-get", "/api/card");
     }
 }

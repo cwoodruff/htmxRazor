@@ -5,7 +5,7 @@
     ViewData["Title"] = "Carousel";
     ViewData["ComponentName"] = "Carousel";
     ViewData["ComponentTag"] = "rhx-carousel";
-    ViewData["ComponentDescription"] = "Image and content slider with autoplay, multi-slide, and htmx lazy loading.";
+    ViewData["ComponentDescription"] = "CSS scroll-snap image and content slider with multi-slide layout and htmx lazy loading.";
 }
 
 <!-- ═══════════════════════════════════════════════
@@ -15,7 +15,7 @@
 <div class="demo-section">
     <h2>Carousel — Image Gallery</h2>
 
-    <div class="demo-label">Navigation arrows and pagination dots</div>
+    <div class="demo-label">Native swipe/trackpad scroll-snap with prev/next buttons</div>
     <div style="max-width: 600px;">
         <rhx-carousel aria-label="Image gallery">
             <rhx-carousel-item>
@@ -41,9 +41,9 @@
 <div class="demo-section">
     <h2>Carousel — Testimonials</h2>
 
-    <div class="demo-label">Text content with autoplay and loop</div>
+    <div class="demo-label">Text content, swipe or use the prev/next buttons</div>
     <div style="max-width: 500px;">
-        <rhx-carousel rhx-autoplay="true" rhx-autoplay-interval="4000" rhx-loop="true" rhx-navigation="false" aria-label="Customer testimonials">
+        <rhx-carousel aria-label="Customer testimonials">
             <rhx-carousel-item>
                 <div style="text-align: center; padding: var(--rhx-space-xl);">
                     <p style="font-size: var(--rhx-font-size-lg); font-style: italic; color: var(--rhx-color-text); margin-bottom: var(--rhx-space-md);">
@@ -79,8 +79,8 @@
 <div class="demo-section">
     <h2>Carousel — Multi-Slide</h2>
 
-    <div class="demo-label">3 slides per page, loop enabled</div>
-    <rhx-carousel rhx-slides-per-page="3" rhx-slides-per-move="1" rhx-loop="true" aria-label="Product showcase">
+    <div class="demo-label">3 slides per page</div>
+    <rhx-carousel rhx-slides-per-page="3" aria-label="Product showcase">
         @for (var i = 1; i <= 6; i++)
         {
             <rhx-carousel-item>
@@ -102,9 +102,9 @@
 <div class="demo-section">
     <h2>Carousel — Minimal</h2>
 
-    <div class="demo-label">Drag or use keyboard arrows to navigate (no arrows, no dots)</div>
+    <div class="demo-label">Swipe / trackpad / keyboard scroll only (no buttons)</div>
     <div style="max-width: 400px;">
-        <rhx-carousel rhx-navigation="false" rhx-pagination="false" rhx-loop="true" aria-label="Minimal carousel">
+        <rhx-carousel rhx-navigation="false" aria-label="Minimal carousel">
             <rhx-carousel-item>
                 <div style="background: var(--rhx-color-brand-500); color: white; padding: var(--rhx-space-xl); text-align: center; border-radius: var(--rhx-radius-md);">
                     Slide A

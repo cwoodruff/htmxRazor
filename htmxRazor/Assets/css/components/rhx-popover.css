@@ -1,15 +1,20 @@
 /* ================================================================
-   htmxRazor Popover Component
-   BEM: rhx-popover / rhx-popover--open
-        rhx-popover__content / rhx-popover__arrow
+   htmxRazor Popover Component — native Popover API (no JavaScript)
+   BEM: rhx-popover / rhx-popover__content / rhx-popover__arrow
+   The element carries [popover]; the browser toggles it via the
+   trigger's popovertarget. Placement is CSS anchor positioning
+   (position-anchor/position-area set inline by the Tag Helper).
    ================================================================ */
 
 @layer rhx.components {
 .rhx-popover {
-  position: absolute;
+  /* Reset the UA popover box (it defaults to centered with inset:0; margin:auto). */
+  position: fixed;
+  inset: auto;
+  margin: 0;
   z-index: var(--rhx-z-popover, 800);
-  display: none;
   max-width: 24rem;
+  padding: 0;
   background: var(--rhx-color-surface);
   border: var(--rhx-border-width) solid var(--rhx-color-border);
   border-radius: var(--rhx-radius-md);
@@ -18,15 +23,21 @@
   font-size: var(--rhx-font-size-sm);
   color: var(--rhx-color-text);
   overflow: visible;
+  opacity: 0;
+  transition: opacity var(--rhx-transition-fast) ease,
+              display var(--rhx-transition-fast) allow-discrete,
+              overlay var(--rhx-transition-fast) allow-discrete;
 }
 
-.rhx-popover--open,
-.rhx-popover[data-rhx-visible] {
-  display: block;
+/* Shown state (native popover open). */
+.rhx-popover:popover-open {
+  opacity: 1;
 }
 
-.rhx-popover[hidden] {
-  display: none;
+@starting-style {
+  .rhx-popover:popover-open {
+    opacity: 0;
+  }
 }
 
 /* ── Content ── */
@@ -45,56 +56,15 @@
   z-index: -1;
 }
 
-/* Arrow placement clipping — hide the inner border edge */
-.rhx-popover[data-rhx-current-placement^="bottom"] > .rhx-popover__arrow {
-  border-bottom: none;
-  border-right: none;
-}
-
-.rhx-popover[data-rhx-current-placement^="top"] > .rhx-popover__arrow {
-  border-top: none;
-  border-left: none;
-}
-
-.rhx-popover[data-rhx-current-placement^="left"] > .rhx-popover__arrow {
-  border-left: none;
-  border-bottom: none;
-}
-
-.rhx-popover[data-rhx-current-placement^="right"] > .rhx-popover__arrow {
-  border-right: none;
-  border-top: none;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   TRANSITIONS
-   ══════════════════════════════════════════════════════════════ */
-
-.rhx-popover {
-  opacity: 0;
-  transition: opacity var(--rhx-transition-fast) ease;
-}
-
-.rhx-popover[data-rhx-visible] {
-  opacity: 1;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   CSS ANCHOR POSITIONING (modern browsers)
-   When supported, JS applies anchor-name and position-anchor
-   inline. These rules enable automatic flip behavior.
-   ══════════════════════════════════════════════════════════════ */
-
-@supports (anchor-name: --x) {
+/* ── Anchor positioning + viewport flip ── */
+@supports (position-area: bottom) {
   .rhx-popover {
     position-try-fallbacks: flip-block, flip-inline;
+    margin: var(--rhx-space-2xs, 0.375rem);
   }
 }
 
-/* ══════════════════════════════════════════════════════════════
-   REDUCED MOTION
-   ══════════════════════════════════════════════════════════════ */
-
+/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .rhx-popover {
     transition-duration: 0.01ms;
