@@ -109,7 +109,7 @@
 <input type="hidden" name="filter" value="@(Model.Filter ?? "all")" />
 
 <!-- Add Task Dialog -->
-<rhx-dialog id="add-todo-dialog" rhx-label="Add New Task">
+<rhx-dialog id="add-todo-dialog" rhx-label="Add New Task" rhx-size="large">
     <form hx-post="/?handler=Add"
           hx-target="#todo-list"
           hx-swap="innerHTML"
@@ -140,7 +140,7 @@
 </rhx-dialog>
 
 <!-- Edit Task Dialog — body is server-rendered (_EditForm) so the pickers bind their values -->
-<rhx-dialog id="edit-todo-dialog" rhx-label="Edit Task">
+<rhx-dialog id="edit-todo-dialog" rhx-label="Edit Task" rhx-size="large">
     <div id="edit-form-body"></div>
 </rhx-dialog>
 

@@ -212,6 +212,13 @@
     margin-bottom: var(--rhx-space-xs);
 }
 
+/* The Radial Select pops a 12rem circular pie centered over its trigger. Indent the
+   control so that pie has room to the left and stays within the (large) dialog rather
+   than spilling over its edge onto the backdrop. */
+.field--category {
+    padding-left: 5rem;
+}
+
 /* Due date + due time side by side, stacking on narrow dialogs. */
 .field-row {
     display: flex;
