@@ -167,13 +167,15 @@
         }
     });
 
-    // Listen for todoChanged events to update filter tabs
+    // Listen for todoChanged events to keep the hidden filter input in sync with
+    // the selected filter tab (the checked native radio carries the filter in its hx-get).
     document.body.addEventListener('todoChanged', function() {
-        // Update the hidden filter input based on current active tab
-        var activeTab = document.querySelector('.rhx-tab[aria-selected="true"]');
-        if (activeTab) {
-            var panel = activeTab.getAttribute('aria-controls') || 'all';
-            document.querySelector('[name="filter"]').value = panel;
+        var activeRadio = document.querySelector('.rhx-tab__radio:checked');
+        var filterInput = document.querySelector('[name="filter"]');
+        if (activeRadio && filterInput) {
+            var hxGet = activeRadio.getAttribute('hx-get') || '';
+            var match = hxGet.match(/filter=([^&]+)/);
+            filterInput.value = match ? match[1] : 'all';
         }
     });
 </script>

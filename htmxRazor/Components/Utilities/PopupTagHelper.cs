@@ -4,14 +4,17 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace htmxRazor.Components.Utilities;
 
 /// <summary>
-/// A lower-level positioning utility — a container that positions itself
-/// relative to an anchor element. Used internally by dropdown, tooltip,
-/// popover, and select.
+/// A lower-level positioning utility — a container that positions itself next to an anchor
+/// element using CSS Anchor Positioning (no JavaScript). Because the anchor is an external
+/// element referenced by selector, the consumer must declare a matching <c>anchor-name</c>
+/// on that anchor: for an <c>rhx-id</c> of <c>X</c> the popup uses <c>position-anchor: --X</c>,
+/// so the anchor must set <c>anchor-name: --X</c>. Toggle visibility by adding/removing the
+/// <c>rhx-popup--active</c> class (or set <c>rhx-active="true"</c> to render it shown).
 /// </summary>
 /// <example>
 /// <code>
-/// &lt;button id="my-trigger"&gt;Open&lt;/button&gt;
-/// &lt;rhx-popup rhx-anchor="#my-trigger" rhx-placement="bottom-start" rhx-active="true"&gt;
+/// &lt;button id="my-trigger" style="anchor-name: --my-popup"&gt;Open&lt;/button&gt;
+/// &lt;rhx-popup rhx-id="my-popup" rhx-placement="bottom-start" rhx-active="true"&gt;
 ///     Positioned content
 /// &lt;/rhx-popup&gt;
 /// </code>
@@ -22,7 +25,8 @@ public class PopupTagHelper : htmxRazorTagHelperBase
     protected override string BlockName => "popup";
 
     /// <summary>
-    /// CSS selector for the anchor element to position relative to.
+    /// CSS selector for the anchor element to position relative to. The referenced element
+    /// must declare an <c>anchor-name</c> matching the popup's id (<c>--{id}</c>).
     /// </summary>
     [HtmlAttributeName("rhx-anchor")]
     public string? Anchor { get; set; }
@@ -36,40 +40,10 @@ public class PopupTagHelper : htmxRazorTagHelperBase
     public string Placement { get; set; } = "bottom-start";
 
     /// <summary>
-    /// Distance in pixels from the anchor along the placement axis. Default: 4.
-    /// </summary>
-    [HtmlAttributeName("rhx-distance")]
-    public int Distance { get; set; } = 4;
-
-    /// <summary>
-    /// Offset in pixels along the cross axis. Default: 0.
-    /// </summary>
-    [HtmlAttributeName("rhx-skidding")]
-    public int Skidding { get; set; }
-
-    /// <summary>
     /// Whether the popup is currently shown. Default: false.
     /// </summary>
     [HtmlAttributeName("rhx-active")]
     public bool Active { get; set; }
-
-    /// <summary>
-    /// Positioning strategy: "absolute" or "fixed". Default: absolute.
-    /// </summary>
-    [HtmlAttributeName("rhx-strategy")]
-    public string Strategy { get; set; } = "absolute";
-
-    /// <summary>
-    /// Whether to flip placement when the popup overflows the viewport. Default: true.
-    /// </summary>
-    [HtmlAttributeName("rhx-flip")]
-    public bool Flip { get; set; } = true;
-
-    /// <summary>
-    /// Whether to shift the popup to keep it in viewport bounds. Default: true.
-    /// </summary>
-    [HtmlAttributeName("rhx-shift")]
-    public bool Shift { get; set; } = true;
 
     /// <summary>
     /// Whether to show a directional arrow. Default: false.
@@ -77,59 +51,48 @@ public class PopupTagHelper : htmxRazorTagHelperBase
     [HtmlAttributeName("rhx-arrow")]
     public bool Arrow { get; set; }
 
-    /// <summary>
-    /// Padding around the arrow from the popup edges in pixels. Default: 8.
-    /// </summary>
-    [HtmlAttributeName("rhx-arrow-padding")]
-    public int ArrowPadding { get; set; } = 8;
-
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
         output.TagName = "div";
         output.TagMode = TagMode.StartTagAndEndTag;
 
+        var id = string.IsNullOrWhiteSpace(Id) ? $"rhx-popup-{context.UniqueId}" : Id!;
+        var anchorName = $"--{id}";
+        var positionArea = PlacementToPositionArea(Placement.ToLowerInvariant());
+
         var css = CreateCssBuilder()
             .AddIf(GetModifierClass("active"), Active);
         ApplyBaseAttributes(output, css);
 
-        output.Attributes.SetAttribute("data-rhx-popup", "");
+        output.Attributes.SetAttribute("id", id);
 
-        if (!string.IsNullOrWhiteSpace(Anchor))
-            output.Attributes.SetAttribute("data-rhx-anchor", Anchor);
-
-        output.Attributes.SetAttribute("data-rhx-placement", Placement.ToLowerInvariant());
-
-        if (Distance != 4)
-            output.Attributes.SetAttribute("data-rhx-distance", Distance.ToString());
-
-        if (Skidding != 0)
-            output.Attributes.SetAttribute("data-rhx-skidding", Skidding.ToString());
-
-        if (!Strategy.Equals("absolute", StringComparison.OrdinalIgnoreCase))
-            output.Attributes.SetAttribute("data-rhx-strategy", Strategy.ToLowerInvariant());
-
-        if (!Flip)
-            output.Attributes.SetAttribute("data-rhx-no-flip", "");
-
-        if (!Shift)
-            output.Attributes.SetAttribute("data-rhx-no-shift", "");
+        // CSS Anchor Positioning: the consumer's anchor element must declare
+        // `anchor-name: --{id}` for this to take effect.
+        var existingStyle = output.Attributes["style"]?.Value?.ToString();
+        var posStyle = $"position-anchor:{anchorName};position-area:{positionArea};position-try-fallbacks:flip-block,flip-inline";
+        output.Attributes.SetAttribute("style",
+            string.IsNullOrWhiteSpace(existingStyle) ? posStyle : existingStyle!.TrimEnd(';', ' ') + ";" + posStyle);
 
         if (Arrow)
-        {
-            output.Attributes.SetAttribute("data-rhx-arrow", "");
-            if (ArrowPadding != 8)
-                output.Attributes.SetAttribute("data-rhx-arrow-padding", ArrowPadding.ToString());
-        }
-
-        if (!Active)
-        {
-            output.Attributes.SetAttribute("aria-hidden", "true");
-            output.Attributes.SetAttribute("hidden", "hidden");
-        }
-
-        if (Arrow)
-            output.PostContent.AppendHtml("<div class=\"rhx-popup__arrow\" data-rhx-popup-arrow></div>");
+            output.PostContent.AppendHtml("<div class=\"rhx-popup__arrow\"></div>");
 
         RenderHtmxAttributes(output);
     }
+
+    private static string PlacementToPositionArea(string placement) => placement switch
+    {
+        "top" => "top",
+        "top-start" => "top span-right",
+        "top-end" => "top span-left",
+        "bottom" => "bottom",
+        "bottom-start" => "bottom span-right",
+        "bottom-end" => "bottom span-left",
+        "left" => "left",
+        "left-start" => "left span-bottom",
+        "left-end" => "left span-top",
+        "right" => "right",
+        "right-start" => "right span-bottom",
+        "right-end" => "right span-top",
+        _ => "bottom span-right"
+    };
 }

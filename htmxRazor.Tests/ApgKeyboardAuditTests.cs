@@ -40,125 +40,85 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
         Assert.Contains("role=\"tablist\"", content);
     }
 
-    [Fact]
-    public async Task TabGroup_Vertical_Has_AriaOrientation()
+    // Tabs are now JS-free: each tab is a native radio (mutual exclusivity +
+    // arrow-key navigation + Space selection are native) paired with a <label>.
+    // The radiogroup lives in the role="tablist" nav; selection is conveyed by the
+    // native radio's checked state rather than aria-selected/role="tab"/tabindex.
+
+    private static (TagHelperContext, List<string>) TabCtx()
     {
-        var helper = new TabGroupTagHelper(CreateUrlHelperFactory());
-        helper.ViewContext = CreateViewContext();
-        helper.Placement = "start";
-        var context = CreateContext("rhx-tab-group");
-        var output = CreateOutput("rhx-tab-group", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("aria-orientation=\"vertical\"", content);
+        var ctx = new TagHelperContext(
+            new TagHelperAttributeList(), new Dictionary<object, object>(), "tabs-test");
+        var navList = new List<string>();
+        ctx.Items["RhxTabsNav"] = navList;
+        ctx.Items["RhxTabsGroupName"] = "rhx-tabs-test";
+        ctx.Items["RhxTabsPanelMap"] = new List<(string, string)>();
+        ctx.Items["RhxTabsCounter"] = new int[1];
+        return (ctx, navList);
     }
 
     [Fact]
-    public async Task TabGroup_Horizontal_No_AriaOrientation()
-    {
-        var helper = new TabGroupTagHelper(CreateUrlHelperFactory());
-        helper.ViewContext = CreateViewContext();
-        helper.Placement = "top";
-        var context = CreateContext("rhx-tab-group");
-        var output = CreateOutput("rhx-tab-group", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.DoesNotContain("aria-orientation", content);
-    }
-
-    [Fact]
-    public async Task Tab_Active_Has_AriaSelected_True_And_Tabindex_0()
+    public async Task Tab_Active_Is_Checked_Radio()
     {
         var helper = new TabTagHelper(CreateUrlHelperFactory());
         helper.ViewContext = CreateViewContext();
         helper.Panel = "general";
         helper.Active = true;
-        var context = CreateContext("rhx-tab");
-        var navList = new List<string>();
-        context.Items["RhxTabsNav"] = navList;
+        var (context, navList) = TabCtx();
         var output = CreateOutput("rhx-tab", childContent: "General");
 
         await helper.ProcessAsync(context, output);
 
         Assert.Single(navList);
         var html = navList[0];
-        Assert.Contains("aria-selected=\"true\"", html);
-        Assert.Contains("tabindex=\"0\"", html);
-        Assert.Contains("role=\"tab\"", html);
+        Assert.Contains("type=\"radio\"", html);
+        Assert.Contains(" checked", html);
     }
 
     [Fact]
-    public async Task Tab_Inactive_Has_AriaSelected_False_And_Tabindex_Minus1()
+    public async Task Tab_Inactive_Radio_Not_Checked()
     {
         var helper = new TabTagHelper(CreateUrlHelperFactory());
         helper.ViewContext = CreateViewContext();
         helper.Panel = "advanced";
         helper.Active = false;
-        var context = CreateContext("rhx-tab");
-        var navList = new List<string>();
-        context.Items["RhxTabsNav"] = navList;
+        var (context, navList) = TabCtx();
         var output = CreateOutput("rhx-tab", childContent: "Advanced");
 
         await helper.ProcessAsync(context, output);
 
-        var html = navList[0];
-        Assert.Contains("aria-selected=\"false\"", html);
-        Assert.Contains("tabindex=\"-1\"", html);
+        Assert.DoesNotContain(" checked", navList[0]);
     }
 
     [Fact]
-    public async Task Tab_Has_AriaControls_Matching_Panel()
+    public async Task Tab_Label_Linked_To_Radio()
     {
         var helper = new TabTagHelper(CreateUrlHelperFactory());
         helper.ViewContext = CreateViewContext();
         helper.Panel = "settings";
-        var context = CreateContext("rhx-tab");
-        var navList = new List<string>();
-        context.Items["RhxTabsNav"] = navList;
+        var (context, navList) = TabCtx();
         var output = CreateOutput("rhx-tab", childContent: "Settings");
 
         await helper.ProcessAsync(context, output);
 
         var html = navList[0];
-        Assert.Contains("aria-controls=\"panel-settings\"", html);
-        Assert.Contains("id=\"tab-settings\"", html);
+        Assert.Contains("id=\"rhx-tabs-test-t0\"", html);
+        Assert.Contains("for=\"rhx-tabs-test-t0\"", html);
     }
 
     [Fact]
-    public async Task Tab_Disabled_Has_AriaDisabled()
+    public async Task Tab_Disabled_Radio_Is_Disabled()
     {
         var helper = new TabTagHelper(CreateUrlHelperFactory());
         helper.ViewContext = CreateViewContext();
         helper.Panel = "disabled-tab";
         helper.Disabled = true;
-        var context = CreateContext("rhx-tab");
-        var navList = new List<string>();
-        context.Items["RhxTabsNav"] = navList;
+        var (context, navList) = TabCtx();
         var output = CreateOutput("rhx-tab", childContent: "Disabled");
 
         await helper.ProcessAsync(context, output);
 
-        var html = navList[0];
-        Assert.Contains("aria-disabled=\"true\"", html);
-        Assert.Contains("disabled", html);
-    }
-
-    [Fact]
-    public async Task TabGroup_Has_DataActivation_When_Manual()
-    {
-        var helper = new TabGroupTagHelper(CreateUrlHelperFactory());
-        helper.ViewContext = CreateViewContext();
-        helper.Activation = "manual";
-        var context = CreateContext("rhx-tab-group");
-        var output = CreateOutput("rhx-tab-group", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-activation", "manual");
+        Assert.Contains(" disabled", navList[0]);
     }
 
     // ══════════════════════════════════════════════

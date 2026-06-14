@@ -5,7 +5,7 @@
     ViewData["Title"] = "Slider";
     ViewData["ComponentName"] = "Slider";
     ViewData["ComponentTag"] = "rhx-slider";
-    ViewData["ComponentDescription"] = "Range input with tooltips, custom ranges, and model binding.";
+    ViewData["ComponentDescription"] = "Native range input styled with accent-color, with custom ranges and model binding.";
 }
 
 <section class="docs-component-section">
@@ -49,16 +49,17 @@
         </rhx-tab-group>
     </div>
 
-    <!-- With Tooltip -->
+    <!-- Show Value -->
     <div class="docs-example">
-        <h3>With Tooltip</h3>
+        <h3>Show Value</h3>
+        <p style="color: var(--rhx-color-text-muted);">The value output shows the <strong>initial</strong> value only. Without JavaScript it does not live-update as the thumb moves.</p>
         <rhx-tab-group>
             <rhx-tab rhx-panel="tooltip-preview" rhx-active="true">Preview</rhx-tab>
             <rhx-tab rhx-panel="tooltip-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="tooltip-preview" rhx-active="true">
                 <div class="docs-preview docs-preview--vertical">
-                    <rhx-slider name="brightness" rhx-label="Brightness" value="75" rhx-tooltip="top" />
-                    <rhx-slider name="contrast" rhx-label="Contrast" value="60" rhx-tooltip="bottom" />
+                    <rhx-slider name="brightness" rhx-label="Brightness" value="75" rhx-show-value="true" />
+                    <rhx-slider name="contrast" rhx-label="Contrast" value="60" rhx-show-value="true" />
                 </div>
             </rhx-tab-panel>
             <rhx-tab-panel rhx-name="tooltip-code">
@@ -156,7 +157,7 @@
             <rhx-tab-panel rhx-name="htmx-preview" rhx-active="true">
                 <div class="docs-preview docs-preview--vertical">
                     <rhx-slider name="fontSize" rhx-label="Font Size" value="16"
-                                rhx-min="8" rhx-max="48" rhx-step="1" rhx-tooltip="top"
+                                rhx-min="8" rhx-max="48" rhx-step="1"
                                 hx-get="/Docs/Components/Slider?handler=FontPreview"
                                 hx-trigger="input changed delay:200ms" hx-target="#slider-preview" hx-include="this" />
                     <div id="slider-preview" style="color: var(--rhx-color-text-muted); padding: var(--rhx-space-md); border: 1px solid var(--rhx-color-border); border-radius: var(--rhx-radius-md);">

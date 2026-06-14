@@ -1,22 +1,27 @@
 /* ================================================================
-   htmxRazor Popup Component
-   Low-level positioning utility. Positioned by rhx-position.js.
+   htmxRazor Popup Component — CSS Anchor Positioning (no JavaScript)
    BEM: rhx-popup / rhx-popup--active / rhx-popup__arrow
+   Low-level positioning utility. The anchor element (referenced by
+   rhx-anchor) must declare `anchor-name: --{id}` matching the
+   popup's id; the Tag Helper sets position-anchor/position-area
+   inline. Visibility is toggled via the .rhx-popup--active class.
    ================================================================ */
 
 @layer rhx.components {
 .rhx-popup {
-  position: absolute;
+  position: fixed;
+  inset: auto;
+  margin: 0;
   z-index: var(--rhx-z-popup, 700);
   display: none;
+  opacity: 0;
+  transition: opacity var(--rhx-transition-fast) ease;
 }
 
+/* Shown state. */
 .rhx-popup--active {
   display: block;
-}
-
-.rhx-popup[hidden] {
-  display: none;
+  opacity: 1;
 }
 
 /* ── Arrow ── */
@@ -31,22 +36,23 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
-   FIXED STRATEGY
-   ══════════════════════════════════════════════════════════════ */
-
-.rhx-popup[data-rhx-strategy="fixed"] {
-  position: fixed;
-}
-
-/* ══════════════════════════════════════════════════════════════
    CSS ANCHOR POSITIONING (modern browsers)
-   When supported, JS applies anchor-name and position-anchor
-   inline. These rules enable automatic flip behavior.
+   The Tag Helper sets position-anchor + position-area inline;
+   these rules enable automatic viewport flip and a small gap.
+   The stacked fallback above (position:fixed) still renders the
+   popup when anchor positioning is unsupported.
    ══════════════════════════════════════════════════════════════ */
-
-@supports (anchor-name: --x) {
+@supports (position-area: bottom) {
   .rhx-popup {
     position-try-fallbacks: flip-block, flip-inline;
+    margin: var(--rhx-space-2xs, 0.375rem);
+  }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .rhx-popup {
+    transition-duration: 0.01ms;
   }
 }
 }

@@ -141,6 +141,40 @@
     cursor: not-allowed;
 }
 
+/* ── Radio-driven state (no JS) ──
+   The visible tab is a <label>; its sibling sr-only radio drives selection. */
+.rhx-tab__radio:checked + .rhx-tab {
+    color: var(--rhx-color-brand-500);
+    border-bottom-color: var(--rhx-color-brand-500);
+}
+
+.rhx-tab-group--bottom .rhx-tab__radio:checked + .rhx-tab {
+    border-bottom-color: transparent;
+    border-top-color: var(--rhx-color-brand-500);
+}
+
+.rhx-tab-group--start .rhx-tab__radio:checked + .rhx-tab {
+    border-bottom-color: transparent;
+    border-right-color: var(--rhx-color-brand-500);
+}
+
+.rhx-tab-group--end .rhx-tab__radio:checked + .rhx-tab {
+    border-bottom-color: transparent;
+    border-left-color: var(--rhx-color-brand-500);
+}
+
+/* Focus ring on the label when its radio is focused via keyboard. */
+.rhx-tab__radio:focus-visible + .rhx-tab {
+    outline: 2px solid var(--rhx-color-brand-500);
+    outline-offset: -2px;
+    border-radius: var(--rhx-radius-sm);
+}
+
+.rhx-tab__radio:disabled + .rhx-tab {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* ── Tab label ── */
 .rhx-tab__label {
     display: inline-flex;

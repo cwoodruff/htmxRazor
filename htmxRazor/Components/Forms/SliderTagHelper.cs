@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -6,18 +5,24 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace htmxRazor.Components.Forms;
 
 /// <summary>
-/// Renders a custom range slider with fill bar, tooltip, and native range input.
-/// Supports model binding via <c>rhx-for</c>, htmx integration on the native input,
+/// Renders a native <c>&lt;input type="range"&gt;</c> slider styled with
+/// <c>accent-color</c>. JS-free: the browser draws the track, fill, and thumb.
+/// Supports model binding via <c>rhx-for</c>, htmx integration on the input,
 /// and configurable min/max/step values.
 /// </summary>
 /// <example>
 /// <code>
 /// &lt;rhx-slider name="volume" rhx-label="Volume" rhx-min="0" rhx-max="100" rhx-step="1" /&gt;
 ///
-/// &lt;rhx-slider rhx-for="Brightness" rhx-tooltip="top"
+/// &lt;rhx-slider rhx-for="Brightness" rhx-show-value="true"
 ///              hx-post="/settings" hx-trigger="change" /&gt;
 /// </code>
 /// </example>
+/// <remarks>
+/// When <see cref="ShowValue"/> is enabled, a static <c>&lt;output&gt;</c> shows the
+/// INITIAL value next to the slider. Without JavaScript it does not live-update as the
+/// thumb moves.
+/// </remarks>
 [HtmlTargetElement("rhx-slider")]
 public class SliderTagHelper : FormControlTagHelperBase
 {
@@ -40,9 +45,12 @@ public class SliderTagHelper : FormControlTagHelperBase
     [HtmlAttributeName("rhx-step")]
     public string Step { get; set; } = "1";
 
-    /// <summary>Tooltip display mode: "none", "top", "bottom". Default: "none".</summary>
-    [HtmlAttributeName("rhx-tooltip")]
-    public string Tooltip { get; set; } = "none";
+    /// <summary>
+    /// Renders a static <c>&lt;output&gt;</c> showing the initial value next to the
+    /// slider. Note: without JavaScript this does not live-update. Default: false.
+    /// </summary>
+    [HtmlAttributeName("rhx-show-value")]
+    public bool ShowValue { get; set; }
 
     // ──────────────────────────────────────────────
     //  Constructor
@@ -66,7 +74,6 @@ public class SliderTagHelper : FormControlTagHelperBase
         var resolvedRequired = ResolveRequired();
         var hasError = HasError();
         var size = Size.ToLowerInvariant();
-        var tooltip = Tooltip.ToLowerInvariant();
 
         var hintId = $"{resolvedId}-hint";
         var errorId = $"{resolvedId}-error";
@@ -78,12 +85,6 @@ public class SliderTagHelper : FormControlTagHelperBase
             .AddIf(GetModifierClass("error"), hasError);
 
         ApplyWrapperAttributes(output, css);
-        output.Attributes.SetAttribute("data-rhx-slider", "");
-        if (tooltip != "none")
-            output.Attributes.SetAttribute("data-rhx-tooltip", tooltip);
-
-        // ── Calculate fill percentage ──
-        var fillPercent = CalculateFillPercent(resolvedValue);
 
         // ── Build inner HTML ──
         var sb = new StringBuilder();
@@ -91,14 +92,11 @@ public class SliderTagHelper : FormControlTagHelperBase
         // Label
         sb.Append(BuildLabelHtml(resolvedId));
 
-        // Track
-        sb.Append($"<div class=\"{GetElementClass("track")}\">");
-
-        // Fill bar
-        sb.Append($"<div class=\"{GetElementClass("fill")}\" style=\"width: {fillPercent}%\"></div>");
+        // Control row (slider + optional static value output)
+        sb.Append($"<div class=\"{GetElementClass("control")}\">");
 
         // Native range input
-        sb.Append($"<input type=\"range\" class=\"{GetElementClass("native")}\"");
+        sb.Append($"<input type=\"range\" class=\"{GetElementClass("input")}\"");
         sb.Append($" id=\"{Enc(resolvedId)}\"");
         if (!string.IsNullOrEmpty(resolvedName))
             sb.Append($" name=\"{Enc(resolvedName)}\"");
@@ -121,18 +119,19 @@ public class SliderTagHelper : FormControlTagHelperBase
         if (hasError) sb.Append(" aria-invalid=\"true\"");
         if (resolvedRequired) sb.Append(" aria-required=\"true\"");
 
-        // htmx and validation on native input
+        // htmx and validation on the input
         sb.Append(BuildHtmxAttributeString());
         sb.Append(BuildValidationAttributeString());
         sb.Append(" />");
 
-        // Tooltip
-        if (tooltip != "none")
+        // Static value output (initial value only; does not live-update without JS)
+        if (ShowValue)
         {
-            sb.Append($"<div class=\"{GetElementClass("tooltip")}\" aria-hidden=\"true\">{Enc(resolvedValue)}</div>");
+            sb.Append($"<output class=\"{GetElementClass("value")}\"");
+            sb.Append($" for=\"{Enc(resolvedId)}\">{Enc(resolvedValue)}</output>");
         }
 
-        sb.Append("</div>"); // close track
+        sb.Append("</div>"); // close control
 
         // Hint
         sb.Append(BuildHintHtml(hintId));
@@ -141,23 +140,5 @@ public class SliderTagHelper : FormControlTagHelperBase
         sb.Append(BuildErrorHtml(errorId));
 
         output.Content.SetHtmlContent(sb.ToString());
-    }
-
-    // ──────────────────────────────────────────────
-    //  Fill calculation
-    // ──────────────────────────────────────────────
-
-    private string CalculateFillPercent(string value)
-    {
-        if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var val) &&
-            double.TryParse(Min, NumberStyles.Float, CultureInfo.InvariantCulture, out var min) &&
-            double.TryParse(Max, NumberStyles.Float, CultureInfo.InvariantCulture, out var max) &&
-            max > min)
-        {
-            var percent = ((val - min) / (max - min)) * 100.0;
-            percent = Math.Max(0, Math.Min(100, percent));
-            return percent.ToString("F1", CultureInfo.InvariantCulture);
-        }
-        return "0.0";
     }
 }

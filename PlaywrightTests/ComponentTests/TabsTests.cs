@@ -1,8 +1,12 @@
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 using PlaywrightTests.Infrastructure;
 
 namespace PlaywrightTests.ComponentTests;
 
+// Tabs are JS-free: each tab is a visually-hidden native radio (.rhx-tab__radio)
+// paired with a clickable <label class="rhx-tab">. Selection is native radio
+// behavior; panel visibility is driven by CSS :has() on the checked radio.
 public sealed class TabsTests(DemoAppFactory app) : ComponentTestBase(app)
 {
     private const string Path = "/Docs/Components/Tabs";
@@ -18,12 +22,12 @@ public sealed class TabsTests(DemoAppFactory app) : ComponentTestBase(app)
         var page = await OpenAsync(browserName, Path);
 
         var group = InnerGroup(page, "panel-basic-preview", "Account settings");
-        var tabs = group.Locator("[role='tablist'] button[role='tab']");
+        var tabs = group.Locator("[role='tablist'] .rhx-tab");
         await Assertions.Expect(tabs).ToHaveCountAsync(3);
 
-        var firstTab = tabs.First;
-        await Assertions.Expect(firstTab).ToHaveAttributeAsync("aria-selected", "true");
-        await Assertions.Expect(firstTab).ToHaveAttributeAsync("tabindex", "0");
+        // The first tab's radio is checked on load.
+        var firstRadio = group.Locator("[role='tablist'] .rhx-tab__radio").First;
+        await Assertions.Expect(firstRadio).ToBeCheckedAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -34,85 +38,73 @@ public sealed class TabsTests(DemoAppFactory app) : ComponentTestBase(app)
         var group = InnerGroup(page, "panel-basic-preview", "Account settings");
         var generalPanel = group.Locator("#panel-general");
         var profilePanel = group.Locator("#panel-profile");
-        var profileTab = group.Locator("[role='tablist'] button[role='tab']", new() { HasTextString = "Profile" });
+        var profileTab = group.Locator("[role='tablist'] .rhx-tab", new() { HasTextString = "Profile" });
 
-        await Assertions.Expect(generalPanel).Not.ToHaveAttributeAsync("hidden", "hidden");
-        await Assertions.Expect(profilePanel).ToHaveAttributeAsync("hidden", "hidden");
+        await Assertions.Expect(generalPanel).ToBeVisibleAsync();
+        await Assertions.Expect(profilePanel).Not.ToBeVisibleAsync();
 
         await profileTab.ClickAsync();
 
-        await Assertions.Expect(profileTab).ToHaveAttributeAsync("aria-selected", "true");
-        await Assertions.Expect(profilePanel).Not.ToHaveAttributeAsync("hidden", "hidden");
-        await Assertions.Expect(generalPanel).ToHaveAttributeAsync("hidden", "hidden");
+        var profileRadio = group.Locator("[role='tablist'] .rhx-tab__radio").Nth(1);
+        await Assertions.Expect(profileRadio).ToBeCheckedAsync();
+        await Assertions.Expect(profilePanel).ToBeVisibleAsync();
+        await Assertions.Expect(generalPanel).Not.ToBeVisibleAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Arrow_key_navigation_moves_active_tab(string browserName)
+    public async Task Arrow_key_navigation_moves_selection(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var group = InnerGroup(page, "panel-basic-preview", "Account settings");
-        var firstTab = group.Locator("[role='tablist'] button[role='tab']").First;
+        var firstRadio = group.Locator("[role='tablist'] .rhx-tab__radio").First;
 
-        await firstTab.FocusAsync();
+        await firstRadio.FocusAsync();
+        // Native radio group: ArrowRight/Down moves to and selects the next radio.
         await page.Keyboard.PressAsync("ArrowRight");
 
-        var profileTab = group.Locator("[role='tablist'] button[role='tab']", new() { HasTextString = "Profile" });
-        await Assertions.Expect(profileTab).ToHaveAttributeAsync("aria-selected", "true");
+        var profileRadio = group.Locator("[role='tablist'] .rhx-tab__radio").Nth(1);
+        await Assertions.Expect(profileRadio).ToBeCheckedAsync();
+        await Assertions.Expect(group.Locator("#panel-profile")).ToBeVisibleAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Disabled_tab_has_aria_disabled_and_is_not_interactive(string browserName)
+    public async Task Disabled_tab_radio_is_disabled(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var group = InnerGroup(page, "panel-disabled-preview", "Disabled tab example");
-        var disabledTab = group.Locator("[role='tablist'] button[role='tab']", new() { HasTextString = "Disabled" });
+        var disabledLabel = group.Locator("[role='tablist'] .rhx-tab", new() { HasTextString = "Disabled" });
+        await Assertions.Expect(disabledLabel).ToHaveClassAsync(new Regex("rhx-tab--disabled"));
 
-        await Assertions.Expect(disabledTab).ToHaveAttributeAsync("aria-disabled", "true");
-        await Assertions.Expect(disabledTab).ToBeDisabledAsync();
-        await Assertions.Expect(disabledTab).ToHaveAttributeAsync("aria-selected", "false");
+        // The corresponding radio (second) is natively disabled.
+        var disabledRadio = group.Locator("[role='tablist'] .rhx-tab__radio").Nth(1);
+        await Assertions.Expect(disabledRadio).ToBeDisabledAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Closable_tab_can_be_removed(string browserName)
+    public async Task Vertical_placement_adds_modifier_class(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var group = InnerGroup(page, "panel-closable-preview", "Closable tabs example");
-        var tabs = group.Locator("[role='tablist'] button[role='tab']");
-        await Assertions.Expect(tabs).ToHaveCountAsync(3);
-
-        await group.Locator("[role='tablist'] .rhx-tab__close").First.ClickAsync();
-        await Assertions.Expect(tabs).ToHaveCountAsync(2);
+        var startGroup = InnerGroup(page, "panel-placements-preview", "Start tabs example");
+        await Assertions.Expect(startGroup).ToHaveClassAsync(new Regex("rhx-tab-group--start"));
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Manual_activation_separates_focus_from_selection(string browserName)
+    public async Task Lazy_tab_loads_content_via_htmx_on_change(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var group = InnerGroup(page, "panel-manual-preview", "Manual activation example");
-        var firstTab = group.Locator("[role='tablist'] button[role='tab']").First;
-        var secondTab = group.Locator("[role='tablist'] button[role='tab']").Nth(1);
+        var group = InnerGroup(page, "panel-lazy-preview", "Lazy-loaded tabs example");
+        var lazyOnePanel = group.Locator("#panel-lazy-one");
 
-        await firstTab.FocusAsync();
-        await page.Keyboard.PressAsync("ArrowRight");
+        // Selecting the tab fires hx-get on the radio's change event.
+        var lazyTab = group.Locator("[role='tablist'] .rhx-tab", new() { HasTextString = "Lazy Tab 1" });
+        await lazyTab.ClickAsync();
 
-        // Manual activation: focus moves but selection does not until Enter/Space.
-        await Assertions.Expect(firstTab).ToHaveAttributeAsync("aria-selected", "true");
-        await Assertions.Expect(secondTab).ToHaveAttributeAsync("aria-selected", "false");
-
-        await page.Keyboard.PressAsync("Enter");
-        await Assertions.Expect(secondTab).ToHaveAttributeAsync("aria-selected", "true");
-    }
-
-    [Theory, MemberData(nameof(Browsers))]
-    public async Task Vertical_placement_sets_aria_orientation(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        var startTablist = page.Locator("#panel-placements-preview [role='tablist'][aria-label='Start tabs example']");
-        await Assertions.Expect(startTablist).ToHaveAttributeAsync("aria-orientation", "vertical");
+        await Assertions.Expect(lazyOnePanel).ToBeVisibleAsync();
+        // The spinner placeholder is replaced by server-rendered content.
+        await Assertions.Expect(lazyOnePanel).Not.ToContainTextAsync("Loading...");
     }
 }

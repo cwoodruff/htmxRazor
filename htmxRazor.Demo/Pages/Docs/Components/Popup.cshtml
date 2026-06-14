@@ -20,16 +20,15 @@
             <rhx-tab-panel rhx-name="basic-preview" rhx-active="true">
                 <div class="docs-preview">
                     <div style="position: relative;">
-                        <button class="rhx-button rhx-button--neutral" id="popup-anchor" onclick="
-                            var p = document.getElementById('demo-popup');
-                            p.hidden = !p.hidden;
-                            p.classList.toggle('rhx-popup--active');
+                        <button class="rhx-button rhx-button--neutral" id="popup-anchor"
+                                style="anchor-name: --demo-popup" onclick="
+                            document.getElementById('demo-popup').classList.toggle('rhx-popup--active');
                         ">Toggle Popup</button>
                         <rhx-popup rhx-anchor="#popup-anchor" rhx-placement="bottom-start" id="demo-popup">
                             <div style="padding: var(--rhx-space-md); background: var(--rhx-color-surface); border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-md); box-shadow: var(--rhx-shadow-lg); min-width: 12rem;">
                                 <p style="margin: 0;">Positioned popup content.</p>
                                 <p style="margin: var(--rhx-space-xs) 0 0; color: var(--rhx-color-text-muted); font-size: var(--rhx-font-size-xs);">
-                                    Uses rhx-position.js for smart placement.
+                                    Positioned with CSS Anchor Positioning (no JavaScript).
                                 </p>
                             </div>
                         </rhx-popup>
@@ -53,10 +52,9 @@
             <rhx-tab-panel rhx-name="arrow-preview" rhx-active="true">
                 <div class="docs-preview">
                     <div style="position: relative;">
-                        <button class="rhx-button rhx-button--brand" id="popup-arrow-anchor" onclick="
-                            var p = document.getElementById('demo-popup-arrow');
-                            p.hidden = !p.hidden;
-                            p.classList.toggle('rhx-popup--active');
+                        <button class="rhx-button rhx-button--brand" id="popup-arrow-anchor"
+                                style="anchor-name: --demo-popup-arrow" onclick="
+                            document.getElementById('demo-popup-arrow').classList.toggle('rhx-popup--active');
                         ">Toggle Popup with Arrow</button>
                         <rhx-popup rhx-anchor="#popup-arrow-anchor" rhx-placement="bottom" rhx-arrow="true" id="demo-popup-arrow">
                             <div style="padding: var(--rhx-space-md); background: var(--rhx-color-surface); border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-md); box-shadow: var(--rhx-shadow-lg); min-width: 12rem;">

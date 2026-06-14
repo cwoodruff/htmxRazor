@@ -5,7 +5,7 @@
     ViewData["Title"] = "Tabs";
     ViewData["ComponentName"] = "Tabs";
     ViewData["ComponentTag"] = "rhx-tab-group";
-    ViewData["ComponentDescription"] = "Tabbed interface with placements, closable tabs, and htmx lazy loading.";
+    ViewData["ComponentDescription"] = "Tabbed interface with placements and htmx lazy loading, built on native radios (no JavaScript).";
 }
 
 <section class="docs-component-section">
@@ -99,68 +99,6 @@
     </div>
 
     <div class="docs-example">
-        <h3>Manual Activation</h3>
-        <rhx-tab-group>
-            <rhx-tab rhx-panel="manual-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="manual-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="manual-preview" rhx-active="true">
-                <div class="docs-preview docs-preview--vertical">
-                    <rhx-tab-group rhx-activation="manual" aria-label="Manual activation example">
-                        <rhx-tab rhx-panel="m-one" rhx-active>First</rhx-tab>
-                        <rhx-tab rhx-panel="m-two">Second</rhx-tab>
-                        <rhx-tab rhx-panel="m-three">Third</rhx-tab>
-                        <rhx-tab-panel rhx-name="m-one" rhx-active>
-                            <p>First tab content. Use arrow keys to move focus, then Enter/Space to select.</p>
-                        </rhx-tab-panel>
-                        <rhx-tab-panel rhx-name="m-two">
-                            <p>Second tab content.</p>
-                        </rhx-tab-panel>
-                        <rhx-tab-panel rhx-name="m-three">
-                            <p>Third tab content.</p>
-                        </rhx-tab-panel>
-                    </rhx-tab-group>
-                </div>
-            </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="manual-code">
-                <div class="docs-code">
-                    <pre><code>@Model.ManualCode</code></pre>
-                </div>
-            </rhx-tab-panel>
-        </rhx-tab-group>
-    </div>
-
-    <div class="docs-example">
-        <h3>Closable Tabs</h3>
-        <rhx-tab-group>
-            <rhx-tab rhx-panel="closable-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="closable-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="closable-preview" rhx-active="true">
-                <div class="docs-preview docs-preview--vertical">
-                    <rhx-tab-group aria-label="Closable tabs example">
-                        <rhx-tab rhx-panel="c-one" rhx-active rhx-closable>Document 1</rhx-tab>
-                        <rhx-tab rhx-panel="c-two" rhx-closable>Document 2</rhx-tab>
-                        <rhx-tab rhx-panel="c-three" rhx-closable>Document 3</rhx-tab>
-                        <rhx-tab-panel rhx-name="c-one" rhx-active>
-                            <p>Document 1 content. Close this tab to see the next one activate.</p>
-                        </rhx-tab-panel>
-                        <rhx-tab-panel rhx-name="c-two">
-                            <p>Document 2 content.</p>
-                        </rhx-tab-panel>
-                        <rhx-tab-panel rhx-name="c-three">
-                            <p>Document 3 content.</p>
-                        </rhx-tab-panel>
-                    </rhx-tab-group>
-                </div>
-            </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="closable-code">
-                <div class="docs-code">
-                    <pre><code>@Model.ClosableCode</code></pre>
-                </div>
-            </rhx-tab-panel>
-        </rhx-tab-group>
-    </div>
-
-    <div class="docs-example">
         <h3>Disabled Tab</h3>
         <rhx-tab-group>
             <rhx-tab rhx-panel="disabled-preview" rhx-active="true">Preview</rhx-tab>
@@ -204,12 +142,12 @@
                                   hx-get="/Docs/Components/Tabs?handler=LazyContent&tab=one"
                                   hx-target="#panel-lazy-one"
                                   hx-swap="innerHTML"
-                                  hx-trigger="click once">Lazy Tab 1</rhx-tab>
+                                  hx-trigger="change once">Lazy Tab 1</rhx-tab>
                         <rhx-tab rhx-panel="lazy-two"
                                   hx-get="/Docs/Components/Tabs?handler=LazyContent&tab=two"
                                   hx-target="#panel-lazy-two"
                                   hx-swap="innerHTML"
-                                  hx-trigger="click once">Lazy Tab 2</rhx-tab>
+                                  hx-trigger="change once">Lazy Tab 2</rhx-tab>
                         <rhx-tab-panel rhx-name="lazy-pre" rhx-active>
                             <p>This panel was rendered with the page. The other tabs will load content via htmx when first clicked.</p>
                         </rhx-tab-panel>
@@ -252,11 +190,11 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Uses <code>role="tablist"</code> on the tab bar with <code>role="tab"</code> on each tab and <code>role="tabpanel"</code> on each panel.</li>
-        <li>Active tab receives <code>aria-selected="true"</code>; panels are linked via <code>aria-controls</code> and <code>aria-labelledby</code>.</li>
-        <li>Arrow keys navigate between tabs; <kbd>Home</kbd> and <kbd>End</kbd> jump to the first and last tab.</li>
-        <li>In manual activation mode, arrow keys move focus only; <kbd>Enter</kbd> or <kbd>Space</kbd> activates the focused tab.</li>
-        <li>Disabled tabs receive <code>aria-disabled="true"</code> and are skipped during keyboard navigation.</li>
-        <li>Vertical placements (<code>start</code>, <code>end</code>) set <code>aria-orientation="vertical"</code> and use up/down arrow keys.</li>
+        <li>Built on a native radio group (one visually-hidden <code>&lt;input type="radio"&gt;</code> per tab) wrapped in a <code>role="tablist"</code> nav, so selection and keyboard support come from the browser — no JavaScript.</li>
+        <li>Arrow keys move between tabs and select them natively (native radio-group behavior); <kbd>Space</kbd> selects the focused tab.</li>
+        <li>Each visible tab is a <code>&lt;label&gt;</code> bound to its radio, so clicking the label (or its text) selects the tab.</li>
+        <li>Panel visibility is driven purely by CSS (<code>:has()</code> on the checked radio); the matching panel is shown and the rest hidden.</li>
+        <li>Disabled tabs use the native <code>disabled</code> attribute and are skipped during keyboard navigation automatically.</li>
+        <li>htmx attributes on a tab fire on the radio's <code>change</code> event, enabling lazy-loaded panel content.</li>
     </ul>
 </section>

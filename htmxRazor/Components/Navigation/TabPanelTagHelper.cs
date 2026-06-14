@@ -55,7 +55,6 @@ public class TabPanelTagHelper : htmxRazorTagHelperBase
         output.TagMode = TagMode.StartTagAndEndTag;
 
         var panelId = $"panel-{Name}";
-        var tabId = $"tab-{Name}";
 
         var css = CreateCssBuilder()
             .AddIf(GetModifierClass("active"), Active);
@@ -66,13 +65,10 @@ public class TabPanelTagHelper : htmxRazorTagHelperBase
         output.Attributes.SetAttribute("class", css.Build());
         output.Attributes.SetAttribute("id", panelId);
         output.Attributes.SetAttribute("role", "tabpanel");
-        output.Attributes.SetAttribute("aria-labelledby", tabId);
         output.Attributes.SetAttribute("tabindex", "0");
 
-        if (!Active)
-        {
-            output.Attributes.SetAttribute("hidden", "hidden");
-        }
+        // Visibility is controlled by the group's generated <style> (CSS :has() on the
+        // checked tab radio). No `hidden` attribute and no JS.
 
         RenderHtmxAttributes(output);
     }

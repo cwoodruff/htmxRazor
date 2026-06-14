@@ -39,15 +39,26 @@ public class PopupTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public void Has_Data_Popup_Attribute()
+    public void No_Data_Hooks()
     {
         var helper = CreateHelper();
+        helper.Anchor = "#trigger";
+        helper.Arrow = true;
         var context = CreateContext("rhx-popup");
         var output = CreateOutput("rhx-popup");
 
         helper.Process(context, output);
 
-        Assert.True(output.Attributes.TryGetAttribute("data-rhx-popup", out _));
+        AssertNoAttribute(output, "data-rhx-popup");
+        AssertNoAttribute(output, "data-rhx-anchor");
+        AssertNoAttribute(output, "data-rhx-placement");
+        AssertNoAttribute(output, "data-rhx-distance");
+        AssertNoAttribute(output, "data-rhx-skidding");
+        AssertNoAttribute(output, "data-rhx-strategy");
+        AssertNoAttribute(output, "data-rhx-no-flip");
+        AssertNoAttribute(output, "data-rhx-no-shift");
+        AssertNoAttribute(output, "data-rhx-arrow");
+        AssertNoAttribute(output, "data-rhx-arrow-padding");
     }
 
     [Fact]
@@ -69,30 +80,6 @@ public class PopupTagHelperTests : TagHelperTestBase
     // ══════════════════════════════════════════════
 
     [Fact]
-    public void Default_Hidden()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        Assert.True(output.Attributes.TryGetAttribute("hidden", out _));
-    }
-
-    [Fact]
-    public void Default_Aria_Hidden()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "aria-hidden", "true");
-    }
-
-    [Fact]
     public void Default_No_Active_Modifier()
     {
         var helper = CreateHelper();
@@ -102,6 +89,20 @@ public class PopupTagHelperTests : TagHelperTestBase
         helper.Process(context, output);
 
         Assert.False(HasClass(output, "rhx-popup--active"));
+    }
+
+    [Fact]
+    public void Default_No_Hidden_Attributes()
+    {
+        var helper = CreateHelper();
+        var context = CreateContext("rhx-popup");
+        var output = CreateOutput("rhx-popup");
+
+        helper.Process(context, output);
+
+        // Visibility is driven entirely by the --active class / CSS now.
+        AssertNoAttribute(output, "hidden");
+        AssertNoAttribute(output, "aria-hidden");
     }
 
     // ══════════════════════════════════════════════
@@ -121,84 +122,61 @@ public class PopupTagHelperTests : TagHelperTestBase
         Assert.True(HasClass(output, "rhx-popup--active"));
     }
 
-    [Fact]
-    public void Active_Not_Hidden()
-    {
-        var helper = CreateHelper();
-        helper.Active = true;
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        AssertNoAttribute(output, "hidden");
-        AssertNoAttribute(output, "aria-hidden");
-    }
-
     // ══════════════════════════════════════════════
-    //  Anchor
+    //  Anchor positioning style
     // ══════════════════════════════════════════════
 
     [Fact]
-    public void Anchor_Selector()
+    public void Emits_Position_Anchor_Style_From_Id()
     {
         var helper = CreateHelper();
-        helper.Anchor = "#my-trigger";
+        helper.Id = "my-popup";
         var context = CreateContext("rhx-popup");
         var output = CreateOutput("rhx-popup");
 
         helper.Process(context, output);
 
-        AssertAttribute(output, "data-rhx-anchor", "#my-trigger");
+        var style = output.Attributes["style"]?.Value?.ToString();
+        Assert.NotNull(style);
+        Assert.Contains("position-anchor:--my-popup", style);
     }
 
     [Fact]
-    public void No_Anchor_No_Attribute()
+    public void Emits_Position_Try_Fallbacks()
     {
         var helper = CreateHelper();
+        helper.Id = "my-popup";
         var context = CreateContext("rhx-popup");
         var output = CreateOutput("rhx-popup");
 
         helper.Process(context, output);
 
-        AssertNoAttribute(output, "data-rhx-anchor");
-    }
-
-    // ══════════════════════════════════════════════
-    //  Placement
-    // ══════════════════════════════════════════════
-
-    [Fact]
-    public void Default_Placement()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-placement", "bottom-start");
+        var style = output.Attributes["style"]?.Value?.ToString();
+        Assert.Contains("position-try-fallbacks:flip-block,flip-inline", style);
     }
 
     [Fact]
-    public void Custom_Placement()
+    public void Generates_Id_When_Absent()
     {
         var helper = CreateHelper();
-        helper.Placement = "top-end";
         var context = CreateContext("rhx-popup");
         var output = CreateOutput("rhx-popup");
 
         helper.Process(context, output);
 
-        AssertAttribute(output, "data-rhx-placement", "top-end");
+        var id = output.Attributes["id"]?.Value?.ToString();
+        Assert.False(string.IsNullOrWhiteSpace(id));
+
+        var style = output.Attributes["style"]?.Value?.ToString();
+        Assert.Contains($"position-anchor:--{id}", style);
     }
 
     // ══════════════════════════════════════════════
-    //  Distance and skidding
+    //  Placement → position-area
     // ══════════════════════════════════════════════
 
     [Fact]
-    public void Default_Distance_Not_Rendered()
+    public void Default_Placement_Maps_To_Bottom_Span_Right()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-popup");
@@ -206,128 +184,34 @@ public class PopupTagHelperTests : TagHelperTestBase
 
         helper.Process(context, output);
 
-        AssertNoAttribute(output, "data-rhx-distance");
+        var style = output.Attributes["style"]?.Value?.ToString();
+        Assert.Contains("position-area:bottom span-right", style);
     }
 
-    [Fact]
-    public void Custom_Distance()
+    [Theory]
+    [InlineData("top", "top")]
+    [InlineData("top-start", "top span-right")]
+    [InlineData("top-end", "top span-left")]
+    [InlineData("bottom", "bottom")]
+    [InlineData("bottom-start", "bottom span-right")]
+    [InlineData("bottom-end", "bottom span-left")]
+    [InlineData("left", "left")]
+    [InlineData("left-start", "left span-bottom")]
+    [InlineData("left-end", "left span-top")]
+    [InlineData("right", "right")]
+    [InlineData("right-start", "right span-bottom")]
+    [InlineData("right-end", "right span-top")]
+    public void Placement_Maps_To_Position_Area(string placement, string expectedArea)
     {
         var helper = CreateHelper();
-        helper.Distance = 12;
+        helper.Placement = placement;
         var context = CreateContext("rhx-popup");
         var output = CreateOutput("rhx-popup");
 
         helper.Process(context, output);
 
-        AssertAttribute(output, "data-rhx-distance", "12");
-    }
-
-    [Fact]
-    public void Default_Skidding_Not_Rendered()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        AssertNoAttribute(output, "data-rhx-skidding");
-    }
-
-    [Fact]
-    public void Custom_Skidding()
-    {
-        var helper = CreateHelper();
-        helper.Skidding = 10;
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-skidding", "10");
-    }
-
-    // ══════════════════════════════════════════════
-    //  Strategy
-    // ══════════════════════════════════════════════
-
-    [Fact]
-    public void Default_Strategy_Not_Rendered()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        AssertNoAttribute(output, "data-rhx-strategy");
-    }
-
-    [Fact]
-    public void Fixed_Strategy()
-    {
-        var helper = CreateHelper();
-        helper.Strategy = "fixed";
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-strategy", "fixed");
-    }
-
-    // ══════════════════════════════════════════════
-    //  Flip and shift
-    // ══════════════════════════════════════════════
-
-    [Fact]
-    public void Default_Flip_No_Attribute()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        AssertNoAttribute(output, "data-rhx-no-flip");
-    }
-
-    [Fact]
-    public void No_Flip()
-    {
-        var helper = CreateHelper();
-        helper.Flip = false;
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        Assert.True(output.Attributes.TryGetAttribute("data-rhx-no-flip", out _));
-    }
-
-    [Fact]
-    public void Default_Shift_No_Attribute()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        AssertNoAttribute(output, "data-rhx-no-shift");
-    }
-
-    [Fact]
-    public void No_Shift()
-    {
-        var helper = CreateHelper();
-        helper.Shift = false;
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        Assert.True(output.Attributes.TryGetAttribute("data-rhx-no-shift", out _));
+        var style = output.Attributes["style"]?.Value?.ToString();
+        Assert.Contains($"position-area:{expectedArea}", style);
     }
 
     // ══════════════════════════════════════════════
@@ -335,7 +219,7 @@ public class PopupTagHelperTests : TagHelperTestBase
     // ══════════════════════════════════════════════
 
     [Fact]
-    public void Default_No_Arrow()
+    public void Default_No_Arrow_Element()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-popup");
@@ -343,20 +227,7 @@ public class PopupTagHelperTests : TagHelperTestBase
 
         helper.Process(context, output);
 
-        AssertNoAttribute(output, "data-rhx-arrow");
-    }
-
-    [Fact]
-    public void Arrow_Adds_Attribute()
-    {
-        var helper = CreateHelper();
-        helper.Arrow = true;
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        Assert.True(output.Attributes.TryGetAttribute("data-rhx-arrow", out _));
+        Assert.DoesNotContain("rhx-popup__arrow", output.PostContent.GetContent());
     }
 
     [Fact]
@@ -369,36 +240,7 @@ public class PopupTagHelperTests : TagHelperTestBase
 
         helper.Process(context, output);
 
-        var postContent = output.PostContent.GetContent();
-        Assert.Contains("rhx-popup__arrow", postContent);
-        Assert.Contains("data-rhx-popup-arrow", postContent);
-    }
-
-    [Fact]
-    public void Arrow_Default_Padding_Not_Rendered()
-    {
-        var helper = CreateHelper();
-        helper.Arrow = true;
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        AssertNoAttribute(output, "data-rhx-arrow-padding");
-    }
-
-    [Fact]
-    public void Arrow_Custom_Padding()
-    {
-        var helper = CreateHelper();
-        helper.Arrow = true;
-        helper.ArrowPadding = 16;
-        var context = CreateContext("rhx-popup");
-        var output = CreateOutput("rhx-popup");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-arrow-padding", "16");
+        Assert.Contains("rhx-popup__arrow", output.PostContent.GetContent());
     }
 
     // ══════════════════════════════════════════════

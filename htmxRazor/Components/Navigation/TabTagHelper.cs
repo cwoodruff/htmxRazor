@@ -68,57 +68,49 @@ public class TabTagHelper : htmxRazorTagHelperBase
     {
         var childContent = await output.GetChildContentAsync();
 
-        // Get parent's tab list
+        // Get parent's shared state
         if (!context.Items.TryGetValue("RhxTabsNav", out var navObj) || navObj is not List<string> tabs)
         {
             output.TagName = null;
             return;
         }
+        var groupName = context.Items.TryGetValue("RhxTabsGroupName", out var gn) ? gn as string : null;
+        var counter = context.Items.TryGetValue("RhxTabsCounter", out var c) ? c as int[] : null;
+        var panelMap = context.Items.TryGetValue("RhxTabsPanelMap", out var pm)
+            ? pm as List<(string, string)> : null;
+        if (groupName is null || counter is null || panelMap is null)
+        {
+            output.SuppressOutput();
+            return;
+        }
 
-        var panelId = $"panel-{Panel}";
-        var tabId = $"tab-{Panel}";
+        // Per-tab unique radio id (multiple tabs may target the same panel — e.g. htmx filters).
+        var index = counter[0]++;
+        var radioId = $"{groupName}-t{index}";
+        panelMap.Add((radioId, Panel));
 
-        // Build CSS classes
+        // Label CSS classes (the visible tab is the <label>).
         var css = new CssClassBuilder(GetBlockClass())
             .AddIf(GetModifierClass("active"), Active)
-            .AddIf(GetModifierClass("closable"), Closable)
             .AddIf(GetModifierClass("disabled"), Disabled);
-
         if (!string.IsNullOrWhiteSpace(CssClass))
             css.Add(CssClass);
 
-        // Build button HTML
+        // A native radio drives selection (keyboard + mutual exclusivity, no JS). htmx
+        // attributes go on the radio so they fire on `change`.
         var sb = new StringBuilder();
-        sb.Append($"<button class=\"{css.Build()}\"");
-        sb.Append($" id=\"{Enc(tabId)}\"");
-        sb.Append(" role=\"tab\"");
-        sb.Append($" aria-selected=\"{Active.ToString().ToLowerInvariant()}\"");
-        sb.Append($" aria-controls=\"{Enc(panelId)}\"");
-        sb.Append($" tabindex=\"{(Active ? "0" : "-1")}\"");
-
-        if (Disabled)
-        {
-            sb.Append(" aria-disabled=\"true\"");
-            sb.Append(" disabled");
-        }
-
-        // htmx attributes
+        sb.Append($"<input type=\"radio\" class=\"{GetElementClass("radio")} rhx-sr-only\"");
+        sb.Append($" name=\"{Enc(groupName)}\" id=\"{Enc(radioId)}\" value=\"{Enc(Panel)}\"");
+        if (Active) sb.Append(" checked");
+        if (Disabled) sb.Append(" disabled");
         sb.Append(BuildHtmxAttributeString());
+        sb.Append(" />");
 
-        sb.Append('>');
-
-        // Label wrapper
+        sb.Append($"<label class=\"{css.Build()}\" for=\"{Enc(radioId)}\">");
         sb.Append($"<span class=\"{GetElementClass("label")}\">");
         sb.Append(childContent.GetContent());
         sb.Append("</span>");
-
-        // Close button (non-interactive span, JS handles click)
-        if (Closable && !Disabled)
-        {
-            sb.Append($"<span class=\"{GetElementClass("close")}\" aria-hidden=\"true\">&times;</span>");
-        }
-
-        sb.Append("</button>");
+        sb.Append("</label>");
 
         tabs.Add(sb.ToString());
         output.SuppressOutput();

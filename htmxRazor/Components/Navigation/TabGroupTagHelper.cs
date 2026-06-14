@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 using htmxRazor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -61,12 +62,20 @@ public class TabGroupTagHelper : htmxRazorTagHelperBase
     /// <inheritdoc/>
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        // Register nav list for child tabs to populate
-        var tabs = new List<string>();
+        // A per-group radio name keeps tabs mutually exclusive (one checked at a time).
+        var groupName = "rhx-tabs-" + context.UniqueId;
+        var groupId = string.IsNullOrWhiteSpace(Id) ? groupName : Id!;
+
+        // Shared state for the child tabs.
+        var tabs = new List<string>();                              // rendered radio+label HTML
+        var panelMap = new List<(string RadioId, string Panel)>();  // for the show/hide <style>
         context.Items["RhxTabsNav"] = tabs;
+        context.Items["RhxTabsGroupName"] = groupName;
+        context.Items["RhxTabsPanelMap"] = panelMap;
+        context.Items["RhxTabsCounter"] = new int[1];
         context.Items[typeof(TabGroupTagHelper)] = this;
 
-        // Process children — tabs register their HTML, panels render normally
+        // Process children — tabs register their radio+label HTML, panels render normally
         var childContent = await output.GetChildContentAsync();
 
         // Render outer container
@@ -74,35 +83,24 @@ public class TabGroupTagHelper : htmxRazorTagHelperBase
         output.TagMode = TagMode.StartTagAndEndTag;
 
         var placement = Placement.ToLowerInvariant();
-        var activation = Activation.ToLowerInvariant();
 
         var css = CreateCssBuilder()
             .AddIf(GetModifierClass(placement), placement != "top");
         ApplyBaseAttributes(output, css);
-
-        output.Attributes.SetAttribute("data-rhx-tabs", "");
-        output.Attributes.SetAttribute("data-rhx-placement", placement);
-
-        if (activation != "auto")
-        {
-            output.Attributes.SetAttribute("data-rhx-activation", activation);
-        }
+        output.Attributes.SetAttribute("id", groupId);
 
         RenderHtmxAttributes(output);
 
         // Assemble inner content
         output.Content.Clear();
 
-        // Nav (tablist)
+        // Nav — a radiogroup of tab labels (native radios drive selection; no JS).
         var ariaLabelAttr = !string.IsNullOrWhiteSpace(AriaLabel)
             ? $" aria-label=\"{WebUtility.HtmlEncode(AriaLabel)}\""
             : "";
 
-        var isVertical = placement == "start" || placement == "end";
-        var orientationAttr = isVertical ? " aria-orientation=\"vertical\"" : "";
-
         output.Content.AppendHtml(
-            $"<div class=\"{GetElementClass("nav")}\" role=\"tablist\"{ariaLabelAttr}{orientationAttr}>");
+            $"<div class=\"{GetElementClass("nav")}\" role=\"tablist\"{ariaLabelAttr}>");
 
         foreach (var tab in tabs)
         {
@@ -115,5 +113,17 @@ public class TabGroupTagHelper : htmxRazorTagHelperBase
         output.Content.AppendHtml($"<div class=\"{GetElementClass("body")}\">");
         output.Content.AppendHtml(childContent);
         output.Content.AppendHtml("</div>");
+
+        // Per-group <style>: hide all panels, show the one whose radio is checked. Pure CSS.
+        var styleSb = new StringBuilder();
+        styleSb.Append("<style>");
+        styleSb.Append($"#{groupId} > .{GetElementClass("body")} > .rhx-tab-panel{{display:none}}");
+        foreach (var (radioId, panel) in panelMap)
+        {
+            styleSb.Append(
+                $"#{groupId}:has(#{radioId}:checked) #panel-{WebUtility.HtmlEncode(panel)}{{display:block}}");
+        }
+        styleSb.Append("</style>");
+        output.Content.AppendHtml(styleSb.ToString());
     }
 }

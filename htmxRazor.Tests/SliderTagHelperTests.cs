@@ -53,66 +53,6 @@ public class SliderTagHelperTests : TagHelperTestBase
         Assert.True(HasClass(output, "rhx-slider"));
     }
 
-    [Fact]
-    public void Has_Data_Attribute()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-slider");
-        var output = CreateOutput("rhx-slider");
-
-        helper.ViewContext = CreateViewContext();
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-slider", "");
-    }
-
-    // ── Track and fill ──
-
-    [Fact]
-    public void Has_Track()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-slider");
-        var output = CreateOutput("rhx-slider");
-
-        helper.ViewContext = CreateViewContext();
-        helper.Process(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-slider__track", content);
-    }
-
-    [Fact]
-    public void Has_Fill_Bar()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-slider");
-        var output = CreateOutput("rhx-slider");
-
-        helper.ViewContext = CreateViewContext();
-        helper.Process(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-slider__fill", content);
-    }
-
-    [Fact]
-    public void Fill_Bar_Has_Width_Style()
-    {
-        var helper = CreateHelper();
-        helper.Value = "50";
-        helper.Min = "0";
-        helper.Max = "100";
-        var context = CreateContext("rhx-slider");
-        var output = CreateOutput("rhx-slider");
-
-        helper.ViewContext = CreateViewContext();
-        helper.Process(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("width: 50.0%", content);
-    }
-
     // ── Native range input ──
 
     [Fact]
@@ -127,7 +67,34 @@ public class SliderTagHelperTests : TagHelperTestBase
 
         var content = output.Content.GetContent();
         Assert.Contains("type=\"range\"", content);
-        Assert.Contains("rhx-slider__native", content);
+        Assert.Contains("rhx-slider__input", content);
+    }
+
+    [Fact]
+    public void Has_No_Fill_Bar()
+    {
+        var helper = CreateHelper();
+        var context = CreateContext("rhx-slider");
+        var output = CreateOutput("rhx-slider");
+
+        helper.ViewContext = CreateViewContext();
+        helper.Process(context, output);
+
+        var content = output.Content.GetContent();
+        Assert.DoesNotContain("rhx-slider__fill", content);
+    }
+
+    [Fact]
+    public void Has_No_Js_Hooks()
+    {
+        var helper = CreateHelper();
+        var context = CreateContext("rhx-slider");
+        var output = CreateOutput("rhx-slider");
+
+        helper.ViewContext = CreateViewContext();
+        helper.Process(context, output);
+
+        AssertNoAttribute(output, "data-rhx-slider");
     }
 
     [Fact]
@@ -197,10 +164,10 @@ public class SliderTagHelperTests : TagHelperTestBase
         Assert.Contains("value=\"75\"", content);
     }
 
-    // ── Tooltip ──
+    // ── Show value ──
 
     [Fact]
-    public void No_Tooltip_By_Default()
+    public void No_Value_Output_By_Default()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-slider");
@@ -210,15 +177,15 @@ public class SliderTagHelperTests : TagHelperTestBase
         helper.Process(context, output);
 
         var content = output.Content.GetContent();
-        Assert.DoesNotContain("rhx-slider__tooltip", content);
-        AssertNoAttribute(output, "data-rhx-tooltip");
+        Assert.DoesNotContain("<output", content);
+        Assert.DoesNotContain("rhx-slider__value", content);
     }
 
     [Fact]
-    public void Tooltip_Top_Renders()
+    public void Show_Value_Renders_Static_Output()
     {
         var helper = CreateHelper();
-        helper.Tooltip = "top";
+        helper.ShowValue = true;
         helper.Value = "50";
         var context = CreateContext("rhx-slider");
         var output = CreateOutput("rhx-slider");
@@ -227,23 +194,8 @@ public class SliderTagHelperTests : TagHelperTestBase
         helper.Process(context, output);
 
         var content = output.Content.GetContent();
-        Assert.Contains("rhx-slider__tooltip", content);
-        Assert.Contains("50", content);
-        AssertAttribute(output, "data-rhx-tooltip", "top");
-    }
-
-    [Fact]
-    public void Tooltip_Bottom()
-    {
-        var helper = CreateHelper();
-        helper.Tooltip = "bottom";
-        var context = CreateContext("rhx-slider");
-        var output = CreateOutput("rhx-slider");
-
-        helper.ViewContext = CreateViewContext();
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-tooltip", "bottom");
+        Assert.Contains("rhx-slider__value", content);
+        Assert.Contains(">50</output>", content);
     }
 
     // ── Label ──
@@ -439,41 +391,5 @@ public class SliderTagHelperTests : TagHelperTestBase
 
         var content = output.Content.GetContent();
         Assert.Contains("aria-label=\"Volume control\"", content);
-    }
-
-    // ── Fill calculation edge cases ──
-
-    [Fact]
-    public void Fill_Percent_Zero_When_At_Min()
-    {
-        var helper = CreateHelper();
-        helper.Value = "0";
-        helper.Min = "0";
-        helper.Max = "100";
-        var context = CreateContext("rhx-slider");
-        var output = CreateOutput("rhx-slider");
-
-        helper.ViewContext = CreateViewContext();
-        helper.Process(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("width: 0.0%", content);
-    }
-
-    [Fact]
-    public void Fill_Percent_100_When_At_Max()
-    {
-        var helper = CreateHelper();
-        helper.Value = "100";
-        helper.Min = "0";
-        helper.Max = "100";
-        var context = CreateContext("rhx-slider");
-        var output = CreateOutput("rhx-slider");
-
-        helper.ViewContext = CreateViewContext();
-        helper.Process(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("width: 100.0%", content);
     }
 }

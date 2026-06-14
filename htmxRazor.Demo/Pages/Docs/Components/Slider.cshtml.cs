@@ -19,7 +19,7 @@ public class SliderModel : PageModel
         new("rhx-min", "string", "0", "Minimum value"),
         new("rhx-max", "string", "100", "Maximum value"),
         new("rhx-step", "string", "1", "Step increment"),
-        new("rhx-tooltip", "string", "-", "Tooltip position: top, bottom"),
+        new("rhx-show-value", "bool", "false", "Show a static output of the initial value (does not live-update without JS)"),
         new("rhx-size", "string", "medium", "Slider size: small, medium, large"),
         new("rhx-disabled", "bool", "false", "Whether the slider is disabled"),
     };
@@ -31,9 +31,9 @@ public class SliderModel : PageModel
            value=""80"" />";
 
     public string TooltipCode => @"<rhx-slider name=""brightness"" rhx-label=""Brightness""
-           value=""75"" rhx-tooltip=""top"" />
+           value=""75"" rhx-show-value=""true"" />
 <rhx-slider name=""contrast"" rhx-label=""Contrast""
-           value=""60"" rhx-tooltip=""bottom"" />";
+           value=""60"" rhx-show-value=""true"" />";
 
     public string HintCode => @"<rhx-slider name=""opacity"" rhx-label=""Opacity""
            value=""100""
@@ -50,7 +50,6 @@ public class SliderModel : PageModel
 
     public string HtmxCode => @"<rhx-slider name=""fontSize"" rhx-label=""Font Size""
            value=""16"" rhx-min=""8"" rhx-max=""48"" rhx-step=""1""
-           rhx-tooltip=""top""
            hx-get=""/Docs/Components/Slider?handler=FontPreview""
            hx-trigger=""input changed delay:200ms""
            hx-target=""#slider-preview""

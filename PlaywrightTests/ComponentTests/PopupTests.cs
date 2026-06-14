@@ -14,18 +14,25 @@ public sealed class PopupTests(DemoAppFactory app) : ComponentTestBase(app)
 
         var popup = page.Locator("#demo-popup");
         await Assertions.Expect(popup).ToHaveCountAsync(1);
-        await Assertions.Expect(popup).ToHaveAttributeAsync("hidden", new System.Text.RegularExpressions.Regex(".*"));
-        await Assertions.Expect(popup).ToHaveAttributeAsync("aria-hidden", "true");
+        // Hidden via CSS (display:none) until the --active class is added.
+        await Assertions.Expect(popup).Not.ToBeVisibleAsync();
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Popup_carries_anchor_and_placement_data_attributes(string browserName)
+    public async Task Popup_carries_anchor_positioning_style(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var popup = page.Locator("#demo-popup");
-        await Assertions.Expect(popup).ToHaveAttributeAsync("data-rhx-anchor", "#popup-anchor");
-        await Assertions.Expect(popup).ToHaveAttributeAsync("data-rhx-placement", "bottom-start");
+        await Assertions.Expect(popup).ToHaveAttributeAsync(
+            "style",
+            new System.Text.RegularExpressions.Regex(@"position-anchor:\s*--demo-popup"));
+        await Assertions.Expect(popup).ToHaveAttributeAsync(
+            "style",
+            new System.Text.RegularExpressions.Regex(@"position-area:\s*bottom span-right"));
+        // No legacy JS data hooks.
+        await Assertions.Expect(popup).Not.ToHaveAttributeAsync(
+            "data-rhx-popup", new System.Text.RegularExpressions.Regex(".*"));
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -57,32 +64,13 @@ public sealed class PopupTests(DemoAppFactory app) : ComponentTestBase(app)
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Open_popup_is_positioned_near_its_anchor(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        await page.Locator("#popup-anchor").ClickAsync();
-        var popup = page.Locator("#demo-popup");
-        await Assertions.Expect(popup).ToBeVisibleAsync();
-
-        var anchorBox = await page.Locator("#popup-anchor").BoundingBoxAsync();
-        var popupBox = await popup.BoundingBoxAsync();
-        Assert.NotNull(anchorBox);
-        Assert.NotNull(popupBox);
-
-        // bottom-start placement: popup should sit near anchor bottom
-        var verticalDelta = Math.Abs(popupBox!.Y - (anchorBox!.Y + anchorBox.Height));
-        Assert.InRange(verticalDelta, 0, 60);
-    }
-
-    [Theory, MemberData(nameof(Browsers))]
     public async Task Arrow_popup_renders_arrow_element(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var popup = page.Locator("#demo-popup-arrow");
         await Assertions.Expect(popup).ToHaveCountAsync(1);
-        await Assertions.Expect(popup.Locator(".rhx-popup__arrow, [data-rhx-popup-arrow]")).Not.ToHaveCountAsync(0);
+        await Assertions.Expect(popup.Locator(".rhx-popup__arrow")).Not.ToHaveCountAsync(0);
     }
 
     [Theory, MemberData(nameof(Browsers))]

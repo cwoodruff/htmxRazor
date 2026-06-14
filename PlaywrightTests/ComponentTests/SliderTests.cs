@@ -18,6 +18,22 @@ public sealed class SliderTests(DemoAppFactory app) : ComponentTestBase(app)
         var native = wrapper.Locator("input[type='range']");
         await Assertions.Expect(native).ToHaveAttributeAsync("name", "volume");
         await Assertions.Expect(native).ToHaveValueAsync("50");
+        await Assertions.Expect(native).ToHaveAttributeAsync("min", "0");
+        await Assertions.Expect(native).ToHaveAttributeAsync("max", "100");
+    }
+
+    [Theory, MemberData(nameof(Browsers))]
+    public async Task Slider_input_uses_accent_color(string browserName)
+    {
+        var page = await OpenAsync(browserName, Path);
+
+        var native = page.Locator("#panel-basic-preview input[type='range'][name='volume']");
+        var accent = await native.EvaluateAsync<string>(
+            "el => getComputedStyle(el).accentColor");
+
+        // accent-color resolves to a non-default color (not 'auto').
+        Assert.False(string.IsNullOrWhiteSpace(accent));
+        Assert.NotEqual("auto", accent);
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -62,15 +78,15 @@ public sealed class SliderTests(DemoAppFactory app) : ComponentTestBase(app)
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Tooltip_example_sets_tooltip_data_attribute(string browserName)
+    public async Task Show_value_renders_static_output_with_initial_value(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var top = page.Locator("#panel-tooltip-preview div.rhx-slider").Nth(0);
-        await Assertions.Expect(top).ToHaveAttributeAsync("data-rhx-tooltip", "top");
+        var brightness = page.Locator("#panel-tooltip-preview output.rhx-slider__value").Nth(0);
+        await Assertions.Expect(brightness).ToHaveTextAsync("75");
 
-        var bottom = page.Locator("#panel-tooltip-preview div.rhx-slider").Nth(1);
-        await Assertions.Expect(bottom).ToHaveAttributeAsync("data-rhx-tooltip", "bottom");
+        var contrast = page.Locator("#panel-tooltip-preview output.rhx-slider__value").Nth(1);
+        await Assertions.Expect(contrast).ToHaveTextAsync("60");
     }
 
     [Theory, MemberData(nameof(Browsers))]
