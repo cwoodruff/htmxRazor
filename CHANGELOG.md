@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Pickers clipped inside dialogs/scroll containers** — the Date Picker calendar, Time Picker list, Date & Time Picker popup, and Radial Select pie/dropdown were clipped (and mispositioned) when used inside an `<rhx-dialog>` or any `overflow`-clipping ancestor. They now anchor with `position: fixed` via a shared `RHX.anchorFloating` helper that reposition on scroll/resize and compensates for transformed containing blocks (e.g. the dialog's `transform: translate(-50%, -50%)` centering), so popups escape clipping and land on their trigger. `rhx-position.js` is now required for these components to position (it already shipped with the demo layout).
+
 ## [2.1.0] — Advanced Inputs
 
 ### Added

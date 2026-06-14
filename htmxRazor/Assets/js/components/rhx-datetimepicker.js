@@ -44,6 +44,8 @@
         }
       })();
 
+      var teardown = null;
+
       function isOpen() { return !popup.hidden; }
 
       function open() {
@@ -51,8 +53,9 @@
         popup.hidden = false;
         input.setAttribute("aria-expanded", "true");
         if (trigger) trigger.setAttribute("aria-expanded", "true");
-        if (window.RHX && typeof window.RHX.positionElement === "function") {
-          window.RHX.positionElement(input.parentNode, popup, { placement: "bottom-start", distance: 4, flip: true, shift: true });
+        // Fixed-position so the popup escapes dialog/scroll clipping; reposition on scroll/resize.
+        if (window.RHX && typeof window.RHX.anchorFloating === "function") {
+          teardown = window.RHX.anchorFloating(input.parentNode, popup, { placement: "bottom-start", distance: 4, flip: true, shift: true });
         }
         var focusDay = popup.querySelector(".rhx-calendar__day[tabindex='0']") || popup.querySelector(DAY);
         if (focusDay) focusDay.focus();
@@ -62,6 +65,7 @@
         popup.hidden = true;
         input.setAttribute("aria-expanded", "false");
         if (trigger) trigger.setAttribute("aria-expanded", "false");
+        if (teardown) { teardown(); teardown = null; }
         if (focusInput) {
           // Set the suppress flag before calling input.focus() so that the focus event
           // (which fires synchronously) sees it and does not re-open the popup.

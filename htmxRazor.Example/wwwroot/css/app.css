@@ -203,31 +203,6 @@
     padding: var(--rhx-space-md) 0;
 }
 
-/* The task dialogs host pop-out picker controls (calendar, radial pie, time list).
-   The dialog normally clips its panel/body for rounded corners + scroll, which cuts
-   those popups off. Let them paint outside instead. Header/footer keep their own
-   rounded corners so the dialog frame still looks right with overflow visible. */
-#add-todo-dialog,
-#edit-todo-dialog,
-#add-todo-dialog .rhx-dialog__panel,
-#edit-todo-dialog .rhx-dialog__panel,
-#add-todo-dialog .rhx-dialog__body,
-#edit-todo-dialog .rhx-dialog__body {
-    overflow: visible;
-}
-
-#add-todo-dialog .rhx-dialog__header,
-#edit-todo-dialog .rhx-dialog__header {
-    border-top-left-radius: var(--rhx-radius-lg);
-    border-top-right-radius: var(--rhx-radius-lg);
-}
-
-#add-todo-dialog .rhx-dialog__footer,
-#edit-todo-dialog .rhx-dialog__footer {
-    border-bottom-left-radius: var(--rhx-radius-lg);
-    border-bottom-right-radius: var(--rhx-radius-lg);
-}
-
 /* Shared field label for controls that don't render their own (priority, category). */
 .field-label {
     display: block;

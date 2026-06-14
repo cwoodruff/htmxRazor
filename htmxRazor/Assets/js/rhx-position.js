@@ -334,5 +334,91 @@
     return result;
   };
 
+  /**
+   * Anchor a floating popup to a trigger using fixed positioning so it escapes any
+   * ancestor that clips overflow (e.g. a modal dialog's body/panel, a scroll container).
+   * Repositions on scroll (capture phase, so nested scroll containers count) and resize.
+   *
+   * @param {Element} anchor   - The trigger/reference element
+   * @param {Element} floating - The popup element (already made visible by the caller)
+   * @param {Object}  options  - Forwarded to computePosition (placement, distance, flip, shift).
+   *                             A custom `position(anchor, floating)` callback overrides the
+   *                             default placement math (used by radial-select's centered pie).
+   * @returns {function} teardown - Call on close to remove the scroll/resize listeners.
+   */
+  /**
+   * Find the offset of the nearest ancestor that establishes a containing block for
+   * position:fixed descendants (any ancestor with a transform, filter, perspective,
+   * will-change, or paint/layout containment). Returns {x:0,y:0} when none — i.e. the
+   * element is positioned against the viewport as usual.
+   */
+  function containingBlockOffset(floating) {
+    var el = floating.parentElement;
+    while (el && el !== document.documentElement) {
+      var cs = window.getComputedStyle(el);
+      var establishesCb =
+        (cs.transform && cs.transform !== "none") ||
+        (cs.perspective && cs.perspective !== "none") ||
+        (cs.filter && cs.filter !== "none") ||
+        (cs.willChange && (cs.willChange.indexOf("transform") >= 0 || cs.willChange.indexOf("filter") >= 0 || cs.willChange.indexOf("perspective") >= 0)) ||
+        (cs.contain && (cs.contain.indexOf("paint") >= 0 || cs.contain.indexOf("layout") >= 0 || cs.contain === "strict" || cs.contain === "content"));
+      if (establishesCb) {
+        var r = el.getBoundingClientRect();
+        return { x: r.left, y: r.top };
+      }
+      el = el.parentElement;
+    }
+    return { x: 0, y: 0 };
+  }
+
+  RHX.anchorFloating = function (anchor, floating, options) {
+    options = options || {};
+    floating.style.position = "fixed";
+    floating.style.margin = "0";
+    // Neutralize any CSS edge offsets (e.g. a listbox pinned left:0;right:0) so the
+    // inline left/top from positionElement fully controls placement.
+    floating.style.right = "auto";
+    floating.style.bottom = "auto";
+
+    function reposition() {
+      if (floating.hidden) return;
+      // Optionally match the trigger's width (a listbox that used to be left:0;right:0).
+      if (options.matchWidth) {
+        floating.style.minWidth = anchor.getBoundingClientRect().width + "px";
+      }
+      if (typeof options.position === "function") {
+        options.position(anchor, floating);
+      } else {
+        RHX.positionElement(anchor, floating, {
+          placement: options.placement || "bottom-start",
+          distance: options.distance != null ? options.distance : 4,
+          flip: options.flip !== false,
+          shift: options.shift !== false,
+          strategy: "fixed"
+        });
+      }
+      // A transformed/filtered ancestor (e.g. a centered modal dialog using
+      // transform: translate(-50%, -50%)) becomes the containing block for a
+      // position:fixed element, so our viewport coords are interpreted relative to it.
+      // Subtract that ancestor's offset so the popup lands where the viewport math intended.
+      var cb = containingBlockOffset(floating);
+      if (cb.x || cb.y) {
+        floating.style.left = (parseFloat(floating.style.left || "0") - cb.x) + "px";
+        floating.style.top = (parseFloat(floating.style.top || "0") - cb.y) + "px";
+      }
+    }
+
+    reposition();
+    // Capture phase catches scrolling inside nested containers (e.g. a dialog body),
+    // not just the window, so the popup tracks the trigger wherever it lives.
+    window.addEventListener("scroll", reposition, { passive: true, capture: true });
+    window.addEventListener("resize", reposition, { passive: true });
+
+    return function teardown() {
+      window.removeEventListener("scroll", reposition, { capture: true });
+      window.removeEventListener("resize", reposition);
+    };
+  };
+
   window.RHX = RHX;
 })();

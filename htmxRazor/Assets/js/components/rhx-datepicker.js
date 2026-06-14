@@ -26,12 +26,18 @@
       var hidden = dp.querySelector("[data-rhx-date-value]");
       if (!popup || !hidden) return;
 
+      var teardown = null;
+
       function isOpen() { return !popup.hidden; }
 
       function open() {
         if (trigger && trigger.hasAttribute("disabled")) return;
         popup.hidden = false;
         if (trigger) trigger.setAttribute("aria-expanded", "true");
+        // Fixed-position the popup against the control so it escapes dialog/scroll clipping.
+        if (window.RHX && typeof window.RHX.anchorFloating === "function") {
+          teardown = window.RHX.anchorFloating(input || trigger || dp, popup, { placement: "bottom-start", distance: 4 });
+        }
         var focusDay = popup.querySelector(".rhx-calendar__day[tabindex='0']") || popup.querySelector(DAY);
         if (focusDay) focusDay.focus();
       }
@@ -39,6 +45,7 @@
       function close(focusTrigger) {
         popup.hidden = true;
         if (trigger) trigger.setAttribute("aria-expanded", "false");
+        if (teardown) { teardown(); teardown = null; }
         if (focusTrigger && trigger) trigger.focus();
       }
 

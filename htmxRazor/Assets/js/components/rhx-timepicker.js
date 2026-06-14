@@ -24,14 +24,17 @@
       // calls close() + input.focus(). Set to true in commit(), cleared on next tick.
       var suppressFocusOpen = false;
 
+      var teardown = null;
+
       function isOpen() { return !listbox.hidden; }
 
       function open() {
         if (input.hasAttribute("disabled") || input.hasAttribute("readonly")) return;
         listbox.hidden = false;
         input.setAttribute("aria-expanded", "true");
-        if (window.RHX && typeof window.RHX.positionElement === "function") {
-          window.RHX.positionElement(input.parentNode, listbox, { placement: "bottom-start", distance: 4, flip: true, shift: true });
+        // Fixed-position so the list escapes dialog/scroll clipping; reposition on scroll/resize.
+        if (window.RHX && typeof window.RHX.anchorFloating === "function") {
+          teardown = window.RHX.anchorFloating(input.parentNode, listbox, { placement: "bottom-start", distance: 4, flip: true, shift: true, matchWidth: true });
         }
         var sel = listbox.querySelector(".rhx-time-picker__option--selected") || listbox.querySelector(OPT);
         focusOption(sel, true);
@@ -40,6 +43,7 @@
       function close() {
         listbox.hidden = true;
         input.setAttribute("aria-expanded", "false");
+        if (teardown) { teardown(); teardown = null; }
         clearFocused();
       }
 

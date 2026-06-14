@@ -53,12 +53,19 @@
         return !pie.hidden;
       }
 
+      var pieTeardown = null;
+
       function openPie() {
         if (trigger.hasAttribute("disabled")) return;
         closeListbox();
         pie.hidden = false;
         trigger.setAttribute("aria-expanded", "true");
-        centerPieOverTrigger();
+        // Fixed-position so the pie escapes dialog/scroll clipping; reposition on scroll/resize.
+        if (window.RHX && typeof window.RHX.anchorFloating === "function") {
+          pieTeardown = window.RHX.anchorFloating(trigger, pie, { position: centerPieOverTrigger });
+        } else {
+          centerPieOverTrigger();
+        }
         var active = wedges.find(function (w) {
           return w.getAttribute("aria-checked") === "true";
         }) || wedges[0];
@@ -66,22 +73,22 @@
       }
 
       // Center the circular pie directly over the trigger (its center aligns with the
-      // trigger's center), so it pops out of the button like a radial menu.
+      // trigger's center), so it pops out of the button like a radial menu. The pie is
+      // fixed-positioned (set by anchorFloating), so coordinates are viewport-relative.
       function centerPieOverTrigger() {
-        var parent = pie.offsetParent || control;
-        var parentRect = parent.getBoundingClientRect();
         var trigRect = trigger.getBoundingClientRect();
         var centerX = trigRect.left + trigRect.width / 2;
         var centerY = trigRect.top + trigRect.height / 2;
         pie.style.right = "auto";
         pie.style.bottom = "auto";
-        pie.style.left = (centerX - parentRect.left - pie.offsetWidth / 2) + "px";
-        pie.style.top = (centerY - parentRect.top - pie.offsetHeight / 2) + "px";
+        pie.style.left = (centerX - pie.offsetWidth / 2) + "px";
+        pie.style.top = (centerY - pie.offsetHeight / 2) + "px";
       }
 
       function closePie(focusTrigger) {
         pie.hidden = true;
         trigger.setAttribute("aria-expanded", "false");
+        if (pieTeardown) { pieTeardown(); pieTeardown = null; }
         if (focusTrigger) trigger.focus();
       }
 
@@ -142,6 +149,8 @@
       //  Dropdown (items within the active category)
       // ──────────────────────────────────────────────
 
+      var listboxTeardown = null;
+
       function listboxOpen() {
         return listbox && !listbox.hidden;
       }
@@ -152,6 +161,10 @@
         closePie(false);
         listbox.hidden = false;
         combobox.setAttribute("aria-expanded", "true");
+        // Fixed-position so the list escapes dialog/scroll clipping; reposition on scroll/resize.
+        if (window.RHX && typeof window.RHX.anchorFloating === "function") {
+          listboxTeardown = window.RHX.anchorFloating(combobox, listbox, { placement: "bottom-start", distance: 4, matchWidth: true });
+        }
         var sel = listbox.querySelector('[role="option"][aria-selected="true"]')
           || listbox.querySelector(OPTION_SELECTOR);
         focusOption(sel);
@@ -161,6 +174,7 @@
         if (!listbox) return;
         listbox.hidden = true;
         if (combobox) combobox.setAttribute("aria-expanded", "false");
+        if (listboxTeardown) { listboxTeardown(); listboxTeardown = null; }
         var f = listbox.querySelector("[data-rhx-focused]");
         if (f) f.removeAttribute("data-rhx-focused");
       }
