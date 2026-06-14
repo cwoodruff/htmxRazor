@@ -4,7 +4,7 @@
 {
     <div class="todo-empty">
         <div class="todo-empty__icon">
-            <rhx-icon name="check" rhx-size="large"></rhx-icon>
+            <rhx-icon rhx-name="check" rhx-size="large"></rhx-icon>
         </div>
         <p style="font-size: var(--rhx-font-size-lg); font-weight: var(--rhx-font-weight-medium);">No tasks here</p>
         <p>Add a new task to get started.</p>
@@ -41,7 +41,7 @@ else
                         @if (category is not null)
                         {
                             <rhx-tag-item rhx-variant="@category.Color" rhx-size="small">
-                                <rhx-icon name="@category.Icon" rhx-size="small"></rhx-icon>
+                                <rhx-icon rhx-name="@category.Icon" rhx-size="small"></rhx-icon>
                                 @category.Name@(string.IsNullOrEmpty(todo.CategoryItem) ? "" : $" · {todo.CategoryItem}")
                             </rhx-tag-item>
                         }
@@ -49,7 +49,7 @@ else
                         @if (todo.IsCompleted && todo.CompletedAt.HasValue)
                         {
                             <rhx-tag-item rhx-variant="success" rhx-size="small">
-                                <rhx-icon name="check" rhx-size="small"></rhx-icon>
+                                <rhx-icon rhx-name="check" rhx-size="small"></rhx-icon>
                                 Done @todo.CompletedAt.Value.ToString("MMM d")
                             </rhx-tag-item>
                         }
@@ -71,7 +71,7 @@ else
                         @if (todo.ReminderAt is { } remind)
                         {
                             <span class="todo-item__reminder" title="Reminder">
-                                <rhx-icon name="clock" rhx-size="small"></rhx-icon>
+                                <rhx-icon rhx-name="clock" rhx-size="small"></rhx-icon>
                                 @remind.ToString("MMM d, h:mm tt")
                             </span>
                         }
@@ -86,7 +86,7 @@ else
                                     hx-get="/?handler=EditForm&id=@todo.Id"
                                     hx-target="#edit-form-body"
                                     hx-swap="innerHTML">
-                            <rhx-icon name="settings" rhx-size="small"></rhx-icon>
+                            <rhx-icon rhx-name="edit" rhx-size="small"></rhx-icon>
                         </rhx-button>
                     </rhx-tooltip>
 
@@ -99,7 +99,7 @@ else
                                     hx-target="#todo-list"
                                     hx-include="[name='filter'],[name='sort']"
                                     hx-confirm="Delete &quot;@todo.Title&quot;?">
-                            <rhx-icon name="trash" rhx-size="small"></rhx-icon>
+                            <rhx-icon rhx-name="trash" rhx-size="small"></rhx-icon>
                         </rhx-button>
                     </rhx-tooltip>
                 </div>

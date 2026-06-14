@@ -44,7 +44,7 @@
     <div class="toolbar__actions">
         <rhx-button rhx-variant="brand"
                     data-rhx-dialog-open="add-todo-dialog">
-            <rhx-icon name="plus" rhx-size="small"></rhx-icon>
+            <rhx-icon rhx-name="plus" rhx-size="small"></rhx-icon>
             Add Task
         </rhx-button>
         @if (Model.CompletedCount > 0)
@@ -56,7 +56,7 @@
                             hx-delete="/?handler=ClearCompleted"
                             hx-target="#todo-list"
                             hx-confirm="Remove all completed tasks?">
-                    <rhx-icon name="trash" rhx-size="small"></rhx-icon>
+                    <rhx-icon rhx-name="trash" rhx-size="small"></rhx-icon>
                     Clear Done
                 </rhx-button>
             </rhx-tooltip>
@@ -132,7 +132,7 @@
             </rhx-button>
             <rhx-button type="submit" rhx-variant="brand"
                         onclick="setTimeout(() => document.getElementById('add-todo-dialog').close(), 100)">
-                <rhx-icon name="plus" rhx-size="small"></rhx-icon>
+                <rhx-icon rhx-name="plus" rhx-size="small"></rhx-icon>
                 Add Task
             </rhx-button>
         </rhx-dialog-footer>
