@@ -1,5 +1,5 @@
-using htmxRazor.Components.Imagery;
 using Xunit;
+using htmxRazor.Components.Imagery;
 
 namespace htmxRazor.Tests;
 
@@ -42,21 +42,12 @@ public class AnimatedImageTagHelperTests : TagHelperTestBase
         Assert.True(HasClass(output, "rhx-animated-image"));
     }
 
-    [Fact]
-    public void Has_Data_Attribute()
-    {
-        var helper = CreateHelper();
-        helper.Src = "animation.gif";
-        var context = CreateContext("rhx-animated-image");
-        var output = CreateOutput("rhx-animated-image");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-animated-image", "");
-    }
+    // ══════════════════════════════════════════════
+    //  No poster — plays continuously, just the image
+    // ══════════════════════════════════════════════
 
     [Fact]
-    public void Contains_Img()
+    public void Without_Poster_Renders_Single_Img()
     {
         var helper = CreateHelper();
         helper.Src = "animation.gif";
@@ -73,7 +64,7 @@ public class AnimatedImageTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public void Contains_Canvas()
+    public void Without_Poster_Is_Not_Hoverable()
     {
         var helper = CreateHelper();
         helper.Src = "animation.gif";
@@ -82,61 +73,50 @@ public class AnimatedImageTagHelperTests : TagHelperTestBase
 
         helper.Process(context, output);
 
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-animated-image__canvas", content);
-        Assert.Contains("aria-hidden=\"true\"", content);
-    }
-
-    [Fact]
-    public void Contains_Control_Button()
-    {
-        var helper = CreateHelper();
-        helper.Src = "animation.gif";
-        var context = CreateContext("rhx-animated-image");
-        var output = CreateOutput("rhx-animated-image");
-
-        helper.Process(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-animated-image__control", content);
-        Assert.Contains("type=\"button\"", content);
+        Assert.False(HasClass(output, "rhx-animated-image--hoverable"));
+        AssertNoAttribute(output, "tabindex");
+        Assert.DoesNotContain("rhx-animated-image__poster", output.Content.GetContent());
     }
 
     // ══════════════════════════════════════════════
-    //  Play / Pause state
+    //  Poster — hover/focus to play (CSS only)
     // ══════════════════════════════════════════════
 
     [Fact]
-    public void Default_Playing()
+    public void With_Poster_Renders_Poster_And_Animation()
     {
         var helper = CreateHelper();
         helper.Src = "animation.gif";
+        helper.Poster = "first-frame.png";
         var context = CreateContext("rhx-animated-image");
         var output = CreateOutput("rhx-animated-image");
 
         helper.Process(context, output);
 
-        Assert.False(HasClass(output, "rhx-animated-image--paused"));
-        AssertNoAttribute(output, "data-rhx-paused");
         var content = output.Content.GetContent();
-        Assert.Contains("Pause animation", content);
+        Assert.Contains("rhx-animated-image__poster", content);
+        Assert.Contains("src=\"first-frame.png\"", content);
+        Assert.Contains("rhx-animated-image__img", content);
+        Assert.Contains("src=\"animation.gif\"", content);
+        Assert.Contains("rhx-animated-image__badge", content);
     }
 
     [Fact]
-    public void Paused_State()
+    public void With_Poster_Is_Hoverable_And_Focusable()
     {
         var helper = CreateHelper();
         helper.Src = "animation.gif";
-        helper.Play = false;
+        helper.Poster = "first-frame.png";
+        helper.Alt = "Demo";
         var context = CreateContext("rhx-animated-image");
         var output = CreateOutput("rhx-animated-image");
 
         helper.Process(context, output);
 
-        Assert.True(HasClass(output, "rhx-animated-image--paused"));
-        AssertAttribute(output, "data-rhx-paused", "");
-        var content = output.Content.GetContent();
-        Assert.Contains("Play animation", content);
+        Assert.True(HasClass(output, "rhx-animated-image--hoverable"));
+        AssertAttribute(output, "tabindex", "0");
+        AssertAttribute(output, "role", "img");
+        AssertAttribute(output, "aria-label", "Demo");
     }
 
     // ══════════════════════════════════════════════

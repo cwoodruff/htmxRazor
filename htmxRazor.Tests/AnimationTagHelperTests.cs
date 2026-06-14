@@ -10,6 +10,9 @@ public class AnimationTagHelperTests : TagHelperTestBase
         return new AnimationTagHelper { ViewContext = CreateViewContext() };
     }
 
+    private static string Style(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output)
+        => output.Attributes.TryGetAttribute("style", out var a) ? a.Value?.ToString() ?? "" : "";
+
     // ══════════════════════════════════════════════
     //  Structure
     // ══════════════════════════════════════════════
@@ -39,18 +42,6 @@ public class AnimationTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public void Has_Data_Attribute()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-animation");
-        var output = CreateOutput("rhx-animation");
-
-        helper.Process(context, output);
-
-        Assert.NotNull(GetAttribute(output, "data-rhx-animation"));
-    }
-
-    [Fact]
     public void Custom_Class_Merged()
     {
         var helper = CreateHelper();
@@ -65,11 +56,11 @@ public class AnimationTagHelperTests : TagHelperTestBase
     }
 
     // ══════════════════════════════════════════════
-    //  Default data attributes
+    //  Server-emitted CSS animation (no JS)
     // ══════════════════════════════════════════════
 
     [Fact]
-    public void Default_Animation_Name()
+    public void Emits_Animation_Style()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-animation");
@@ -77,11 +68,11 @@ public class AnimationTagHelperTests : TagHelperTestBase
 
         helper.Process(context, output);
 
-        AssertAttribute(output, "data-rhx-animation", "fadeIn");
+        Assert.Contains("animation:", Style(output));
     }
 
     [Fact]
-    public void Default_Duration()
+    public void Default_Style_Uses_Defaults()
     {
         var helper = CreateHelper();
         var context = CreateContext("rhx-animation");
@@ -89,68 +80,98 @@ public class AnimationTagHelperTests : TagHelperTestBase
 
         helper.Process(context, output);
 
-        AssertAttribute(output, "data-rhx-duration", "300");
+        Assert.Equal("animation: rhx-fadeIn 300ms ease 0ms 1 normal both", Style(output));
     }
 
     [Fact]
-    public void Default_Delay()
+    public void Custom_Animation_Name()
     {
         var helper = CreateHelper();
+        helper.Name = "slideInLeft";
         var context = CreateContext("rhx-animation");
         var output = CreateOutput("rhx-animation");
 
         helper.Process(context, output);
 
-        AssertAttribute(output, "data-rhx-delay", "0");
+        Assert.Contains("animation: rhx-slideInLeft ", Style(output));
     }
 
     [Fact]
-    public void Default_No_Direction_Attribute()
+    public void Custom_Duration()
     {
         var helper = CreateHelper();
+        helper.Duration = 500;
         var context = CreateContext("rhx-animation");
         var output = CreateOutput("rhx-animation");
 
         helper.Process(context, output);
 
-        AssertNoAttribute(output, "data-rhx-direction");
+        Assert.Contains("rhx-fadeIn 500ms ", Style(output));
     }
 
     [Fact]
-    public void Default_No_Easing_Attribute()
+    public void Custom_Delay()
     {
         var helper = CreateHelper();
+        helper.Delay = 200;
         var context = CreateContext("rhx-animation");
         var output = CreateOutput("rhx-animation");
 
         helper.Process(context, output);
 
-        AssertNoAttribute(output, "data-rhx-easing");
+        Assert.Contains("ease 200ms ", Style(output));
     }
 
     [Fact]
-    public void Default_No_Iterations_Attribute()
+    public void Custom_Direction()
     {
         var helper = CreateHelper();
+        helper.Direction = "reverse";
         var context = CreateContext("rhx-animation");
         var output = CreateOutput("rhx-animation");
 
         helper.Process(context, output);
 
-        AssertNoAttribute(output, "data-rhx-iterations");
+        Assert.Contains(" reverse ", Style(output));
     }
 
     [Fact]
-    public void Default_No_Fill_Attribute()
+    public void Custom_Easing()
     {
         var helper = CreateHelper();
+        helper.Easing = "ease-in-out";
         var context = CreateContext("rhx-animation");
         var output = CreateOutput("rhx-animation");
 
         helper.Process(context, output);
 
-        // Default is "both", not rendered
-        AssertNoAttribute(output, "data-rhx-fill");
+        Assert.Contains(" ease-in-out ", Style(output));
+    }
+
+    [Fact]
+    public void Custom_Iterations()
+    {
+        var helper = CreateHelper();
+        helper.Iterations = "infinite";
+        var context = CreateContext("rhx-animation");
+        var output = CreateOutput("rhx-animation");
+
+        helper.Process(context, output);
+
+        Assert.Contains(" infinite ", Style(output));
+    }
+
+    [Fact]
+    public void Custom_Fill()
+    {
+        var helper = CreateHelper();
+        helper.Fill = "forwards";
+        var context = CreateContext("rhx-animation");
+        var output = CreateOutput("rhx-animation");
+
+        helper.Process(context, output);
+
+        Assert.EndsWith(" forwards", Style(output));
     }
 
     [Fact]
@@ -166,140 +187,7 @@ public class AnimationTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public void Default_No_Paused_Attribute()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-animation");
-        var output = CreateOutput("rhx-animation");
-
-        helper.Process(context, output);
-
-        AssertNoAttribute(output, "data-rhx-paused");
-    }
-
-    // ══════════════════════════════════════════════
-    //  Custom properties
-    // ══════════════════════════════════════════════
-
-    [Fact]
-    public void Custom_Animation_Name()
-    {
-        var helper = CreateHelper();
-        helper.Name = "slideInLeft";
-        var context = CreateContext("rhx-animation");
-        var output = CreateOutput("rhx-animation");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-animation", "slideInLeft");
-    }
-
-    [Fact]
-    public void Custom_Duration()
-    {
-        var helper = CreateHelper();
-        helper.Duration = 500;
-        var context = CreateContext("rhx-animation");
-        var output = CreateOutput("rhx-animation");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-duration", "500");
-    }
-
-    [Fact]
-    public void Custom_Delay()
-    {
-        var helper = CreateHelper();
-        helper.Delay = 200;
-        var context = CreateContext("rhx-animation");
-        var output = CreateOutput("rhx-animation");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-delay", "200");
-    }
-
-    [Fact]
-    public void Custom_Direction()
-    {
-        var helper = CreateHelper();
-        helper.Direction = "reverse";
-        var context = CreateContext("rhx-animation");
-        var output = CreateOutput("rhx-animation");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-direction", "reverse");
-    }
-
-    [Fact]
-    public void Normal_Direction_Not_Rendered()
-    {
-        var helper = CreateHelper();
-        helper.Direction = "normal";
-        var context = CreateContext("rhx-animation");
-        var output = CreateOutput("rhx-animation");
-
-        helper.Process(context, output);
-
-        AssertNoAttribute(output, "data-rhx-direction");
-    }
-
-    [Fact]
-    public void Custom_Easing()
-    {
-        var helper = CreateHelper();
-        helper.Easing = "ease-in-out";
-        var context = CreateContext("rhx-animation");
-        var output = CreateOutput("rhx-animation");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-easing", "ease-in-out");
-    }
-
-    [Fact]
-    public void Custom_Iterations()
-    {
-        var helper = CreateHelper();
-        helper.Iterations = "infinite";
-        var context = CreateContext("rhx-animation");
-        var output = CreateOutput("rhx-animation");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-iterations", "infinite");
-    }
-
-    [Fact]
-    public void Iterations_One_Not_Rendered()
-    {
-        var helper = CreateHelper();
-        helper.Iterations = "1";
-        var context = CreateContext("rhx-animation");
-        var output = CreateOutput("rhx-animation");
-
-        helper.Process(context, output);
-
-        AssertNoAttribute(output, "data-rhx-iterations");
-    }
-
-    [Fact]
-    public void Custom_Fill()
-    {
-        var helper = CreateHelper();
-        helper.Fill = "forwards";
-        var context = CreateContext("rhx-animation");
-        var output = CreateOutput("rhx-animation");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-fill", "forwards");
-    }
-
-    [Fact]
-    public void Paused_Adds_Data_Attribute()
+    public void Paused_Sets_Play_State_Paused()
     {
         var helper = CreateHelper();
         helper.Play = false;
@@ -308,7 +196,7 @@ public class AnimationTagHelperTests : TagHelperTestBase
 
         helper.Process(context, output);
 
-        Assert.True(output.Attributes.TryGetAttribute("data-rhx-paused", out _));
+        Assert.Contains("animation-play-state: paused", Style(output));
     }
 
     [Fact]

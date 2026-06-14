@@ -8,19 +8,20 @@ public class AnimatedImageModel : PageModel
 {
     public List<ComponentProperty> Properties { get; } = new()
     {
-        new("rhx-src", "string", "-", "URL of the animated image or video"),
+        new("rhx-src", "string", "-", "URL of the animated image (GIF/APNG/WebP)"),
         new("rhx-alt", "string", "-", "Alt text for the image"),
-        new("rhx-play", "bool", "true", "Whether the animation starts playing"),
+        new("rhx-poster", "string", "-", "Optional still image; when set the animation pauses (poster shown) and plays on hover/focus — pure CSS, no JS"),
     };
 
-    public string PlayPauseCode => @"<rhx-animated-image
+    public string PlaysCode => @"<rhx-animated-image
     rhx-src=""https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif""
     rhx-alt=""Animated loading"" />";
 
-    public string InitiallyPausedCode => @"<rhx-animated-image
+    public string HoverCode => @"<!-- With a poster it stays paused (poster shown) and plays on hover/focus -->
+<rhx-animated-image
     rhx-src=""https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif""
-    rhx-alt=""Paused animation""
-    rhx-play=""false"" />";
+    rhx-poster=""https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy_s.gif""
+    rhx-alt=""Hover to play"" />";
 
     public void OnGet()
     {

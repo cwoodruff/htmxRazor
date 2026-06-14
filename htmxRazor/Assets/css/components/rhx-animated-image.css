@@ -15,25 +15,44 @@
     height: auto;
 }
 
-.rhx-animated-image__canvas {
+/* ── Poster / hover-to-play (no JS) ── */
+/* The poster sits on top at rest; hovering or focusing reveals the animation beneath. */
+.rhx-animated-image--hoverable {
+    cursor: pointer;
+}
+
+.rhx-animated-image--hoverable .rhx-animated-image__poster {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.rhx-animated-image--hoverable .rhx-animated-image__img {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
     opacity: 0;
-    pointer-events: none;
+    transition: opacity var(--rhx-transition-fast);
 }
 
-.rhx-animated-image--paused .rhx-animated-image__img {
-    opacity: 0;
-}
-
-.rhx-animated-image--paused .rhx-animated-image__canvas {
+.rhx-animated-image--hoverable:hover .rhx-animated-image__img,
+.rhx-animated-image--hoverable:focus-visible .rhx-animated-image__img {
     opacity: 1;
 }
 
-.rhx-animated-image__control {
+.rhx-animated-image--hoverable:hover .rhx-animated-image__poster,
+.rhx-animated-image--hoverable:focus-visible .rhx-animated-image__poster {
+    opacity: 0;
+}
+
+.rhx-animated-image--hoverable:focus-visible {
+    outline: 2px solid var(--rhx-color-brand-500);
+    outline-offset: 2px;
+}
+
+/* Play affordance — hidden while playing (hover/focus). */
+.rhx-animated-image__badge {
     position: absolute;
     bottom: var(--rhx-space-sm);
     right: var(--rhx-space-sm);
@@ -42,27 +61,22 @@
     justify-content: center;
     width: 2rem;
     height: 2rem;
-    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--rhx-radius-full);
     background: rgba(0, 0, 0, 0.5);
     color: #fff;
-    cursor: pointer;
-    padding: 0;
-    transition: background var(--rhx-transition-fast);
+    pointer-events: none;
+    transition: opacity var(--rhx-transition-fast);
     backdrop-filter: blur(4px);
 }
 
-.rhx-animated-image__control:hover {
-    background: rgba(0, 0, 0, 0.7);
-}
-
-.rhx-animated-image__control:focus-visible {
-    outline: 2px solid var(--rhx-color-brand-500);
-    outline-offset: 2px;
+.rhx-animated-image--hoverable:hover .rhx-animated-image__badge,
+.rhx-animated-image--hoverable:focus-visible .rhx-animated-image__badge {
+    opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .rhx-animated-image__control {
+    .rhx-animated-image--hoverable .rhx-animated-image__img,
+    .rhx-animated-image__badge {
         transition: none;
     }
 }

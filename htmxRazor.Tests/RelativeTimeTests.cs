@@ -272,29 +272,34 @@ public class RelativeTimeTests : TagHelperTestBase
     }
 
     [Fact]
-    public void TagHelper_Has_Data_Attribute_For_JS()
+    public void TagHelper_Renders_Text_Server_Side_Without_Js_Hooks()
     {
-        var helper = new RelativeTimeTagHelper { Date = Now };
+        var helper = new RelativeTimeTagHelper { Date = Now.AddHours(-2) };
         var context = CreateContext("rhx-relative-time");
         var output = CreateOutput("rhx-relative-time");
 
         helper.Process(context, output);
 
-        Assert.NotNull(GetAttribute(output, "data-rhx-relative-time"));
-        AssertAttribute(output, "data-rhx-relative-format", "long");
-        AssertAttribute(output, "data-rhx-relative-numeric", "always");
+        // Text is rendered on the server; no JS-only data hooks remain.
+        Assert.False(string.IsNullOrWhiteSpace(output.Content.GetContent()));
+        Assert.NotNull(GetAttribute(output, "datetime"));
+        AssertNoAttribute(output, "data-rhx-relative-time");
+        AssertNoAttribute(output, "data-rhx-relative-format");
+        AssertNoAttribute(output, "data-rhx-relative-numeric");
     }
 
     [Fact]
-    public void TagHelper_Custom_Format_In_Data()
+    public void TagHelper_Format_Affects_Rendered_Text()
     {
-        var helper = new RelativeTimeTagHelper { Date = Now, Format = "short", Numeric = "auto" };
-        var context = CreateContext("rhx-relative-time");
-        var output = CreateOutput("rhx-relative-time");
+        var longHelper = new RelativeTimeTagHelper { Date = Now.AddHours(-2), Format = "long" };
+        var shortHelper = new RelativeTimeTagHelper { Date = Now.AddHours(-2), Format = "short" };
 
-        helper.Process(context, output);
+        var longOut = CreateOutput("rhx-relative-time");
+        var shortOut = CreateOutput("rhx-relative-time");
+        longHelper.Process(CreateContext("rhx-relative-time"), longOut);
+        shortHelper.Process(CreateContext("rhx-relative-time"), shortOut);
 
-        AssertAttribute(output, "data-rhx-relative-format", "short");
-        AssertAttribute(output, "data-rhx-relative-numeric", "auto");
+        // Different formats produce different server-rendered text.
+        Assert.NotEqual(longOut.Content.GetContent(), shortOut.Content.GetContent());
     }
 }

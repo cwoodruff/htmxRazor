@@ -1,12 +1,14 @@
+using System.Globalization;
+using System.Text;
 using htmxRazor.Infrastructure;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace htmxRazor.Components.Utilities;
 
 /// <summary>
-/// Renders a QR code as a <c>&lt;canvas&gt;</c> element. The QR code is generated
-/// client-side by a lightweight built-in algorithm (no external dependency).
-/// Supports dynamic updates via <c>MutationObserver</c> for htmx swap compatibility.
+/// Renders a QR code as an inline <c>&lt;svg&gt;</c> element. The QR code is generated
+/// entirely server-side by a lightweight built-in algorithm (no external dependency,
+/// no JavaScript). Supports versions 1–10, byte mode, and all EC levels (L/M/Q/H).
 /// </summary>
 /// <example>
 /// <code>
@@ -20,6 +22,13 @@ namespace htmxRazor.Components.Utilities;
 [HtmlTargetElement("rhx-qr-code")]
 public class QrCodeTagHelper : htmxRazorTagHelperBase
 {
+    // The previous canvas implementation drew modules edge-to-edge with no quiet
+    // zone, so the SVG keeps the same behaviour for visual parity.
+    private const int QuietZone = 0;
+
+    private const string DefaultFill = "var(--rhx-color-text)";
+    private const string DefaultBackground = "var(--rhx-color-surface)";
+
     /// <inheritdoc/>
     protected override string BlockName => "qr-code";
 
@@ -36,7 +45,7 @@ public class QrCodeTagHelper : htmxRazorTagHelperBase
     public string? Label { get; set; }
 
     /// <summary>
-    /// Pixel dimensions (width and height) of the canvas.
+    /// Pixel dimensions (width and height) of the rendered SVG.
     /// Default: 128.
     /// </summary>
     [HtmlAttributeName("rhx-size")]
@@ -74,34 +83,83 @@ public class QrCodeTagHelper : htmxRazorTagHelperBase
     /// <inheritdoc/>
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        output.TagName = "canvas";
+        output.TagName = "svg";
         output.TagMode = TagMode.StartTagAndEndTag;
 
-        // ── CSS classes ──
+        // ── CSS classes & base attributes ──
         var css = CreateCssBuilder();
         ApplyBaseAttributes(output, css);
+        RenderHtmxAttributes(output);
 
-        // ── Data attributes for JS ──
-        output.Attributes.SetAttribute("data-rhx-qr-code", "");
-        output.Attributes.SetAttribute("data-rhx-qr-value", Value);
-        output.Attributes.SetAttribute("data-rhx-qr-size", Size.ToString());
-        if (!string.IsNullOrEmpty(Fill))
-            output.Attributes.SetAttribute("data-rhx-qr-fill", Fill);
-        if (!string.IsNullOrEmpty(Background))
-            output.Attributes.SetAttribute("data-rhx-qr-background", Background);
-        output.Attributes.SetAttribute("data-rhx-qr-ec", ErrorCorrection.ToUpperInvariant());
+        var ec = ErrorCorrection.ToUpperInvariant();
+        var modules = QrCodeGenerator.Generate(Value, ec);
+        var moduleCount = modules?.Length ?? 0;
+        var viewSize = moduleCount + 2 * QuietZone;
+        if (viewSize <= 0) viewSize = 1;
 
-        if (Radius > 0)
-            output.Attributes.SetAttribute("data-rhx-qr-radius", Radius.ToString("F2"));
-
-        // ── Canvas dimensions ──
-        output.Attributes.SetAttribute("width", Size.ToString());
-        output.Attributes.SetAttribute("height", Size.ToString());
-
-        // ── Accessibility ──
+        // ── SVG attributes ──
+        output.Attributes.SetAttribute("xmlns", "http://www.w3.org/2000/svg");
+        output.Attributes.SetAttribute("width", Size.ToString(CultureInfo.InvariantCulture));
+        output.Attributes.SetAttribute("height", Size.ToString(CultureInfo.InvariantCulture));
+        output.Attributes.SetAttribute("viewBox", $"0 0 {viewSize} {viewSize}");
         output.Attributes.SetAttribute("role", "img");
 
         if (!string.IsNullOrWhiteSpace(Label))
             AriaAttributeHelper.AriaLabel(output, Label);
+
+        // ── SVG content ──
+        var fill = string.IsNullOrEmpty(Fill) ? DefaultFill : Fill;
+        var background = string.IsNullOrEmpty(Background) ? DefaultBackground : Background;
+
+        output.Content.Clear();
+
+        // Background rectangle fills the whole viewBox.
+        output.Content.AppendHtml(
+            $"<rect width=\"{viewSize}\" height=\"{viewSize}\" fill=\"{background}\" />");
+
+        if (modules == null || moduleCount == 0)
+            return;
+
+        output.Content.AppendHtml(BuildModulesMarkup(modules, moduleCount, fill));
+    }
+
+    private string BuildModulesMarkup(bool[][] modules, int moduleCount, string fill)
+    {
+        // With a quiet zone of 0 the module grid maps 1:1 onto the viewBox.
+        const int offset = QuietZone;
+
+        if (Radius > 0)
+        {
+            // Rounded modules: one <rect> per dark module with rx = Radius * cellSize.
+            // cellSize is 1 in viewBox units, so rx is simply Radius.
+            var rx = Radius.ToString("0.####", CultureInfo.InvariantCulture);
+            var sb = new StringBuilder();
+            for (var r = 0; r < moduleCount; r++)
+            {
+                for (var c = 0; c < moduleCount; c++)
+                {
+                    if (!modules[r][c]) continue;
+                    var x = c + offset;
+                    var y = r + offset;
+                    sb.Append($"<rect x=\"{x}\" y=\"{y}\" width=\"1\" height=\"1\" rx=\"{rx}\" fill=\"{fill}\" />");
+                }
+            }
+            return sb.ToString();
+        }
+
+        // Square modules: a single compact <path> covering all dark modules.
+        var path = new StringBuilder();
+        for (var r = 0; r < moduleCount; r++)
+        {
+            for (var c = 0; c < moduleCount; c++)
+            {
+                if (!modules[r][c]) continue;
+                var x = c + offset;
+                var y = r + offset;
+                path.Append($"M{x} {y}h1v1h-1z");
+            }
+        }
+
+        return $"<path d=\"{path}\" fill=\"{fill}\" />";
     }
 }

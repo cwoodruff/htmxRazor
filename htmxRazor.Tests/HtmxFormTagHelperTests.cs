@@ -351,10 +351,10 @@ public class HtmxFormTagHelperTests : TagHelperTestBase
         Assert.True(HasClass(output, "my-form"));
     }
 
-    // ── Data attributes ──
+    // ── Reset on success (htmx hx-on, no custom JS) ──
 
     [Fact]
-    public async Task ResetOnSuccess_Data_Attribute()
+    public async Task ResetOnSuccess_Emits_HxOn_AfterRequest()
     {
         var helper = CreateHelper();
         helper.Page = "/Contact";
@@ -365,11 +365,11 @@ public class HtmxFormTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "data-rhx-reset-on-success", "true");
+        AssertAttribute(output, "hx-on::after-request", "if(event.detail.successful)this.reset()");
     }
 
     [Fact]
-    public async Task Data_Marker_Attribute()
+    public async Task Without_ResetOnSuccess_No_HxOn()
     {
         var helper = CreateHelper();
         helper.Page = "/Contact";
@@ -379,6 +379,23 @@ public class HtmxFormTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        Assert.True(output.Attributes.TryGetAttribute("data-rhx-htmx-form", out _));
+        AssertNoAttribute(output, "hx-on::after-request");
+    }
+
+    [Fact]
+    public async Task Error_Container_Has_No_Hidden_Attribute()
+    {
+        var helper = CreateHelper();
+        helper.Page = "/Contact";
+
+        var context = CreateContext("rhx-htmx-form");
+        var output = CreateOutput("rhx-htmx-form");
+
+        await helper.ProcessAsync(context, output);
+
+        // The container is CSS-hidden while :empty; it must not carry a `hidden` attribute.
+        var content = output.Content.GetContent();
+        Assert.Contains("rhx-htmx-form__error-container", content);
+        Assert.DoesNotContain("rhx-htmx-form__error-container\" aria-live=\"polite\" hidden", content);
     }
 }

@@ -5,45 +5,47 @@
     ViewData["Title"] = "Animated Image";
     ViewData["ComponentName"] = "Animated Image";
     ViewData["ComponentTag"] = "rhx-animated-image";
-    ViewData["ComponentDescription"] = "GIF/video player with play/pause controls.";
+    ViewData["ComponentDescription"] = "GIF/APNG display. With a poster it pauses (showing the still) and plays on hover/focus — pure CSS, no JavaScript.";
 }
 
 <section class="docs-component-section">
     <h2>Examples</h2>
 
-    <!-- Play/Pause -->
+    <!-- Plays continuously -->
     <div class="docs-example">
-        <h3>Play/Pause</h3>
+        <h3>Plays continuously</h3>
+        <p>Without a poster the animation simply plays.</p>
         <rhx-tab-group>
-            <rhx-tab rhx-panel="playpause-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="playpause-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="playpause-preview" rhx-active="true">
+            <rhx-tab rhx-panel="plays-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="plays-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="plays-preview" rhx-active="true">
                 <div class="docs-preview">
                     <rhx-animated-image rhx-src="https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif" rhx-alt="Animated loading" />
                 </div>
             </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="playpause-code">
+            <rhx-tab-panel rhx-name="plays-code">
                 <div class="docs-code">
-                    <pre><code>@Model.PlayPauseCode</code></pre>
+                    <pre><code>@Model.PlaysCode</code></pre>
                 </div>
             </rhx-tab-panel>
         </rhx-tab-group>
     </div>
 
-    <!-- Initially Paused -->
+    <!-- Hover to play -->
     <div class="docs-example">
-        <h3>Initially Paused</h3>
+        <h3>Hover to play (with poster)</h3>
+        <p>Add a <code>rhx-poster</code> still and the control stays paused until you hover or focus it — no JavaScript.</p>
         <rhx-tab-group>
-            <rhx-tab rhx-panel="paused-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="paused-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="paused-preview" rhx-active="true">
+            <rhx-tab rhx-panel="hover-preview" rhx-active="true">Preview</rhx-tab>
+            <rhx-tab rhx-panel="hover-code">Code</rhx-tab>
+            <rhx-tab-panel rhx-name="hover-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <rhx-animated-image rhx-src="https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif" rhx-alt="Paused animation" rhx-play="false" />
+                    <rhx-animated-image rhx-src="https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif" rhx-poster="https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy_s.gif" rhx-alt="Hover to play" />
                 </div>
             </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="paused-code">
+            <rhx-tab-panel rhx-name="hover-code">
                 <div class="docs-code">
-                    <pre><code>@Model.InitiallyPausedCode</code></pre>
+                    <pre><code>@Model.HoverCode</code></pre>
                 </div>
             </rhx-tab-panel>
         </rhx-tab-group>
@@ -57,8 +59,8 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Play/pause button has an <code>aria-label</code> that updates to reflect the current state ("Pause animation" / "Play animation").</li>
-        <li>The image element receives <code>alt</code> text from <code>rhx-alt</code> for screen reader users.</li>
-        <li>Respects the <code>prefers-reduced-motion</code> media query by starting in a paused state.</li>
+        <li>The image receives <code>alt</code> text from <code>rhx-alt</code> for screen-reader users.</li>
+        <li>With a poster the control is keyboard-focusable (<code>tabindex="0"</code>, <code>role="img"</code>) so it also plays on focus, not only hover.</li>
+        <li>Honors <code>prefers-reduced-motion</code>: the poster stays put and the cross-fade is disabled.</li>
     </ul>
 </section>
