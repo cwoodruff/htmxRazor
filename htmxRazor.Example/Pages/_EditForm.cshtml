@@ -34,3 +34,21 @@
         </rhx-button>
     </rhx-dialog-footer>
 </form>
+
+@if (!string.IsNullOrEmpty(Model.CategoryItem))
+{
+    <script>
+        // Show the saved category item in the Radial Select's combobox display. The control
+        // only renders its placeholder server-side; run after RHX.init has wired it up.
+        (function () {
+            var item = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryItem));
+            setTimeout(function () {
+                var display = document.querySelector('#edit-form-body [data-rhx-radial-display]');
+                if (display) {
+                    display.textContent = item;
+                    display.removeAttribute('data-rhx-empty');
+                }
+            }, 0);
+        })();
+    </script>
+}

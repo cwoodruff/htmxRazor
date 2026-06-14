@@ -24,8 +24,11 @@ public class TodoItem
     /// <summary>Optional reminder instant (Date &amp; Time Picker, <c>rhx-datetime-picker</c>).</summary>
     public DateTime? ReminderAt { get; set; }
 
-    /// <summary>Optional category (Radial Select, <c>rhx-radial-select</c>). One of <see cref="TodoCategory.All"/>.</summary>
+    /// <summary>Optional category (Radial Select wedge, <c>rhx-radial-select</c>). One of <see cref="TodoCategory.All"/>.</summary>
     public string? Category { get; set; }
+
+    /// <summary>Optional item within the category (Radial Select cascade dropdown). One of the category's <see cref="TodoCategory.Items"/>.</summary>
+    public string? CategoryItem { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -51,20 +54,26 @@ public enum TodoPriority
 /// Category metadata shared by the Radial Select wedges and the task-card tag, so colors and
 /// icons stay in sync. Icon names are known to <c>IconRegistry</c>.
 /// </summary>
-public record TodoCategory(string Name, string Color, string Icon)
+public record TodoCategory(string Name, string Color, string Icon, string[] Items)
 {
     public static readonly IReadOnlyList<TodoCategory> All = new[]
     {
-        new TodoCategory("Work", "brand", "grid"),
-        new TodoCategory("Personal", "success", "heart"),
-        new TodoCategory("Shopping", "warning", "star"),
-        new TodoCategory("Health", "danger", "check-circle"),
+        new TodoCategory("Work", "brand", "grid", new[] { "Email", "Meeting", "Report", "Review", "Call" }),
+        new TodoCategory("Personal", "success", "heart", new[] { "Errand", "Appointment", "Family", "Hobby" }),
+        new TodoCategory("Shopping", "warning", "star", new[] { "Groceries", "Household", "Gifts", "Clothing" }),
+        new TodoCategory("Health", "danger", "check-circle", new[] { "Exercise", "Doctor", "Medication", "Meal" }),
     };
 
     public static TodoCategory? Find(string? name) =>
         string.IsNullOrWhiteSpace(name)
             ? null
             : All.FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>The valid item name within this category (case-insensitive), or null.</summary>
+    public string? FindItem(string? item) =>
+        string.IsNullOrWhiteSpace(item)
+            ? null
+            : Items.FirstOrDefault(i => string.Equals(i, item, StringComparison.OrdinalIgnoreCase));
 }
 
 /// <summary>

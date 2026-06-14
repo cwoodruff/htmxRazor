@@ -9,9 +9,9 @@ public class TodoService
 
     private static readonly List<TodoItem> _todos = new()
     {
-        new() { Id = 1, Title = "Set up htmxRazor project", IsCompleted = true, Priority = TodoPriority.High, Category = "Work", CreatedAt = DateTime.UtcNow.AddDays(-3), CompletedAt = DateTime.UtcNow.AddDays(-2) },
-        new() { Id = 2, Title = "Build the To-Do app UI", IsCompleted = false, Priority = TodoPriority.High, Category = "Work", DueDate = DateOnly.FromDateTime(DateTime.Today.AddDays(2)), DueTime = new TimeOnly(17, 0), CreatedAt = DateTime.UtcNow.AddDays(-2) },
-        new() { Id = 3, Title = "Add dark mode support", IsCompleted = false, Priority = TodoPriority.Medium, Category = "Personal", DueDate = DateOnly.FromDateTime(DateTime.Today.AddDays(7)), CreatedAt = DateTime.UtcNow.AddDays(-1) },
+        new() { Id = 1, Title = "Set up htmxRazor project", IsCompleted = true, Priority = TodoPriority.High, Category = "Work", CategoryItem = "Review", CreatedAt = DateTime.UtcNow.AddDays(-3), CompletedAt = DateTime.UtcNow.AddDays(-2) },
+        new() { Id = 2, Title = "Build the To-Do app UI", IsCompleted = false, Priority = TodoPriority.High, Category = "Work", CategoryItem = "Report", DueDate = DateOnly.FromDateTime(DateTime.Today.AddDays(2)), DueTime = new TimeOnly(17, 0), CreatedAt = DateTime.UtcNow.AddDays(-2) },
+        new() { Id = 3, Title = "Add dark mode support", IsCompleted = false, Priority = TodoPriority.Medium, Category = "Personal", CategoryItem = "Hobby", DueDate = DateOnly.FromDateTime(DateTime.Today.AddDays(7)), CreatedAt = DateTime.UtcNow.AddDays(-1) },
         new() { Id = 4, Title = "Write documentation", IsCompleted = false, Priority = TodoPriority.Low, CreatedAt = DateTime.UtcNow },
     };
 
@@ -53,11 +53,19 @@ public class TodoService
 
     public TodoItem? GetById(int id) => _todos.FirstOrDefault(t => t.Id == id);
 
+    /// <summary>Resolves a submitted (category, item) pair to validated names; item is kept only when it belongs to the category.</summary>
+    private static (string? Category, string? Item) ResolveCategory(string? category, string? categoryItem)
+    {
+        var cat = TodoCategory.Find(category);
+        return (cat?.Name, cat?.FindItem(categoryItem));
+    }
+
     public TodoItem Add(string title, TodoPriority priority, DateOnly? dueDate = null,
-        TimeOnly? dueTime = null, DateTime? reminderAt = null, string? category = null)
+        TimeOnly? dueTime = null, DateTime? reminderAt = null, string? category = null, string? categoryItem = null)
     {
         lock (_lock)
         {
+            var (cat, item) = ResolveCategory(category, categoryItem);
             var todo = new TodoItem
             {
                 Id = _nextId++,
@@ -66,7 +74,8 @@ public class TodoService
                 DueDate = dueDate,
                 DueTime = dueTime,
                 ReminderAt = reminderAt,
-                Category = TodoCategory.Find(category)?.Name,
+                Category = cat,
+                CategoryItem = item,
                 CreatedAt = DateTime.UtcNow
             };
             _todos.Add(todo);
@@ -85,17 +94,19 @@ public class TodoService
     }
 
     public TodoItem? Update(int id, string title, TodoPriority priority, DateOnly? dueDate = null,
-        TimeOnly? dueTime = null, DateTime? reminderAt = null, string? category = null)
+        TimeOnly? dueTime = null, DateTime? reminderAt = null, string? category = null, string? categoryItem = null)
     {
         var todo = GetById(id);
         if (todo is null) return null;
 
+        var (cat, item) = ResolveCategory(category, categoryItem);
         todo.Title = title;
         todo.Priority = priority;
         todo.DueDate = dueDate;
         todo.DueTime = dueTime;
         todo.ReminderAt = reminderAt;
-        todo.Category = TodoCategory.Find(category)?.Name;
+        todo.Category = cat;
+        todo.CategoryItem = item;
         return todo;
     }
 

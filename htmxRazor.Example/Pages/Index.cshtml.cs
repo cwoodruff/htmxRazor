@@ -43,19 +43,24 @@ public class IndexModel : PageModel
         return Partial("_TodoList", Todos);
     }
 
-    /// <summary>Cascade endpoint for the category Radial Select: returns a single listbox option
-    /// echoing the chosen category so the control completes. Category-only — the option value is
-    /// not stored; <c>rhx-category-name</c> carries the category itself.</summary>
-    public IActionResult OnGetCategoryItems(string? category)
+    /// <summary>Cascade endpoint for the category Radial Select: returns the listbox option set for
+    /// the chosen wedge (multiple items per category). The active wedge is submitted via
+    /// <c>rhx-category-name</c>; the selected item via the control's <c>name</c>. An optional
+    /// <c>selected</c> marks one option pre-selected (used when re-opening a wedge on edit).</summary>
+    public IActionResult OnGetCategoryItems(string? category, string? selected)
     {
         var cat = TodoCategory.Find(category);
-        if (cat is null)
-            return Content("<div class=\"rhx-radial-select__placeholder\">No category</div>", "text/html");
+        if (cat is null || cat.Items.Length == 0)
+            return Content("<div class=\"rhx-radial-select__placeholder\">No items</div>", "text/html");
 
-        var name = System.Net.WebUtility.HtmlEncode(cat.Name);
-        return Content(
-            $"<div class=\"rhx-radial-select__option\" role=\"option\" data-value=\"{name}\" aria-selected=\"false\" tabindex=\"-1\">{name}</div>",
-            "text/html");
+        var sel = cat.FindItem(selected);
+        var html = string.Concat(cat.Items.Select(item =>
+        {
+            var v = System.Net.WebUtility.HtmlEncode(item);
+            var isSel = string.Equals(item, sel, StringComparison.Ordinal) ? "true" : "false";
+            return $"<div class=\"rhx-radial-select__option\" role=\"option\" data-value=\"{v}\" aria-selected=\"{isSel}\" tabindex=\"-1\">{v}</div>";
+        }));
+        return Content(html, "text/html");
     }
 
     /// <summary>Returns the populated edit form (server-rendered so the date/time/category controls
@@ -83,11 +88,11 @@ public class IndexModel : PageModel
     }
 
     public IActionResult OnPostAdd(string title, TodoPriority priority, DateOnly? dueDate,
-        TimeOnly? dueTime, DateTime? reminderAt, string? category, string? filter, string? sort)
+        TimeOnly? dueTime, DateTime? reminderAt, string? category, string? categoryItem, string? filter, string? sort)
     {
         if (!string.IsNullOrWhiteSpace(title))
         {
-            _todoService.Add(title.Trim(), priority, dueDate, dueTime, reminderAt, category);
+            _todoService.Add(title.Trim(), priority, dueDate, dueTime, reminderAt, category, categoryItem);
             var due = dueDate is { } d ? $" (due {d:MMM d})" : "";
             _todoService.LogActivity($"Added \"{title.Trim()}\"{due}", "success", "plus");
             Response.HxToast($"Task \"{title.Trim()}\" added", "success");
@@ -116,11 +121,11 @@ public class IndexModel : PageModel
     }
 
     public IActionResult OnPutUpdate(int id, string title, TodoPriority priority, DateOnly? dueDate,
-        TimeOnly? dueTime, DateTime? reminderAt, string? category, string? filter, string? sort)
+        TimeOnly? dueTime, DateTime? reminderAt, string? category, string? categoryItem, string? filter, string? sort)
     {
         if (!string.IsNullOrWhiteSpace(title))
         {
-            _todoService.Update(id, title.Trim(), priority, dueDate, dueTime, reminderAt, category);
+            _todoService.Update(id, title.Trim(), priority, dueDate, dueTime, reminderAt, category, categoryItem);
             _todoService.LogActivity($"Updated \"{title.Trim()}\"", "brand", "edit");
             Response.HxToast("Task updated", "brand");
         }

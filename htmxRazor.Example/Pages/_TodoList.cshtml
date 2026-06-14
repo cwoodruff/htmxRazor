@@ -42,7 +42,7 @@ else
                         {
                             <rhx-tag-item rhx-variant="@category.Color" rhx-size="small">
                                 <rhx-icon name="@category.Icon" rhx-size="small"></rhx-icon>
-                                @category.Name
+                                @category.Name@(string.IsNullOrEmpty(todo.CategoryItem) ? "" : $" · {todo.CategoryItem}")
                             </rhx-tag-item>
                         }
 
