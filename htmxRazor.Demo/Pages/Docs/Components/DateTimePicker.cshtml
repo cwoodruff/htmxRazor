@@ -33,8 +33,8 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Trigger uses <code>aria-haspopup="dialog"</code>/<code>aria-expanded</code>; the popup is <code>role="dialog"</code> containing the calendar <code>grid</code> and a time <code>listbox</code>.</li>
-        <li>Calendar keyboard (arrows, PageUp/Down for months, Enter to select, Escape to close) works in the popup; the time list is selected by click.</li>
-        <li>The hidden value is ISO <code>yyyy-MM-ddTHH:mm</code> and is committed only once both a date and a time are chosen.</li>
+        <li>Built on the native <code>&lt;input type="datetime-local"&gt;</code>, so the browser supplies the combined date/time entry UI and accessibility — no JavaScript.</li>
+        <li><code>rhx-step</code> (minutes) maps to the native <code>step</code> (seconds); <code>rhx-min</code>/<code>rhx-max</code> bound the selectable range.</li>
+        <li>The submitted value is ISO <code>yyyy-MM-ddTHH:mm</code>; the field displays the user's locale format.</li>
     </ul>
 </section>

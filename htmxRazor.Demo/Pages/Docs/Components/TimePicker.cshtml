@@ -49,8 +49,8 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>The input is a <code>role="combobox"</code> with <code>aria-haspopup="listbox"</code>/<code>aria-expanded</code>; the popup is <code>role="listbox"</code> with <code>role="option"</code> items.</li>
-        <li>Keyboard: Down/Up move, Home/End jump, Enter selects, Escape closes, printable keys type-ahead by label; the active option is tracked via <code>aria-activedescendant</code>.</li>
-        <li>The hidden value is ISO <code>HH:mm</code> (24-hour) for reliable model binding regardless of display mode.</li>
+        <li>Built on the native <code>&lt;input type="time"&gt;</code>, so the browser supplies the time entry UI, keyboard support, and accessibility — no JavaScript.</li>
+        <li><code>rhx-step</code> (minutes) maps to the native <code>step</code> (seconds); <code>rhx-min</code>/<code>rhx-max</code> become native <code>min</code>/<code>max</code>.</li>
+        <li>The submitted value is ISO <code>HH:mm</code> (24-hour); the field displays the user's locale format.</li>
     </ul>
 </section>

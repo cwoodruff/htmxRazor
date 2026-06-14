@@ -6,6 +6,8 @@ using Xunit;
 
 namespace htmxRazor.Tests;
 
+// rhx-datetime-picker renders a native <input type="datetime-local"> (no JS). Binding is via
+// an ISO yyyy-MM-ddTHH:mm value; step in minutes → seconds; min/max bound to whole days.
 public class DateTimePickerTagHelperTests : TagHelperTestBase
 {
     private DateTimePickerTagHelper CreateHelper() => new(CreateUrlHelperFactory())
@@ -23,8 +25,16 @@ public class DateTimePickerTagHelperTests : TagHelperTestBase
         return new ModelExpression(prop, new ModelExplorer(provider, metadata, value));
     }
 
+    private async Task<string> RenderAsync(DateTimePickerTagHelper helper)
+    {
+        var ctx = CreateContext("rhx-datetime-picker");
+        var output = CreateOutput("rhx-datetime-picker");
+        await helper.ProcessAsync(ctx, output);
+        return output.Content.GetContent();
+    }
+
     [Fact]
-    public async Task Renders_Wrapper_Input_Trigger_And_Hidden_Iso_DateTime()
+    public async Task Renders_Native_DateTimeLocal_Input_With_Iso_Value()
     {
         var helper = CreateHelper();
         helper.Name = "StartsAt";
@@ -36,87 +46,55 @@ public class DateTimePickerTagHelperTests : TagHelperTestBase
 
         Assert.Equal("div", output.TagName);
         Assert.True(HasClass(output, "rhx-datetime-picker"));
-        Assert.True(output.Attributes.TryGetAttribute("data-rhx-datetime-picker", out _));
         var html = output.Content.GetContent();
-        Assert.Contains("rhx-datetime-picker__input", html);
-        Assert.Contains("rhx-datetime-picker__trigger", html);
-        Assert.Contains("aria-haspopup=\"dialog\"", html);
-        Assert.Contains("type=\"hidden\"", html);
+        Assert.Contains("type=\"datetime-local\"", html);
+        Assert.Contains("rhx-datetime-picker__control", html);
         Assert.Contains("name=\"StartsAt\"", html);
         Assert.Contains("value=\"2026-10-15T09:30\"", html);
-        Assert.Contains("data-rhx-dt-value", html);
     }
 
     [Fact]
-    public async Task Popup_Has_Calendar_For_Date_And_TimeList_With_Selected_Time()
+    public async Task Empty_Value_Has_No_Value_Attribute()
     {
         var helper = CreateHelper();
         helper.Name = "d";
-        helper.Value = "2026-10-15T09:30";
-        var ctx = CreateContext("rhx-datetime-picker");
-        var output = CreateOutput("rhx-datetime-picker");
-
-        await helper.ProcessAsync(ctx, output);
-        var html = output.Content.GetContent();
-
-        Assert.Contains("rhx-calendar", html);
-        Assert.Contains("October 2026", html);
-        Assert.Contains("data-date=\"2026-10-15\"", html);
-        Assert.Contains("rhx-datetime-picker__times", html);
-        Assert.Contains("data-time=\"09:30\"", html);
-        Assert.Contains("rhx-time-picker__option--selected", html);
-        Assert.Contains("data-rhx-dt-clear", html);
-        Assert.Contains("data-rhx-dt-done", html);
+        var html = await RenderAsync(helper);
+        Assert.DoesNotContain("value=\"", html);
     }
 
     [Fact]
-    public async Task Empty_Value_Shows_Today_Month_No_Selection_Empty_Hidden()
-    {
-        var helper = CreateHelper();
-        helper.Name = "d";
-        var ctx = CreateContext("rhx-datetime-picker");
-        var output = CreateOutput("rhx-datetime-picker");
-
-        await helper.ProcessAsync(ctx, output);
-        var html = output.Content.GetContent();
-
-        Assert.Contains("October 2026", html);
-        Assert.DoesNotContain("aria-selected=\"true\"", html);
-        Assert.Contains("value=\"\"", html);
-    }
-
-    [Fact]
-    public async Task DateTime_Model_Binding_Produces_Iso_And_Selection()
+    public async Task DateTime_Model_Binding_Produces_Iso()
     {
         var helper = CreateHelper();
         helper.For = Expr("StartsAt", new DateTime(2026, 10, 15, 14, 0, 0));
-        var ctx = CreateContext("rhx-datetime-picker");
-        var output = CreateOutput("rhx-datetime-picker");
-
-        await helper.ProcessAsync(ctx, output);
-        var html = output.Content.GetContent();
-
+        var html = await RenderAsync(helper);
         Assert.Contains("value=\"2026-10-15T14:00\"", html);
-        Assert.Contains("data-time=\"14:00\"", html);
     }
 
     [Fact]
-    public async Task Calendar_Pane_Hides_Calendar_Own_Footer()
+    public async Task Min_And_Max_Bound_To_Whole_Days()
     {
         var helper = CreateHelper();
         helper.Name = "d";
-        var ctx = CreateContext("rhx-datetime-picker");
-        var output = CreateOutput("rhx-datetime-picker");
-
-        await helper.ProcessAsync(ctx, output);
-        var html = output.Content.GetContent();
-
-        Assert.DoesNotContain("data-rhx-cal-today", html);
-        Assert.DoesNotContain("data-rhx-cal-clear", html);
+        helper.Min = "2026-10-01";
+        helper.Max = "2026-10-31";
+        var html = await RenderAsync(helper);
+        Assert.Contains("min=\"2026-10-01T00:00\"", html);
+        Assert.Contains("max=\"2026-10-31T23:59\"", html);
     }
 
     [Fact]
-    public async Task Disabled_Adds_Modifier_And_Disables_Input_And_Trigger()
+    public async Task Step_Minutes_Maps_To_Native_Seconds()
+    {
+        var helper = CreateHelper();
+        helper.Name = "d";
+        helper.Step = 15;
+        var html = await RenderAsync(helper);
+        Assert.Contains("step=\"900\"", html);
+    }
+
+    [Fact]
+    public async Task Disabled_Adds_Modifier_And_Native_Attribute()
     {
         var helper = CreateHelper();
         helper.Name = "d";
@@ -125,10 +103,8 @@ public class DateTimePickerTagHelperTests : TagHelperTestBase
         var output = CreateOutput("rhx-datetime-picker");
 
         await helper.ProcessAsync(ctx, output);
-        var html = output.Content.GetContent();
-
         Assert.True(HasClass(output, "rhx-datetime-picker--disabled"));
-        Assert.True(System.Text.RegularExpressions.Regex.Matches(html, "disabled").Count >= 2);
+        Assert.Contains(" disabled", output.Content.GetContent());
     }
 
     [Fact]
@@ -137,14 +113,9 @@ public class DateTimePickerTagHelperTests : TagHelperTestBase
         var helper = CreateHelper();
         helper.Name = "d";
         helper.Label = "Starts at";
-        var ctx = CreateContext("rhx-datetime-picker");
-        var output = CreateOutput("rhx-datetime-picker");
-
-        await helper.ProcessAsync(ctx, output);
-        var html = output.Content.GetContent();
-
+        var html = await RenderAsync(helper);
         Assert.Contains(">Starts at</label>", html);
-        Assert.Contains("for=\"d-input\"", html);
+        Assert.Contains("for=\"d\"", html);
         Assert.Contains("aria-labelledby=\"d-label\"", html);
     }
 }

@@ -1,35 +1,92 @@
+/* ─────────────────────────────────────────────
+   rhx-datetime-picker
+   Native <input type="datetime-local"> with label, hint, and error slots.
+   No JavaScript — the combined date/time entry UI is the browser's.
+   ───────────────────────────────────────────── */
+
 @layer rhx.components {
-  .rhx-datetime-picker { position: relative; display: inline-flex; flex-direction: column; gap: var(--rhx-space-xs); font-family: var(--rhx-font-family); max-width: 20rem; }
-  .rhx-datetime-picker__label { font-size: var(--rhx-font-size-sm); font-weight: var(--rhx-font-weight-medium); color: var(--rhx-color-text); }
+.rhx-datetime-picker {
+    display: inline-flex;
+    flex-direction: column;
+    gap: var(--rhx-space-xs);
+    width: 100%;
+    max-width: 22rem;
+    font-family: var(--rhx-font-family);
+}
 
-  .rhx-datetime-picker__control { display: flex; align-items: center; border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-md); background: var(--rhx-color-surface); }
-  .rhx-datetime-picker__control:focus-within { border-color: var(--rhx-color-brand-500); box-shadow: 0 0 0 1px var(--rhx-color-brand-500); }
-  .rhx-datetime-picker__input { flex: 1; min-width: 10rem; min-height: 2.5rem; padding: var(--rhx-space-sm) var(--rhx-space-md); border: none; background: transparent; color: var(--rhx-color-text); font: inherit; outline: none; }
-  .rhx-datetime-picker__input::placeholder { color: var(--rhx-color-text-muted); }
-  .rhx-datetime-picker__trigger { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; align-self: stretch; border: none; background: none; color: var(--rhx-color-text-muted); cursor: pointer; }
-  .rhx-datetime-picker__trigger:hover:not([disabled]) { color: var(--rhx-color-brand-600); }
+.rhx-datetime-picker__label {
+    display: block;
+    font-size: var(--rhx-font-size-sm);
+    font-weight: var(--rhx-font-weight-medium);
+    color: var(--rhx-color-text);
+    line-height: var(--rhx-line-height-tight);
+}
 
-  .rhx-datetime-picker__popup { position: absolute; top: calc(100% + var(--rhx-space-2xs, 0.25rem)); left: 0; z-index: var(--rhx-z-dropdown); border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-md); background: var(--rhx-color-surface-raised); box-shadow: var(--rhx-shadow-lg); }
-  .rhx-datetime-picker__popup[hidden] { display: none; }
+.rhx-datetime-picker__control {
+    width: 100%;
+    min-height: 2.5rem;
+    padding: var(--rhx-space-sm) var(--rhx-space-md);
+    background-color: var(--rhx-color-surface);
+    border: var(--rhx-border-width) solid var(--rhx-color-border);
+    border-radius: var(--rhx-radius-md);
+    color: var(--rhx-color-text);
+    font-size: var(--rhx-font-size-base);
+    font-family: inherit;
+    line-height: var(--rhx-line-height-normal);
+    transition: border-color var(--rhx-transition-fast), box-shadow var(--rhx-transition-fast);
+}
 
-  .rhx-datetime-picker__panes { display: flex; align-items: stretch; }
-  .rhx-datetime-picker__calendar { border-right: var(--rhx-border-width) solid var(--rhx-color-border); }
-  .rhx-datetime-picker__times { width: 7rem; max-height: 17.5rem; overflow-y: auto; padding: var(--rhx-space-2xs, 0.25rem); }
+.rhx-datetime-picker__control:hover {
+    border-color: var(--rhx-color-border-hover, var(--rhx-color-neutral-400));
+}
 
-  .rhx-datetime-picker__footer { display: flex; justify-content: flex-end; gap: var(--rhx-space-sm); padding: var(--rhx-space-xs) var(--rhx-space-sm); border-top: var(--rhx-border-width) solid var(--rhx-color-border); }
-  .rhx-datetime-picker__action { border: none; background: none; color: var(--rhx-color-brand-600); font: inherit; font-weight: var(--rhx-font-weight-medium); cursor: pointer; padding: var(--rhx-space-2xs, 0.25rem) var(--rhx-space-sm); border-radius: var(--rhx-radius-sm); }
-  .rhx-datetime-picker__action:hover { background: var(--rhx-color-brand-100); }
+.rhx-datetime-picker__control:focus-visible {
+    outline: 2px solid var(--rhx-color-brand-500);
+    outline-offset: 2px;
+    border-color: var(--rhx-color-brand-500);
+}
 
-  .rhx-datetime-picker--small .rhx-datetime-picker__input { min-height: 2rem; font-size: var(--rhx-font-size-sm); }
-  .rhx-datetime-picker--large .rhx-datetime-picker__input { min-height: 3rem; font-size: var(--rhx-font-size-md); }
-  .rhx-datetime-picker--disabled { opacity: 0.6; pointer-events: none; }
-  .rhx-datetime-picker--readonly .rhx-datetime-picker__trigger,
-  .rhx-datetime-picker--readonly .rhx-datetime-picker__input { cursor: default; }
-  .rhx-datetime-picker--error .rhx-datetime-picker__control { border-color: var(--rhx-color-danger-500); }
+.rhx-datetime-picker--small .rhx-datetime-picker__control {
+    min-height: 2rem;
+    padding: var(--rhx-space-xs) var(--rhx-space-sm);
+    font-size: var(--rhx-font-size-sm);
+}
 
-  @media (max-width: 30rem) {
-    .rhx-datetime-picker__panes { flex-direction: column; }
-    .rhx-datetime-picker__calendar { border-right: none; border-bottom: var(--rhx-border-width) solid var(--rhx-color-border); }
-    .rhx-datetime-picker__times { width: auto; max-height: 10rem; }
-  }
+.rhx-datetime-picker--large .rhx-datetime-picker__control {
+    min-height: 3rem;
+    padding: var(--rhx-space-md) var(--rhx-space-lg);
+    font-size: var(--rhx-font-size-lg);
+}
+
+.rhx-datetime-picker__control:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.rhx-datetime-picker__control:read-only {
+    background-color: var(--rhx-color-readonly-bg);
+}
+
+.rhx-datetime-picker--error .rhx-datetime-picker__control {
+    border-color: var(--rhx-color-danger-500);
+}
+
+.rhx-datetime-picker--error .rhx-datetime-picker__control:focus-visible {
+    box-shadow: 0 0 0 1px var(--rhx-color-danger-500);
+    outline-color: var(--rhx-color-danger-500);
+}
+
+.rhx-datetime-picker__error {
+    font-size: var(--rhx-font-size-sm);
+    color: var(--rhx-color-danger-500);
+}
+
+.rhx-datetime-picker__hint {
+    font-size: var(--rhx-font-size-sm);
+    color: var(--rhx-color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rhx-datetime-picker__control { transition: none; }
+}
 }

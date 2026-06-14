@@ -49,8 +49,8 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Trigger uses <code>aria-haspopup="dialog"</code>/<code>aria-expanded</code>; the popup is <code>role="dialog"</code>.</li>
-        <li>The grid uses <code>role="grid"</code> with <code>gridcell</code> days and roving <code>tabindex</code>; arrows move by day/week, PageUp/Down by month, Enter selects, Escape closes.</li>
-        <li>The hidden value is ISO <code>yyyy-MM-dd</code> for reliable model binding; the visible input shows the culture short date.</li>
+        <li>Built on the native <code>&lt;input type="date"&gt;</code>, so the browser supplies the calendar popup, keyboard entry, and accessibility — no JavaScript.</li>
+        <li>The label is associated via <code>for</code>/<code>id</code>; <code>rhx-min</code>/<code>rhx-max</code> become native <code>min</code>/<code>max</code> and <code>rhx-required</code> enforces native validation.</li>
+        <li>The submitted value is ISO <code>yyyy-MM-dd</code>; the field displays the user's locale format.</li>
     </ul>
 </section>

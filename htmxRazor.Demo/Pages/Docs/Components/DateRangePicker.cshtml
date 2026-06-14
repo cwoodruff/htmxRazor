@@ -12,14 +12,13 @@
     <h2>Examples</h2>
 
     <div class="docs-example">
-        <h3>Basic with presets</h3>
+        <h3>Basic</h3>
         <rhx-tab-group>
             <rhx-tab rhx-panel="basic-preview" rhx-active="true">Preview</rhx-tab>
             <rhx-tab rhx-panel="basic-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="basic-preview" rhx-active="true">
-                <div class="docs-preview docs-preview--vertical" style="min-height: 26rem; align-items: flex-start;">
-                    <rhx-date-range-picker rhx-start-name="From" rhx-end-name="To"
-                                           rhx-presets="today,last7,thismonth,last30" rhx-placeholder="Pick a range…" />
+                <div class="docs-preview docs-preview--vertical" style="align-items: flex-start;">
+                    <rhx-date-range-picker rhx-label="Date range" rhx-start-name="From" rhx-end-name="To" />
                 </div>
             </rhx-tab-panel>
             <rhx-tab-panel rhx-name="basic-code">
@@ -34,9 +33,8 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Trigger uses <code>aria-haspopup="dialog"</code>/<code>aria-expanded</code>; the popup is <code>role="dialog"</code> with two calendar grids.</li>
-        <li>Two hidden ISO <code>yyyy-MM-dd</code> inputs (start + end) for reliable model binding.</li>
-        <li>First day click sets the start; the second sets the end (auto-swapped if earlier); hovering previews the range; presets set both at once.</li>
-        <li>Keyboard: arrow keys move across both months, PageUp/PageDown change months, Enter selects, Escape closes.</li>
+        <li>Two native <code>&lt;input type="date"&gt;</code> controls (start + end) inside a labelled <code>role="group"</code> — the browser supplies each calendar popup, keyboard entry, and accessibility (no JavaScript).</li>
+        <li>Each submits its own ISO <code>yyyy-MM-dd</code> value under <code>rhx-start-name</code> / <code>rhx-end-name</code>.</li>
+        <li>The end input's <code>min</code> follows the chosen start so the range stays ordered.</li>
     </ul>
 </section>
