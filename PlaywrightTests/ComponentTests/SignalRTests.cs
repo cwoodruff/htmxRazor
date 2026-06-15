@@ -1,32 +1,26 @@
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 using PlaywrightTests.Infrastructure;
 
 namespace PlaywrightTests.ComponentTests;
 
+// rhx-signalr now emits htmx SSE-extension attributes; the demo streams real Server-Sent
+// Events (clock + chat broadcast) from minimal-API endpoints. No SignalR, no custom JS.
 public sealed class SignalRTests(DemoAppFactory app) : ComponentTestBase(app)
 {
     private const string Path = "/Docs/Components/SignalR";
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Clock_connector_renders_with_hub_attributes(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        var connector = page.Locator("#panel-clock-preview div.rhx-signalr[data-rhx-signalr]");
-        await Assertions.Expect(connector).ToHaveCountAsync(1);
-        await Assertions.Expect(connector).ToHaveAttributeAsync("data-rhx-hub-url", "/demoHub");
-        await Assertions.Expect(connector).ToHaveAttributeAsync("data-rhx-method", "ServerClock");
-        await Assertions.Expect(connector).ToHaveAttributeAsync("aria-live", "polite");
-    }
-
-    [Theory, MemberData(nameof(Browsers))]
-    public async Task Clock_connector_exposes_connection_state_indicator(string browserName)
+    public async Task Clock_connector_wires_the_sse_extension(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var connector = page.Locator("#panel-clock-preview div.rhx-signalr");
-        await Assertions.Expect(connector).ToHaveAttributeAsync("data-rhx-connection-state", "");
-        await Assertions.Expect(connector).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("rhx-signalr--has-state"));
+        await Assertions.Expect(connector).ToHaveCountAsync(1);
+        await Assertions.Expect(connector).ToHaveAttributeAsync("hx-ext", "sse");
+        await Assertions.Expect(connector).ToHaveAttributeAsync("sse-connect", "/demo-sse/clock");
+        await Assertions.Expect(connector).ToHaveAttributeAsync("sse-swap", "ServerClock");
+        await Assertions.Expect(connector).ToHaveAttributeAsync("aria-live", "polite");
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -35,11 +29,9 @@ public sealed class SignalRTests(DemoAppFactory app) : ComponentTestBase(app)
         var page = await OpenAsync(browserName, Path);
 
         var connector = page.Locator("#panel-clock-preview div.rhx-signalr");
-        // Hub pushes a <span> with HH:mm:ss.ff every 2s; wait for an update to replace
-        // the initial spinner.
+        // The SSE endpoint pushes a <span> with HH:mm:ss.ff every second.
         await Assertions.Expect(connector)
-            .ToContainTextAsync(new System.Text.RegularExpressions.Regex(@"\d{2}:\d{2}:\d{2}"),
-                new() { Timeout = 15_000 });
+            .ToContainTextAsync(new Regex(@"\d{2}:\d{2}:\d{2}"), new() { Timeout = 15_000 });
     }
 
     [Theory, MemberData(nameof(Browsers))]
@@ -48,26 +40,22 @@ public sealed class SignalRTests(DemoAppFactory app) : ComponentTestBase(app)
         var page = await OpenAsync(browserName, Path);
 
         var connector = page.Locator("#panel-chat-preview #chat-connector");
-        await Assertions.Expect(connector).ToHaveAttributeAsync("data-rhx-target", "#chat-messages");
-        await Assertions.Expect(connector).ToHaveAttributeAsync("data-rhx-swap", "beforeend");
-        await Assertions.Expect(connector).ToHaveAttributeAsync("data-rhx-method", "ReceiveMessage");
+        await Assertions.Expect(connector).ToHaveAttributeAsync("sse-connect", "/demo-sse/chat");
+        await Assertions.Expect(connector).ToHaveAttributeAsync("sse-swap", "ReceiveMessage");
+        await Assertions.Expect(connector).ToHaveAttributeAsync("hx-target", "#chat-messages");
+        await Assertions.Expect(connector).ToHaveAttributeAsync("hx-swap", "beforeend");
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Sending_chat_message_appends_to_message_list(string browserName)
+    public async Task Sending_chat_message_broadcasts_over_sse(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
         var messages = page.Locator("#panel-chat-preview #chat-messages");
+        await page.Locator("#panel-chat-preview input[name='message']").FillAsync("Hello SSE");
+        await page.Locator("#panel-chat-preview button[type='submit']").ClickAsync();
 
-        // The hub takes a moment to connect; retry briefly if the first send is
-        // dropped because the connection isn't ready yet.
-        var messageInput = page.Locator("#panel-chat-preview #chat-message");
-        await messageInput.FillAsync("Hello world");
-
-        var sendBtn = page.Locator("#panel-chat-preview #chat-send-btn");
-        await sendBtn.ClickAsync();
-
-        await Assertions.Expect(messages).ToContainTextAsync("Hello world", new() { Timeout = 15_000 });
+        // The POST broadcasts the message; it arrives back over the SSE connection.
+        await Assertions.Expect(messages).ToContainTextAsync("Hello SSE", new() { Timeout = 15_000 });
     }
 }

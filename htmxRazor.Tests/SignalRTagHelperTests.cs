@@ -4,6 +4,8 @@ using Xunit;
 
 namespace htmxRazor.Tests;
 
+// rhx-signalr now emits htmx SSE-extension attributes (hx-ext="sse", sse-connect, sse-swap) —
+// the sse.js extension does server→client push with no custom JavaScript.
 public class SignalRTagHelperTests : TagHelperTestBase
 {
     private SignalRTagHelper CreateHelper()
@@ -13,228 +15,118 @@ public class SignalRTagHelperTests : TagHelperTestBase
         return helper;
     }
 
+    private async Task<TagHelperOutput> RenderAsync(SignalRTagHelper helper)
+    {
+        var context = CreateContext("rhx-signalr");
+        var output = CreateOutput("rhx-signalr");
+        await helper.ProcessAsync(context, output);
+        return output;
+    }
+
     [Fact]
     public async Task Renders_Div_With_Block_Class()
     {
         var helper = CreateHelper();
-        helper.HubUrl = "/testHub";
+        helper.HubUrl = "/events";
         helper.Method = "TestMethod";
 
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
+        var output = await RenderAsync(helper);
 
         Assert.Equal("div", output.TagName);
         Assert.True(HasClass(output, "rhx-signalr"));
     }
 
     [Fact]
-    public async Task Sets_Data_Attributes()
+    public async Task Wires_The_Htmx_Sse_Extension()
     {
         var helper = CreateHelper();
-        helper.HubUrl = "/chatHub";
+        helper.HubUrl = "/chat-events";
         helper.Method = "ReceiveMessage";
         helper.SignalRSwap = "beforeend";
 
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
+        var output = await RenderAsync(helper);
 
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-signalr", "");
-        AssertAttribute(output, "data-rhx-hub-url", "/chatHub");
-        AssertAttribute(output, "data-rhx-method", "ReceiveMessage");
-        AssertAttribute(output, "data-rhx-swap", "beforeend");
+        AssertAttribute(output, "hx-ext", "sse");
+        AssertAttribute(output, "sse-connect", "/chat-events");
+        AssertAttribute(output, "sse-swap", "ReceiveMessage");
+        AssertAttribute(output, "hx-swap", "beforeend");
     }
 
     [Fact]
-    public async Task Sets_Default_Swap_To_InnerHTML()
+    public async Task Default_Swap_Is_InnerHTML()
     {
         var helper = CreateHelper();
-        helper.HubUrl = "/hub";
+        helper.HubUrl = "/events";
         helper.Method = "Test";
 
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-swap", "innerHTML");
+        AssertAttribute(await RenderAsync(helper), "hx-swap", "innerHTML");
     }
 
     [Fact]
     public async Task Sets_Target_When_Specified()
     {
         var helper = CreateHelper();
-        helper.HubUrl = "/hub";
+        helper.HubUrl = "/events";
         helper.Method = "Test";
         helper.SignalRTarget = "#messages";
 
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-target", "#messages");
+        AssertAttribute(await RenderAsync(helper), "hx-target", "#messages");
     }
 
     [Fact]
     public async Task Omits_Target_When_Not_Specified()
     {
         var helper = CreateHelper();
-        helper.HubUrl = "/hub";
+        helper.HubUrl = "/events";
         helper.Method = "Test";
 
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertNoAttribute(output, "data-rhx-target");
+        AssertNoAttribute(await RenderAsync(helper), "hx-target");
     }
 
     [Fact]
-    public async Task Sets_Reconnect_False_When_Disabled()
+    public async Task ConnectionState_Adds_Modifier_Class()
     {
         var helper = CreateHelper();
-        helper.HubUrl = "/hub";
-        helper.Method = "Test";
-        helper.Reconnect = false;
-
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-reconnect", "false");
-    }
-
-    [Fact]
-    public async Task Omits_Reconnect_When_Default_True()
-    {
-        var helper = CreateHelper();
-        helper.HubUrl = "/hub";
-        helper.Method = "Test";
-
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertNoAttribute(output, "data-rhx-reconnect");
-    }
-
-    [Fact]
-    public async Task Sets_Transport_Attribute()
-    {
-        var helper = CreateHelper();
-        helper.HubUrl = "/hub";
-        helper.Method = "Test";
-        helper.Transport = "WebSockets";
-
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-transport", "websockets");
-    }
-
-    [Fact]
-    public async Task Omits_Transport_When_Not_Specified()
-    {
-        var helper = CreateHelper();
-        helper.HubUrl = "/hub";
-        helper.Method = "Test";
-
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertNoAttribute(output, "data-rhx-transport");
-    }
-
-    [Fact]
-    public async Task Sets_Groups_Attribute()
-    {
-        var helper = CreateHelper();
-        helper.HubUrl = "/hub";
-        helper.Method = "Test";
-        helper.Groups = "room1,room2";
-
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-groups", "room1,room2");
-    }
-
-    [Fact]
-    public async Task Sets_Connection_State_Attribute_And_Class()
-    {
-        var helper = CreateHelper();
-        helper.HubUrl = "/hub";
+        helper.HubUrl = "/events";
         helper.Method = "Test";
         helper.ConnectionState = true;
 
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-connection-state", "");
-        Assert.True(HasClass(output, "rhx-signalr--has-state"));
+        Assert.True(HasClass(await RenderAsync(helper), "rhx-signalr--has-state"));
     }
 
     [Fact]
     public async Task Sets_Accessibility_Attributes()
     {
         var helper = CreateHelper();
-        helper.HubUrl = "/hub";
+        helper.HubUrl = "/events";
         helper.Method = "Test";
 
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
+        var output = await RenderAsync(helper);
         AssertAttribute(output, "aria-live", "polite");
         AssertAttribute(output, "aria-atomic", "false");
     }
 
     [Fact]
-    public async Task Generates_Url_From_Page_Route()
+    public async Task Generates_Sse_Connect_From_Page_Route()
     {
         var helper = CreateHelper();
         helper.Page = "/Dashboard";
-        helper.PageHandler = "Hub";
+        helper.PageHandler = "Events";
         helper.Method = "StatusUpdate";
 
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
-        // The mocked URL helper factory returns "/generated-url"
-        AssertAttribute(output, "data-rhx-hub-url", "/generated-url");
+        // The mocked URL helper factory returns "/generated-url".
+        AssertAttribute(await RenderAsync(helper), "sse-connect", "/generated-url");
     }
 
     [Fact]
     public async Task Custom_Css_Class_Is_Appended()
     {
         var helper = CreateHelper();
-        helper.HubUrl = "/hub";
+        helper.HubUrl = "/events";
         helper.Method = "Test";
         helper.CssClass = "my-custom-class";
 
-        var context = CreateContext("rhx-signalr");
-        var output = CreateOutput("rhx-signalr");
-
-        await helper.ProcessAsync(context, output);
-
+        var output = await RenderAsync(helper);
         Assert.True(HasClass(output, "rhx-signalr"));
         Assert.True(HasClass(output, "my-custom-class"));
     }
@@ -243,15 +135,13 @@ public class SignalRTagHelperTests : TagHelperTestBase
     public async Task Preserves_Child_Content()
     {
         var helper = CreateHelper();
-        helper.HubUrl = "/hub";
+        helper.HubUrl = "/events";
         helper.Method = "Test";
 
         var context = CreateContext("rhx-signalr");
         var output = CreateOutput("rhx-signalr", childContent: "<span>Loading...</span>");
-
         await helper.ProcessAsync(context, output);
 
-        var content = output.Content.GetContent();
-        Assert.Contains("Loading...", content);
+        Assert.Contains("Loading...", output.Content.GetContent());
     }
 }

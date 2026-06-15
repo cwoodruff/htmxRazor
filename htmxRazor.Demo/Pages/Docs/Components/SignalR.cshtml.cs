@@ -8,58 +8,48 @@ public class SignalRModel : PageModel
 {
     public List<ComponentProperty> Properties { get; } = new()
     {
-        new("hub-url", "string", "-", "The SignalR hub URL to connect to"),
-        new("page", "string", "-", "Razor Page path for hub URL generation"),
-        new("page-handler", "string", "-", "Page handler for hub URL generation"),
-        new("rhx-method", "string", "-", "Hub method name to listen for"),
+        new("hub-url", "string", "-", "The SSE endpoint URL to connect to (sse-connect)"),
+        new("page", "string", "-", "Razor Page path for endpoint URL generation"),
+        new("page-handler", "string", "-", "Page handler for endpoint URL generation"),
+        new("rhx-method", "string", "-", "Named SSE event to swap from (sse-swap)"),
         new("rhx-swap", "string", "innerHTML", "How received HTML is swapped: innerHTML, beforeend, outerHTML, etc."),
         new("rhx-target", "string", "self", "CSS selector for the swap target element"),
-        new("rhx-reconnect", "bool", "true", "Automatically reconnect on connection loss"),
-        new("rhx-transport", "string", "auto", "Force transport: websockets, sse, or longpolling"),
-        new("rhx-groups", "string", "-", "Comma-separated group names to join on connect"),
-        new("rhx-connection-state", "bool", "false", "Show visual connection state indicator"),
+        new("rhx-connection-state", "bool", "false", "Adds the --has-state modifier for styling a state indicator"),
     };
 
-    public string ClockCode => @"<!-- Server pushes a timestamp every 2 seconds -->
-<rhx-signalr hub-url=""/demoHub"" rhx-method=""ServerClock""
-             rhx-connection-state=""true"">
+    public string ClockCode => @"<!-- Listens for the ""ServerClock"" SSE event and replaces its content -->
+<rhx-signalr hub-url=""/demo-sse/clock"" rhx-method=""ServerClock"">
     <rhx-spinner rhx-size=""small"" />
 </rhx-signalr>";
 
-    public string ChatCode => @"<!-- Messages appended as they arrive -->
-<rhx-signalr hub-url=""/demoHub"" rhx-method=""ReceiveMessage""
-             rhx-swap=""beforeend"" rhx-target=""#chat-messages""
-             rhx-connection-state=""true"">
+    public string ChatCode => @"<!-- Appends each broadcast ""ReceiveMessage"" event -->
+<rhx-signalr hub-url=""/demo-sse/chat"" rhx-method=""ReceiveMessage""
+             rhx-swap=""beforeend"" rhx-target=""#chat-messages"">
 </rhx-signalr>
-<div id=""chat-messages""></div>";
+<div id=""chat-messages""></div>
 
-    public string HubCode => @"public class ChatHub : Hub
+<!-- Sending is a plain htmx POST; the server broadcasts over SSE -->
+<form hx-post=""/demo-sse/chat-send"" hx-swap=""none"">
+    <input name=""message"" />
+    <button type=""submit"">Send</button>
+</form>";
+
+    public string HubCode => @"// Minimal-API SSE endpoint (.NET 10) — named events, no SignalR.
+app.MapGet(""/events"", (CancellationToken ct) =>
+    TypedResults.ServerSentEvents(Stream(ct), eventType: ""ServerClock""));
+
+static async IAsyncEnumerable<string> Stream(
+    [EnumeratorCancellation] CancellationToken ct)
 {
-    public Task JoinGroup(string groupName)
-        => Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-
-    public async Task SendMessage(string user, string message)
+    while (!ct.IsCancellationRequested)
     {
-        var html = $""<div><strong>{user}</strong>: {message}</div>"";
-        await Clients.All.SendAsync(""ReceiveMessage"", html);
+        yield return $""<span>{DateTime.Now:HH:mm:ss}</span>"";
+        await Task.Delay(1000, ct);
     }
 }";
 
-    public string ExtensionsCode => @"// From a controller or background service via IHubContext:
-await hubContext.SendHtmlAsync(""ReceiveMessage"",
-    ""<div>Broadcast to everyone</div>"");
-
-await hubContext.SendHtmlToGroupAsync(""room1"",
-    ""ReceiveMessage"", ""<div>Group-only message</div>"");
-
-await hubContext.SendHtmlToConnectionAsync(connectionId,
-    ""ReceiveMessage"", ""<div>Private message</div>"");";
-
-    public string SetupCode => @"// Program.cs
-builder.Services.AddSignalR();
-
-var app = builder.Build();
-app.MapHub<ChatHub>(""/chatHub"");";
+    public string SetupCode => @"<!-- Load the htmx SSE extension once (the htmx ecosystem; no custom JS) -->
+<script src=""https://unpkg.com/htmx-ext-sse@@2.2.2/sse.js"" defer></script>";
 
     public void OnGet()
     {

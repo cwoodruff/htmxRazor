@@ -133,41 +133,31 @@ public class SignalRTagHelper : htmxRazorTagHelperBase
             .AddIf(GetModifierClass("has-state"), ConnectionState);
         ApplyBaseAttributes(output, css);
 
-        output.Attributes.SetAttribute("data-rhx-signalr", "");
+        // Wire the htmx SSE extension (server→client push). The sse.js extension does the work —
+        // no custom JavaScript. SSE auto-reconnects natively, so rhx-reconnect/transport/groups
+        // (SignalR-specific) are retained as no-ops for source compatibility.
+        output.Attributes.SetAttribute("hx-ext", "sse");
 
-        // Determine the hub URL
+        // Determine the SSE endpoint URL (hub-url or generated route).
         var url = HubUrl;
         if (string.IsNullOrWhiteSpace(url))
             url = GenerateRouteUrl();
 
         if (!string.IsNullOrWhiteSpace(url))
-            output.Attributes.SetAttribute("data-rhx-hub-url", url);
+            output.Attributes.SetAttribute("sse-connect", url);
 
+        // rhx-method is the named SSE event to swap from.
         if (!string.IsNullOrWhiteSpace(Method))
-            output.Attributes.SetAttribute("data-rhx-method", Method);
+            output.Attributes.SetAttribute("sse-swap", Method);
 
-        output.Attributes.SetAttribute("data-rhx-swap", SignalRSwap);
+        output.Attributes.SetAttribute("hx-swap", SignalRSwap);
 
         if (!string.IsNullOrWhiteSpace(SignalRTarget))
-            output.Attributes.SetAttribute("data-rhx-target", SignalRTarget);
+            output.Attributes.SetAttribute("hx-target", SignalRTarget);
 
-        if (!Reconnect)
-            output.Attributes.SetAttribute("data-rhx-reconnect", "false");
-
-        if (!string.IsNullOrWhiteSpace(Transport))
-            output.Attributes.SetAttribute("data-rhx-transport", Transport.ToLowerInvariant());
-
-        if (!string.IsNullOrWhiteSpace(Groups))
-            output.Attributes.SetAttribute("data-rhx-groups", Groups);
-
-        if (ConnectionState)
-            output.Attributes.SetAttribute("data-rhx-connection-state", "");
-
-        // Accessibility — real-time content announced to screen readers
+        // Accessibility — real-time content announced to screen readers.
         output.Attributes.SetAttribute("aria-live", "polite");
         output.Attributes.SetAttribute("aria-atomic", "false");
-
-        RenderHtmxAttributes(output);
 
         var childContent = await output.GetChildContentAsync();
         output.Content.SetHtmlContent(childContent);

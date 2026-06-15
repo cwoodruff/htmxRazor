@@ -3,33 +3,31 @@
 @{
     Layout = "_ComponentPage";
     ViewData["Title"] = "SignalR";
-    ViewData["ComponentName"] = "SignalR Connector";
+    ViewData["ComponentName"] = "SSE Connector";
     ViewData["ComponentTag"] = "rhx-signalr";
-    ViewData["ComponentDescription"] = "Declarative SignalR hub connection that swaps received HTML fragments into the DOM in real time.";
+    ViewData["ComponentDescription"] = "Declarative server→client push that swaps received HTML fragments into the DOM in real time, via the htmx SSE extension — no custom JavaScript.";
 }
 
 <section class="docs-component-section">
     <h2>Examples</h2>
 
     <rhx-callout rhx-variant="neutral">
-        The SignalR Connector requires the
-        <code>@@microsoft/signalr</code> client library loaded before <code>rhx-signalr.js</code>.
-        This demo site includes it globally. In your own project, add
-        <code>&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"&gt;&lt;/script&gt;</code>
-        to your layout.
+        The connector uses the <strong>htmx SSE extension</strong> (<code>sse.js</code>) — already
+        included on this site. It emits <code>hx-ext="sse"</code> + <code>sse-connect</code> +
+        <code>sse-swap</code>; the browser's native <code>EventSource</code> does the rest. No
+        SignalR client library and no custom JavaScript.
     </rhx-callout>
 
     <!-- Server Clock -->
     <div class="docs-example">
         <h3>Server Clock</h3>
-        <p>A background service pushes the server time every 2 seconds via <code>IHubContext&lt;DemoHub&gt;</code>. The component replaces its content on each message.</p>
+        <p>A streaming endpoint pushes the server time every second as a named <code>ServerClock</code> SSE event. The component replaces its content on each message.</p>
         <rhx-tab-group>
             <rhx-tab rhx-panel="clock-preview" rhx-active="true">Preview</rhx-tab>
             <rhx-tab rhx-panel="clock-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="clock-preview" rhx-active="true">
                 <div class="docs-preview" style="text-align: center; padding: var(--rhx-space-xl);">
-                    <rhx-signalr hub-url="/demoHub" rhx-method="ServerClock"
-                                 rhx-connection-state="true">
+                    <rhx-signalr hub-url="/demo-sse/clock" rhx-method="ServerClock">
                         <rhx-spinner rhx-size="small" />
                     </rhx-signalr>
                 </div>
@@ -45,28 +43,29 @@
     <!-- Chat Messages -->
     <div class="docs-example">
         <h3>Chat Messages</h3>
-        <p>Type a message and click Send. The hub broadcasts to all connected clients and the <code>beforeend</code> swap appends each message.</p>
+        <p>Sending posts the message with htmx; the server broadcasts it as a <code>ReceiveMessage</code> SSE event to every connected client, and the <code>beforeend</code> swap appends it.</p>
         <rhx-tab-group>
             <rhx-tab rhx-panel="chat-preview" rhx-active="true">Preview</rhx-tab>
             <rhx-tab rhx-panel="chat-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="chat-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <rhx-signalr id="chat-connector" hub-url="/demoHub" rhx-method="ReceiveMessage"
-                                 rhx-swap="beforeend" rhx-target="#chat-messages"
-                                 rhx-connection-state="true">
+                    <rhx-signalr id="chat-connector" hub-url="/demo-sse/chat" rhx-method="ReceiveMessage"
+                                 rhx-swap="beforeend" rhx-target="#chat-messages">
                     </rhx-signalr>
 
                     <div id="chat-messages" style="max-height: 12rem; overflow-y: auto; margin-bottom: var(--rhx-space-md); border: var(--rhx-border-width) solid var(--rhx-color-border-muted); border-radius: var(--rhx-radius-md); padding: var(--rhx-space-sm);">
                         <p style="color: var(--rhx-color-text-muted); font-size: var(--rhx-font-size-sm);">Messages will appear here...</p>
                     </div>
 
-                    <div style="display: flex; gap: var(--rhx-space-sm);">
-                        <input id="chat-user" type="text" placeholder="Name" value="Demo User"
+                    <form hx-post="/demo-sse/chat-send" hx-swap="none"
+                          hx-on::after-request="this.querySelector('[name=message]').value=''"
+                          style="display: flex; gap: var(--rhx-space-sm);">
+                        <input name="user" type="text" placeholder="Name" value="Demo User"
                                style="flex: 0 0 8rem; padding: var(--rhx-space-xs) var(--rhx-space-sm); border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-md); font-size: var(--rhx-font-size-sm);" />
-                        <input id="chat-message" type="text" placeholder="Type a message..."
+                        <input name="message" id="chat-message" type="text" placeholder="Type a message..."
                                style="flex: 1; padding: var(--rhx-space-xs) var(--rhx-space-sm); border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-md); font-size: var(--rhx-font-size-sm);" />
-                        <rhx-button rhx-variant="brand" rhx-size="small" id="chat-send-btn">Send</rhx-button>
-                    </div>
+                        <rhx-button type="submit" rhx-variant="brand" rhx-size="small" id="chat-send-btn">Send</rhx-button>
+                    </form>
                 </div>
             </rhx-tab-panel>
             <rhx-tab-panel rhx-name="chat-code">
@@ -77,21 +76,12 @@
         </rhx-tab-group>
     </div>
 
-    <!-- Hub Implementation -->
+    <!-- Endpoint Implementation -->
     <div class="docs-example">
-        <h3>Hub Implementation</h3>
-        <p>Define a standard SignalR hub. The <code>JoinGroup</code> method is required if you use <code>rhx-groups</code>.</p>
+        <h3>SSE Endpoint</h3>
+        <p>Stream named events from a minimal-API endpoint with .NET's native <code>TypedResults.ServerSentEvents</code>.</p>
         <div class="docs-code">
             <pre><code>@Model.HubCode</code></pre>
-        </div>
-    </div>
-
-    <!-- Server-Side Extensions -->
-    <div class="docs-example">
-        <h3>Server-Side Extensions</h3>
-        <p>Use <code>HtmxSignalRExtensions</code> to send HTML fragments from controllers, background services, or anywhere you have <code>IHubContext</code>.</p>
-        <div class="docs-code">
-            <pre><code>@Model.ExtensionsCode</code></pre>
         </div>
     </div>
 
@@ -110,36 +100,7 @@
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
         <li>Container has <code>aria-live="polite"</code> so screen readers announce new content as it arrives.</li>
-        <li>Connection state indicator uses color tokens with sufficient contrast (green/red/yellow).</li>
-        <li>Reduced-motion users see a static indicator instead of the pulse animation.</li>
-        <li>Swapped content is processed by htmx so any <code>aria-*</code> attributes in the HTML fragments are preserved.</li>
+        <li>Swapped content is processed by htmx, so any <code>aria-*</code> attributes in the HTML fragments are preserved.</li>
+        <li>Server-Sent Events reconnect automatically (native <code>EventSource</code>) with no custom code.</li>
     </ul>
 </section>
-
-<!-- Chat send button wiring -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var sendBtn = document.getElementById("chat-send-btn");
-        var messageInput = document.getElementById("chat-message");
-        if (!sendBtn || !messageInput) return;
-
-        function sendMessage() {
-            var connector = document.getElementById("chat-connector");
-            if (!connector || !connector._rhxSignalRConnection) return;
-
-            var user = document.getElementById("chat-user").value || "Anonymous";
-            var message = messageInput.value;
-            if (!message) return;
-
-            connector._rhxSignalRConnection.invoke("SendMessage", user, message).catch(function (err) {
-                console.error("[demo] SendMessage failed:", err);
-            });
-            messageInput.value = "";
-        }
-
-        sendBtn.addEventListener("click", sendMessage);
-        messageInput.addEventListener("keydown", function (e) {
-            if (e.key === "Enter") sendMessage();
-        });
-    });
-</script>
