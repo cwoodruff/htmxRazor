@@ -5,7 +5,7 @@
     ViewData["Title"] = "Radial Select";
     ViewData["ComponentName"] = "Radial Select";
     ViewData["ComponentTag"] = "rhx-radial-select";
-    ViewData["ComponentDescription"] = "A rectangular trigger flush-left against a dropdown opens a circular SVG pie of category wedges. Selecting a wedge cascades the dropdown's option set via htmx and echoes the category color + icon onto the trigger.";
+    ViewData["ComponentDescription"] = "A cascading category → item picker built from two native <select>s. Changing the category loads the item options via htmx — no JavaScript.";
 }
 
 <section class="docs-component-section">
@@ -13,59 +13,26 @@
 
     <!-- Basic -->
     <div class="docs-example">
-        <h3>Basic — pie category → cascading dropdown</h3>
+        <h3>Cascading category → item</h3>
         <rhx-tab-group>
             <rhx-tab rhx-panel="basic-preview" rhx-active="true">Preview</rhx-tab>
             <rhx-tab rhx-panel="basic-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="basic-preview" rhx-active="true">
-                <div class="docs-preview docs-preview--vertical" style="min-height: 18rem; align-items: flex-start;">
-                    <rhx-radial-select name="FoodItem" rhx-category-name="Category"
+                <div class="docs-preview docs-preview--vertical" style="align-items: flex-start;">
+                    <rhx-radial-select name="FoodItem" rhx-category-name="cat"
                                        rhx-default-category="fruit"
-                                       rhx-placeholder="Choose an item…" aria-label="Food category">
-                        <rhx-radial-option rhx-value="fruit" rhx-label="Fruit" rhx-icon="heart" rhx-color="danger"
-                                           hx-get="/Docs/Components/RadialSelect?handler=Items&cat=fruit" />
-                        <rhx-radial-option rhx-value="veg" rhx-label="Veggies" rhx-icon="star" rhx-color="success"
-                                           hx-get="/Docs/Components/RadialSelect?handler=Items&cat=veg" />
-                        <rhx-radial-option rhx-value="meat" rhx-label="Meat" rhx-icon="grid" rhx-color="warning"
-                                           hx-get="/Docs/Components/RadialSelect?handler=Items&cat=meat" />
-                        <rhx-radial-option rhx-value="drink" rhx-label="Drinks" rhx-icon="globe" rhx-color="brand"
-                                           hx-get="/Docs/Components/RadialSelect?handler=Items&cat=drink" />
+                                       hx-get="/Docs/Components/RadialSelect?handler=Items"
+                                       rhx-placeholder="Choose an item…" aria-label="Food">
+                        <rhx-radial-option rhx-value="fruit" rhx-label="Fruit" />
+                        <rhx-radial-option rhx-value="veg" rhx-label="Veggies" />
+                        <rhx-radial-option rhx-value="meat" rhx-label="Meat" />
+                        <rhx-radial-option rhx-value="drink" rhx-label="Drinks" />
                     </rhx-radial-select>
                 </div>
             </rhx-tab-panel>
             <rhx-tab-panel rhx-name="basic-code">
                 <div class="docs-code">
                     <pre><code>@Model.BasicCode</code></pre>
-                </div>
-            </rhx-tab-panel>
-        </rhx-tab-group>
-    </div>
-
-    <!-- Auto color cycle -->
-    <div class="docs-example">
-        <h3>Automatic color cycle</h3>
-        <p>Omit <code>rhx-color</code> and wedges are assigned colors deterministically:
-            <code>brand → success → warning → danger → neutral</code>.</p>
-        <rhx-tab-group>
-            <rhx-tab rhx-panel="cycle-preview" rhx-active="true">Preview</rhx-tab>
-            <rhx-tab rhx-panel="cycle-code">Code</rhx-tab>
-            <rhx-tab-panel rhx-name="cycle-preview" rhx-active="true">
-                <div class="docs-preview docs-preview--vertical" style="min-height: 18rem; align-items: flex-start;">
-                    <rhx-radial-select name="Pick" rhx-placeholder="Pick…" aria-label="Auto-colored">
-                        <rhx-radial-option rhx-value="fruit" rhx-label="One" rhx-icon="star"
-                                           hx-get="/Docs/Components/RadialSelect?handler=Items&cat=fruit" />
-                        <rhx-radial-option rhx-value="veg" rhx-label="Two" rhx-icon="heart"
-                                           hx-get="/Docs/Components/RadialSelect?handler=Items&cat=veg" />
-                        <rhx-radial-option rhx-value="meat" rhx-label="Three" rhx-icon="grid"
-                                           hx-get="/Docs/Components/RadialSelect?handler=Items&cat=meat" />
-                        <rhx-radial-option rhx-value="drink" rhx-label="Four" rhx-icon="globe"
-                                           hx-get="/Docs/Components/RadialSelect?handler=Items&cat=drink" />
-                    </rhx-radial-select>
-                </div>
-            </rhx-tab-panel>
-            <rhx-tab-panel rhx-name="cycle-code">
-                <div class="docs-code">
-                    <pre><code>@Model.ColorCycleCode</code></pre>
                 </div>
             </rhx-tab-panel>
         </rhx-tab-group>
@@ -87,10 +54,9 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>The visual is radial; the accessibility tree is a <strong>menu</strong>. Trigger uses <code>aria-haspopup="menu"</code> with <code>aria-expanded</code>.</li>
-        <li>The pie uses <code>role="menu"</code>; each wedge is a <code>role="menuitemradio"</code> with <code>aria-checked</code> (single active category).</li>
-        <li>Keyboard: Enter / Space / ArrowDown opens the pie; arrow keys + Home/End move between wedges; type-ahead jumps by label; Enter / Space selects; Escape closes and returns focus to the trigger.</li>
-        <li>Selecting a wedge echoes the category color + icon onto the trigger, swaps the dropdown's options, and auto-selects the first option.</li>
-        <li>Disabled wedges render with <code>aria-disabled="true"</code> and cannot be selected.</li>
+        <li>Built from two native <code>&lt;select&gt;</code> elements (category + item), so keyboard support, the option list, and accessibility come from the browser — no JavaScript.</li>
+        <li>Changing the category <code>&lt;select&gt;</code> fires the cascade (<code>hx-trigger="change, load"</code>); htmx sends the chosen category and swaps the item <code>&lt;select&gt;</code>'s <code>&lt;option&gt;</code>s.</li>
+        <li>The item select carries the bound field value; the category select carries the category value (<code>rhx-category-name</code>).</li>
+        <li>The SVG pie and its pointer/keyboard interaction are replaced by the native selects (accepted change).</li>
     </ul>
 </section>

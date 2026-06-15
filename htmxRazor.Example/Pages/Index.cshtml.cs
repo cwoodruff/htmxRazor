@@ -47,18 +47,20 @@ public class IndexModel : PageModel
     /// the chosen wedge (multiple items per category). The active wedge is submitted via
     /// <c>rhx-category-name</c>; the selected item via the control's <c>name</c>. An optional
     /// <c>selected</c> marks one option pre-selected (used when re-opening a wedge on edit).</summary>
+    // Cascade endpoint for the radial-select: returns the item <option>s for the chosen
+    // category, pre-selecting `selected` when it belongs to that category.
     public IActionResult OnGetCategoryItems(string? category, string? selected)
     {
         var cat = TodoCategory.Find(category);
         if (cat is null || cat.Items.Length == 0)
-            return Content("<div class=\"rhx-radial-select__placeholder\">No items</div>", "text/html");
+            return Content("<option value=\"\">No items</option>", "text/html");
 
         var sel = cat.FindItem(selected);
         var html = string.Concat(cat.Items.Select(item =>
         {
             var v = System.Net.WebUtility.HtmlEncode(item);
-            var isSel = string.Equals(item, sel, StringComparison.Ordinal) ? "true" : "false";
-            return $"<div class=\"rhx-radial-select__option\" role=\"option\" data-value=\"{v}\" aria-selected=\"{isSel}\" tabindex=\"-1\">{v}</div>";
+            var isSel = string.Equals(item, sel, StringComparison.Ordinal) ? " selected" : "";
+            return $"<option value=\"{v}\"{isSel}>{v}</option>";
         }));
         return Content(html, "text/html");
     }

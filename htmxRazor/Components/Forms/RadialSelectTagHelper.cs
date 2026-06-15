@@ -1,26 +1,29 @@
-using System.Globalization;
+using System.Net;
 using System.Text;
-using htmxRazor.Components.Imagery;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace htmxRazor.Components.Forms;
 
 /// <summary>
-/// Compound control: a rectangular trigger button flush-left against a dropdown.
-/// The trigger opens a circular SVG pie popup whose wedges (categories, each with a
-/// color + icon) drive the dropdown's option set via an htmx cascade. Selecting a wedge
-/// echoes its color + icon onto the trigger, swaps the dropdown's option set, and
-/// auto-selects the first option.
+/// A cascading category → item picker built from two native <c>&lt;select&gt;</c> elements —
+/// no JavaScript. Changing the category <c>&lt;select&gt;</c> fires the wrapper's htmx request
+/// (with the chosen category included automatically) to load the item <c>&lt;select&gt;</c>'s
+/// options. The item select carries the bound field value; the category select carries the
+/// category value (<c>rhx-category-name</c>).
 /// </summary>
+/// <remarks>
+/// The radial SVG pie and its pointer/keyboard interaction are replaced by native selects
+/// (Decision #2). The cascade endpoint receives <c>{rhx-category-name}={category}</c> and
+/// <c>selected={current item}</c>, and returns the item <c>&lt;option&gt;</c> set.
+/// </remarks>
 /// <example>
 /// <code>
-/// &lt;rhx-radial-select rhx-for="FoodItem" rhx-category-name="Category"
-///                    rhx-placeholder="Choose an item…" aria-label="Food category"&gt;
-///     &lt;rhx-radial-option rhx-value="fruit" rhx-label="Fruit" rhx-icon="apple"
-///                        rhx-color="danger" hx-get="/Menu?handler=Items&amp;cat=fruit" /&gt;
-///     &lt;rhx-radial-option rhx-value="meat"  rhx-label="Meat"  rhx-icon="drumstick"
-///                        rhx-color="success" hx-get="/Menu?handler=Items&amp;cat=meat" /&gt;
+/// &lt;rhx-radial-select name="FoodItem" rhx-category-name="Category"
+///                    rhx-default-category="fruit" hx-get="/Menu?handler=Items"
+///                    rhx-placeholder="Choose an item…" aria-label="Food"&gt;
+///     &lt;rhx-radial-option rhx-value="fruit" rhx-label="Fruit" /&gt;
+///     &lt;rhx-radial-option rhx-value="meat"  rhx-label="Meat" /&gt;
 /// &lt;/rhx-radial-select&gt;
 /// </code>
 /// </example>
@@ -31,24 +34,14 @@ public sealed class RadialSelectTagHelper : FormControlTagHelperBase
     /// <inheritdoc/>
     protected override string BlockName => "radial-select";
 
-    /// <summary>Placeholder shown before any option is selected / when a category is empty.</summary>
+    /// <summary>Placeholder shown in the item select before a category's options load.</summary>
     [HtmlAttributeName("rhx-placeholder")] public string? Placeholder { get; set; }
 
-    /// <summary>Optional form field name for submitting the active category value.</summary>
+    /// <summary>Form field name for the category <c>&lt;select&gt;</c>.</summary>
     [HtmlAttributeName("rhx-category-name")] public string? CategoryName { get; set; }
 
-    /// <summary>Optional rhx-value of the wedge to activate on initial render.</summary>
+    /// <summary>rhx-value of the category selected on initial render.</summary>
     [HtmlAttributeName("rhx-default-category")] public string? DefaultCategory { get; set; }
-
-    // Ordered cycle for wedges that omit rhx-color. Only tokens that exist.
-    private static readonly string[] ColorCycle =
-        { "brand", "success", "warning", "danger", "neutral" };
-
-    private static readonly HashSet<string> AllowedColors =
-        new(ColorCycle, StringComparer.OrdinalIgnoreCase);
-
-    // Pie geometry (SVG user units).
-    private const double PieCx = 100, PieCy = 100, PieR = 92, IconR = 58;
 
     /// <summary>Creates a new <see cref="RadialSelectTagHelper"/> instance.</summary>
     public RadialSelectTagHelper(IUrlHelperFactory urlHelperFactory) : base(urlHelperFactory) { }
@@ -56,9 +49,7 @@ public sealed class RadialSelectTagHelper : FormControlTagHelperBase
     /// <inheritdoc/>
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        // ── Collect child wedges ──
-        // Reuse a list already present on the context (e.g. seeded by a test) so the same
-        // instance receives the children; otherwise seed a fresh one.
+        // ── Collect child category options ──
         List<RadialOptionData> options;
         if (context.Items.TryGetValue(RadialOptionTagHelper.ItemsKey, out var existing)
             && existing is List<RadialOptionData> seeded)
@@ -78,16 +69,8 @@ public sealed class RadialSelectTagHelper : FormControlTagHelperBase
             resolvedId = "rhx-radial-" + context.UniqueId;
         var resolvedValue = ResolveValue();
         var size = Size.ToLowerInvariant();
-        var listboxId = $"{resolvedId}-listbox";
-        var pieId = $"{resolvedId}-pie";
-
-        // ── Resolve per-wedge colors (explicit or cycle) ──
-        var colored = ResolveColors(options);
-
-        // Active wedge (rhx-default-category) for the initial trigger echo.
-        var active = colored.FirstOrDefault(c =>
-            !string.IsNullOrEmpty(DefaultCategory) &&
-            string.Equals(DefaultCategory, c.Opt.Value, StringComparison.OrdinalIgnoreCase));
+        var itemsId = $"{resolvedId}-items";
+        var catId = $"{resolvedId}-category";
 
         // ── Wrapper ──
         output.TagName = "div";
@@ -97,171 +80,63 @@ public sealed class RadialSelectTagHelper : FormControlTagHelperBase
             .AddIf(GetModifierClass(size), size != "medium")
             .AddIf(GetModifierClass("disabled"), Disabled);
         ApplyWrapperAttributes(output, css);
-        output.Attributes.SetAttribute("data-rhx-radial-select", "");
 
         var sb = new StringBuilder();
-        sb.Append($"<div class=\"{GetElementClass("group")}\">");
 
-        // ── Trigger button ──
-        sb.Append($"<button type=\"button\" class=\"{GetElementClass("trigger")}\"");
-        sb.Append($" id=\"{Enc(resolvedId)}-trigger\"");
-        sb.Append(" aria-haspopup=\"menu\" aria-expanded=\"false\"");
-        sb.Append($" aria-controls=\"{Enc(pieId)}\"");
-        if (!string.IsNullOrEmpty(AriaLabel)) sb.Append($" aria-label=\"{Enc(AriaLabel)}\"");
-        if (active.Opt != null) sb.Append($" data-rhx-active-color=\"{Enc(active.Color)}\"");
-        if (active.Opt != null) sb.Append($" style=\"--rhx-radial-active: var(--rhx-color-{Enc(active.Color)}-500)\"");
-        if (Disabled) sb.Append(" disabled");
-        sb.Append('>');
-        if (active.Opt != null && !string.IsNullOrWhiteSpace(active.Opt.Icon))
-        {
-            var triggerIcon = IconRegistry.Get(active.Opt.Icon!);
-            if (triggerIcon != null)
-                sb.Append($"<span class=\"{GetElementClass("trigger-icon")}\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">{triggerIcon}</svg></span>");
-        }
-        sb.Append("</button>");
-
-        // ── Dropdown (combobox button + popup listbox populated by the htmx cascade) ──
-        sb.Append($"<div class=\"{GetElementClass("dropdown")}\">");
-
-        // Combobox button — shows the selected value (or placeholder) and opens the listbox.
-        sb.Append($"<button type=\"button\" class=\"{GetElementClass("combobox")}\"");
-        sb.Append($" role=\"combobox\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"{Enc(listboxId)}\"");
-        if (!string.IsNullOrEmpty(AriaLabel)) sb.Append($" aria-label=\"{Enc(AriaLabel)}\"");
-        if (Disabled) sb.Append(" disabled");
-        sb.Append('>');
-        var placeholder = Placeholder ?? "";
-        sb.Append($"<span class=\"{GetElementClass("value")}\" data-rhx-radial-display data-rhx-placeholder=\"{Enc(placeholder)}\">{Enc(placeholder)}</span>");
-        sb.Append($"<svg class=\"{GetElementClass("arrow")}\" xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"6 9 12 15 18 9\"></polyline></svg>");
-        sb.Append("</button>");
-
-        // Popup listbox (hidden until opened).
-        sb.Append($"<div class=\"{GetElementClass("listbox")}\" id=\"{Enc(listboxId)}\" role=\"listbox\"");
-        if (!string.IsNullOrEmpty(AriaLabel)) sb.Append($" aria-label=\"{Enc(AriaLabel)}\"");
-        sb.Append(" hidden></div>");
-
-        sb.Append("</div>"); // dropdown
-        sb.Append("</div>"); // group
-
-        // ── Pie popup ──
-        sb.Append($"<div class=\"{GetElementClass("pie")}\" id=\"{Enc(pieId)}\" role=\"menu\"");
-        if (!string.IsNullOrEmpty(AriaLabel)) sb.Append($" aria-label=\"{Enc(AriaLabel)}\"");
-        sb.Append(" hidden>");
-        sb.Append(BuildPie(colored));
-        sb.Append("</div>");
-
-        // ── Hidden value input (dropdown value) ──
-        sb.Append($"<input type=\"hidden\" data-rhx-radial-value name=\"{Enc(resolvedName)}\" value=\"{Enc(resolvedValue ?? "")}\"");
-        sb.Append(BuildValidationAttributeString());
-        sb.Append(" />");
-
-        // ── Hidden category input ──
+        // ── Category select (drives the cascade) ──
+        var (verbAttr, verbVal) = ResolveVerb();
+        sb.Append($"<select class=\"{GetElementClass("category")}\" id=\"{Enc(catId)}\"");
         if (!string.IsNullOrWhiteSpace(CategoryName))
+            sb.Append($" name=\"{Enc(CategoryName)}\"");
+        if (!string.IsNullOrEmpty(AriaLabel))
+            sb.Append($" aria-label=\"{Enc(AriaLabel)} category\"");
+        if (Disabled) sb.Append(" disabled");
+        if (verbAttr != null && !string.IsNullOrWhiteSpace(verbVal))
         {
-            var cat = DefaultCategory ?? "";
-            sb.Append($"<input type=\"hidden\" data-rhx-radial-category name=\"{Enc(CategoryName)}\" value=\"{Enc(cat)}\" />");
+            // Changing the category (and on initial load) fetches the item options. htmx sends
+            // the category select's own value; hx-vals carries the current item for pre-select.
+            sb.Append($" {verbAttr}=\"{Enc(verbVal)}\"");
+            sb.Append(" hx-trigger=\"change, load\"");
+            sb.Append($" hx-target=\"#{Enc(itemsId)}\"");
+            sb.Append(" hx-swap=\"innerHTML\"");
+            sb.Append($" hx-vals='{{\"selected\":\"{Enc(resolvedValue ?? "")}\"}}'");
         }
+        sb.Append('>');
+        foreach (var opt in options)
+        {
+            var selected = !string.IsNullOrEmpty(DefaultCategory)
+                && string.Equals(DefaultCategory, opt.Value, StringComparison.OrdinalIgnoreCase);
+            sb.Append($"<option value=\"{Enc(opt.Value)}\"");
+            if (selected) sb.Append(" selected");
+            if (opt.Disabled) sb.Append(" disabled");
+            sb.Append($">{Enc(opt.Label)}</option>");
+        }
+        sb.Append("</select>");
+
+        // ── Item select (bound field; options arrive via the cascade) ──
+        sb.Append($"<select class=\"{GetElementClass("item")}\" id=\"{Enc(itemsId)}\"");
+        if (!string.IsNullOrEmpty(resolvedName))
+            sb.Append($" name=\"{Enc(resolvedName)}\"");
+        if (!string.IsNullOrEmpty(AriaLabel))
+            sb.Append($" aria-label=\"{Enc(AriaLabel)}\"");
+        if (Disabled) sb.Append(" disabled");
+        sb.Append(BuildValidationAttributeString());
+        sb.Append('>');
+        // Initial placeholder option (replaced by the cascade on load). If a value is already
+        // bound (edit), keep it as a selected option so the form submits it before the cascade.
+        if (!string.IsNullOrEmpty(resolvedValue))
+            sb.Append($"<option value=\"{Enc(resolvedValue)}\" selected>{Enc(resolvedValue)}</option>");
+        else if (!string.IsNullOrEmpty(Placeholder))
+            sb.Append($"<option value=\"\">{Enc(Placeholder)}</option>");
+        sb.Append("</select>");
 
         output.Content.SetHtmlContent(sb.ToString());
     }
 
-    // ──────────────────────────────────────────────
-    //  Color resolution (§3.3)
-    // ──────────────────────────────────────────────
-
-    private List<(RadialOptionData Opt, string Color)> ResolveColors(List<RadialOptionData> options)
+    private (string? attr, string? value) ResolveVerb()
     {
-        var result = new List<(RadialOptionData, string)>();
-        var cycleIndex = 0;
-        foreach (var opt in options)
-        {
-            string color;
-            if (!string.IsNullOrWhiteSpace(opt.Color) && AllowedColors.Contains(opt.Color))
-            {
-                color = opt.Color.ToLowerInvariant();
-            }
-            else
-            {
-                color = ColorCycle[cycleIndex % ColorCycle.Length];
-                cycleIndex++;
-            }
-            result.Add((opt, color));
-        }
-        return result;
+        if (HxGet != null) return ("hx-get", HxGet.Length == 0 ? GenerateRouteUrl() : HxGet);
+        if (HxPost != null) return ("hx-post", HxPost.Length == 0 ? GenerateRouteUrl() : HxPost);
+        return (null, null);
     }
-
-    /// <summary>Test seam for color resolution. Not part of the public API.</summary>
-    internal List<(RadialOptionData Opt, string Color)> ResolveColorsForTest(List<RadialOptionData> options)
-        => ResolveColors(options);
-
-    // ──────────────────────────────────────────────
-    //  SVG pie rendering (§4.2)
-    // ──────────────────────────────────────────────
-
-    private string BuildPie(List<(RadialOptionData Opt, string Color)> colored)
-    {
-        if (colored.Count == 0) return "";
-
-        var n = colored.Count;
-        var slice = 360.0 / n;
-        var sb = new StringBuilder();
-
-        sb.Append("<svg class=\"" + GetElementClass("wheel") + "\" viewBox=\"0 0 200 200\" ");
-        sb.Append("xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"false\">");
-
-        for (var i = 0; i < n; i++)
-        {
-            var (opt, color) = colored[i];
-            var start = -90 + i * slice;          // start at 12 o'clock
-            var end = start + slice;
-            var (x1, y1) = Polar(PieR, start);
-            var (x2, y2) = Polar(PieR, end);
-            var largeArc = slice > 180 ? 1 : 0;
-
-            var isChecked = !string.IsNullOrEmpty(DefaultCategory)
-                && string.Equals(DefaultCategory, opt.Value, StringComparison.OrdinalIgnoreCase);
-
-            // Single-wedge (n==1) degenerates to a full circle.
-            var d = n == 1
-                ? $"M {F(PieCx - PieR)} {F(PieCy)} a {F(PieR)} {F(PieR)} 0 1 0 {F(PieR * 2)} 0 a {F(PieR)} {F(PieR)} 0 1 0 {F(-PieR * 2)} 0"
-                : $"M {F(PieCx)} {F(PieCy)} L {F(x1)} {F(y1)} A {F(PieR)} {F(PieR)} 0 {largeArc} 1 {F(x2)} {F(y2)} Z";
-
-            sb.Append("<g class=\"" + GetElementClass("wedge") + "\"");
-            sb.Append($" data-rhx-radial-option-value=\"{Enc(opt.Value)}\"");
-            sb.Append(" role=\"menuitemradio\"");
-            sb.Append($" aria-checked=\"{(isChecked ? "true" : "false")}\"");
-            sb.Append($" aria-label=\"{Enc(opt.Label)}\"");
-            if (opt.Disabled) sb.Append(" aria-disabled=\"true\"");
-            if (!string.IsNullOrWhiteSpace(opt.HxGet)) sb.Append($" data-rhx-radial-hx-get=\"{Enc(opt.HxGet)}\"");
-            sb.Append($" data-rhx-radial-color=\"{Enc(color)}\"");
-            sb.Append(" tabindex=\"-1\">");
-
-            sb.Append($"<path d=\"{d}\" fill=\"var(--rhx-color-{color}-500)\" />");
-
-            // Icon at wedge centroid angle.
-            var mid = start + slice / 2.0;
-            var (ix, iy) = Polar(IconR, mid);
-            var iconSvg = !string.IsNullOrWhiteSpace(opt.Icon) ? IconRegistry.Get(opt.Icon!) : null;
-            if (iconSvg != null)
-            {
-                sb.Append($"<g transform=\"translate({F(ix - 8)} {F(iy - 8)})\" class=\"{GetElementClass("wedge-icon")}\" aria-hidden=\"true\">");
-                sb.Append("<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">");
-                sb.Append(iconSvg);
-                sb.Append("</svg>");
-                sb.Append("</g>");
-            }
-            sb.Append("</g>");
-        }
-
-        sb.Append("</svg>");
-        return sb.ToString();
-    }
-
-    private static (double X, double Y) Polar(double radius, double angleDeg)
-    {
-        var rad = angleDeg * Math.PI / 180.0;
-        return (PieCx + radius * Math.Cos(rad), PieCy + radius * Math.Sin(rad));
-    }
-
-    private static string F(double v) =>
-        v.ToString("0.###", CultureInfo.InvariantCulture);
 }

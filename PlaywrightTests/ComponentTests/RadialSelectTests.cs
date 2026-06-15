@@ -3,191 +3,65 @@ using PlaywrightTests.Infrastructure;
 
 namespace PlaywrightTests.ComponentTests;
 
+// rhx-radial-select is now two native <select>s (category → item). Changing the category fires
+// the htmx cascade (also on load) that swaps the item <select>'s <option>s. No JavaScript.
 public sealed class RadialSelectTests(DemoAppFactory app) : ComponentTestBase(app)
 {
     private const string Path = "/Docs/Components/RadialSelect";
     private const string Scope = "#panel-basic-preview ";
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Renders_trigger_group_and_hidden_pie_menu(string browserName)
+    public async Task Renders_category_and_item_selects(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var wrapper = page.Locator(Scope + "div.rhx-radial-select");
-        await Assertions.Expect(wrapper).ToHaveAttributeAsync("data-rhx-radial-select", "");
+        var category = page.Locator(Scope + "select.rhx-radial-select__category");
+        var item = page.Locator(Scope + "select.rhx-radial-select__item");
 
-        var trigger = wrapper.Locator("button.rhx-radial-select__trigger");
-        await Assertions.Expect(trigger).ToHaveAttributeAsync("aria-haspopup", "menu");
-        await Assertions.Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
-
-        var pie = wrapper.Locator(".rhx-radial-select__pie");
-        await Assertions.Expect(pie).Not.ToBeVisibleAsync();
-        await Assertions.Expect(pie.Locator("[role='menuitemradio']")).ToHaveCountAsync(4);
+        await Assertions.Expect(category).ToHaveCountAsync(1);
+        await Assertions.Expect(item).ToHaveCountAsync(1);
+        await Assertions.Expect(category).ToHaveAttributeAsync("name", "cat");
+        await Assertions.Expect(item).ToHaveAttributeAsync("name", "FoodItem");
+        await Assertions.Expect(category.Locator("option")).ToHaveCountAsync(4);
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Default_category_wedge_is_checked_initially(string browserName)
+    public async Task Default_category_is_selected(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var fruit = page.Locator(Scope + "[role='menuitemradio'][data-rhx-radial-option-value='fruit']");
-        await Assertions.Expect(fruit).ToHaveAttributeAsync("aria-checked", "true");
+        var category = page.Locator(Scope + "select.rhx-radial-select__category");
+        await Assertions.Expect(category).ToHaveValueAsync("fruit");
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Clicking_trigger_opens_pie(string browserName)
+    public async Task Load_cascade_populates_item_options_for_default_category(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var trigger = page.Locator(Scope + "button.rhx-radial-select__trigger");
-        var pie = page.Locator(Scope + ".rhx-radial-select__pie");
-
-        await trigger.ClickAsync();
-        await Assertions.Expect(pie).ToBeVisibleAsync();
-        await Assertions.Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+        // The category select's "load" trigger fetches the fruit items via htmx.
+        var item = page.Locator(Scope + "select.rhx-radial-select__item");
+        await Assertions.Expect(
+            item.Locator("option", new() { HasTextString = "Apple" })).ToHaveCountAsync(1, new() { Timeout = 5000 });
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Pie_opens_centered_over_trigger(string browserName)
+    public async Task Changing_category_cascades_new_item_options(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
 
-        var trigger = page.Locator(Scope + "button.rhx-radial-select__trigger");
-        await trigger.ScrollIntoViewIfNeededAsync();
+        var category = page.Locator(Scope + "select.rhx-radial-select__category");
+        var item = page.Locator(Scope + "select.rhx-radial-select__item");
 
-        await trigger.ClickAsync();
-        var pie = page.Locator(Scope + ".rhx-radial-select__pie");
-        await Assertions.Expect(pie).ToBeVisibleAsync();
-        await page.WaitForTimeoutAsync(200); // let the fade-in settle
+        // Wait for the initial (fruit) cascade, then switch to meat.
+        await Assertions.Expect(
+            item.Locator("option", new() { HasTextString = "Apple" })).ToHaveCountAsync(1, new() { Timeout = 5000 });
 
-        var pieBox = await pie.BoundingBoxAsync();
-        var trigBox = await trigger.BoundingBoxAsync();
-        Assert.NotNull(pieBox);
-        Assert.NotNull(trigBox);
+        await category.SelectOptionAsync(new SelectOptionValue { Value = "meat" });
 
-        var pieCenterX = pieBox!.X + pieBox.Width / 2;
-        var pieCenterY = pieBox.Y + pieBox.Height / 2;
-        var trigCenterX = trigBox!.X + trigBox.Width / 2;
-        var trigCenterY = trigBox.Y + trigBox.Height / 2;
-
-        // Pie is centered OVER the trigger: its center aligns with the trigger's center
-        // on both axes (overlapping it), not floating above or off to the right.
-        Assert.True(System.Math.Abs(pieCenterX - trigCenterX) < 4,
-            $"Pie center X {pieCenterX} should align with trigger center X {trigCenterX}.");
-        Assert.True(System.Math.Abs(pieCenterY - trigCenterY) < 4,
-            $"Pie center Y {pieCenterY} should align with trigger center Y {trigCenterY}.");
-
-        // The trigger sits inside the pie's bounds (the pie covers it).
-        Assert.True(trigCenterX >= pieBox.X && trigCenterX <= pieBox.X + pieBox.Width
-                 && trigCenterY >= pieBox.Y && trigCenterY <= pieBox.Y + pieBox.Height,
-            "Trigger center should fall within the pie bounds (pie covers the trigger).");
-    }
-
-    [Theory, MemberData(nameof(Browsers))]
-    public async Task Selecting_wedge_cascades_and_autoselects_first(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        var trigger = page.Locator(Scope + "button.rhx-radial-select__trigger");
-        await trigger.ClickAsync();
-
-        var meat = page.Locator(Scope + "[role='menuitemradio'][data-rhx-radial-option-value='meat']");
-        await meat.ClickAsync();
-
-        // Listbox repopulates with the meat category's options...
-        var listbox = page.Locator(Scope + ".rhx-radial-select__listbox");
-        var firstOption = listbox.Locator("[role='option']").First;
-        await Assertions.Expect(firstOption).ToContainTextAsync("Chicken");
-        // ...and the first option is auto-selected.
-        await Assertions.Expect(firstOption).ToHaveAttributeAsync("aria-selected", "true");
-
-        // ...the chosen category is reflected in the hidden category input + on the trigger...
-        await Assertions.Expect(page.Locator(Scope + "[data-rhx-radial-category]")).ToHaveValueAsync("meat");
-        await Assertions.Expect(trigger).ToHaveAttributeAsync("data-rhx-active-color", "warning");
-        // ...and the combobox value display shows the auto-selected first item.
-        await Assertions.Expect(page.Locator(Scope + "[data-rhx-radial-display]")).ToContainTextAsync("Chicken");
-    }
-
-    [Theory, MemberData(nameof(Browsers))]
-    public async Task Dropdown_opens_as_vertical_popup_and_selecting_updates_display(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        // Load a category so the dropdown has items.
-        await page.Locator(Scope + "button.rhx-radial-select__trigger").ClickAsync();
-        await page.Locator(Scope + "[role='menuitemradio'][data-rhx-radial-option-value='fruit']").ClickAsync();
-
-        var combobox = page.Locator(Scope + "button.rhx-radial-select__combobox");
-        var listbox = page.Locator(Scope + ".rhx-radial-select__listbox");
-
-        // Listbox is a popup — hidden until the combobox is clicked.
-        await Assertions.Expect(listbox).Not.ToBeVisibleAsync();
-        await combobox.ClickAsync();
-        await Assertions.Expect(listbox).ToBeVisibleAsync();
-        await Assertions.Expect(combobox).ToHaveAttributeAsync("aria-expanded", "true");
-
-        // Options stack vertically (each below the previous), not in a horizontal row.
-        var options = listbox.Locator("[role='option']");
-        await Assertions.Expect(options).ToHaveCountAsync(4);
-        var firstBox = await options.Nth(0).BoundingBoxAsync();
-        var secondBox = await options.Nth(1).BoundingBoxAsync();
-        Assert.NotNull(firstBox);
-        Assert.NotNull(secondBox);
-        Assert.True(secondBox!.Y >= firstBox!.Y + firstBox.Height - 1,
-            "Second option should sit below the first (vertical stack), not beside it.");
-        Assert.True(System.Math.Abs(secondBox.X - firstBox.X) < 1,
-            "Options should share the same left edge (column), not flow horizontally.");
-
-        // Selecting an option updates the value display and closes the popup.
-        await options.Nth(2).ClickAsync();
-        await Assertions.Expect(listbox).Not.ToBeVisibleAsync();
-        await Assertions.Expect(page.Locator(Scope + "[data-rhx-radial-display]")).ToContainTextAsync("Cherry");
-        await Assertions.Expect(page.Locator(Scope + "[data-rhx-radial-value]")).ToHaveValueAsync("cherry");
-    }
-
-    // The checked wedge's black outline must not be overdrawn by its neighbors. SVG paints
-    // siblings in document order, so the checked wedge has to be the LAST one in the DOM
-    // (painted on top) — both initially and after a new selection.
-    [Theory, MemberData(nameof(Browsers))]
-    public async Task Checked_wedge_is_painted_on_top_initially_and_after_selection(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        const string checkedIsLast =
-            @"() => {
-                const root = document.querySelector('#panel-basic-preview');
-                const wedges = [...root.querySelectorAll('[role=""menuitemradio""]')];
-                const checked = root.querySelector('[role=""menuitemradio""][aria-checked=""true""]');
-                return checked !== null && wedges.indexOf(checked) === wedges.length - 1;
-              }";
-
-        // Default-checked wedge is brought to the front on init.
-        Assert.True(await page.EvaluateAsync<bool>(checkedIsLast),
-            "Initially checked wedge should be the last (top-most) sibling.");
-
-        // Selecting a different wedge moves it to the front.
-        await page.Locator(Scope + "button.rhx-radial-select__trigger").ClickAsync();
-        await page.Locator(Scope + "[role='menuitemradio'][data-rhx-radial-option-value='meat']").ClickAsync();
-
-        var meat = page.Locator(Scope + "[role='menuitemradio'][data-rhx-radial-option-value='meat']");
-        await Assertions.Expect(meat).ToHaveAttributeAsync("aria-checked", "true");
-        Assert.True(await page.EvaluateAsync<bool>(checkedIsLast),
-            "Newly selected wedge should become the last (top-most) sibling.");
-    }
-
-    [Theory, MemberData(nameof(Browsers))]
-    public async Task Escape_closes_pie_and_restores_focus(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        var trigger = page.Locator(Scope + "button.rhx-radial-select__trigger");
-        var pie = page.Locator(Scope + ".rhx-radial-select__pie");
-
-        await trigger.ClickAsync();
-        await Assertions.Expect(pie).ToBeVisibleAsync();
-
-        await page.Keyboard.PressAsync("Escape");
-        await Assertions.Expect(pie).Not.ToBeVisibleAsync();
-        await Assertions.Expect(trigger).ToBeFocusedAsync();
+        await Assertions.Expect(
+            item.Locator("option", new() { HasTextString = "Chicken" })).ToHaveCountAsync(1, new() { Timeout = 5000 });
+        await Assertions.Expect(
+            item.Locator("option", new() { HasTextString = "Apple" })).ToHaveCountAsync(0);
     }
 }

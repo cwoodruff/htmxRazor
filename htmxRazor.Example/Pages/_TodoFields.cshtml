@@ -43,14 +43,11 @@
                        rhx-category-name="category"
                        rhx-default-category="@t?.Category"
                        rhx-placeholder="Pick a category…"
+                       hx-get="/?handler=CategoryItems"
                        aria-label="Task category">
         @foreach (var c in TodoCategory.All)
         {
-            <rhx-radial-option rhx-value="@c.Name"
-                               rhx-label="@c.Name"
-                               rhx-icon="@c.Icon"
-                               rhx-color="@c.Color"
-                               hx-get="/?handler=CategoryItems&category=@c.Name" />
+            <rhx-radial-option rhx-value="@c.Name" rhx-label="@c.Name" />
         }
     </rhx-radial-select>
 </div>

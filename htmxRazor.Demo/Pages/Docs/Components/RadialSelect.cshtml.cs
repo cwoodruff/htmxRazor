@@ -12,42 +12,30 @@ public class RadialSelectModel : PageModel
     {
         new("rhx-for", "ModelExpression", "-", "Model binding for the dropdown value (mutually exclusive with name)"),
         new("name", "string", "-", "Form field name for the dropdown value when not using rhx-for"),
-        new("rhx-category-name", "string", "-", "Optional. Form field name submitting the active category value"),
-        new("rhx-default-category", "string", "-", "Optional. rhx-value of the wedge to activate on initial render"),
-        new("rhx-placeholder", "string", "-", "Dropdown placeholder shown before any option is selected"),
+        new("rhx-category-name", "string", "-", "Form field name for the category <select>"),
+        new("rhx-default-category", "string", "-", "rhx-value of the category selected on initial render"),
+        new("hx-get", "string", "-", "Cascade endpoint returning the item <option> set for the chosen category"),
+        new("rhx-placeholder", "string", "-", "Item-select placeholder shown before options load"),
         new("rhx-size", "string", "medium", "Control size: small, medium, large"),
         new("rhx-disabled", "bool", "false", "Disables the whole control"),
-        new("aria-label", "string", "-", "Accessible name for the category picker"),
+        new("aria-label", "string", "-", "Accessible name for the control"),
     };
 
     public List<ComponentProperty> OptionProperties { get; } = new()
     {
-        new("rhx-value", "string", "required", "Category identifier submitted via rhx-category-name"),
-        new("rhx-label", "string", "required", "Accessible name + visible label for the wedge"),
-        new("rhx-icon", "string", "-", "Icon name resolved through IconRegistry"),
-        new("rhx-color", "variant", "cycle", "brand, success, warning, danger, neutral. Omitted = deterministic cycle"),
-        new("hx-get", "string", "-", "Endpoint returning this category's option fragment"),
-        new("rhx-disabled", "bool", "false", "Renders the wedge dimmed and non-selectable"),
+        new("rhx-value", "string", "required", "Category value (an <option> in the category <select>)"),
+        new("rhx-label", "string", "required", "Category option's visible label"),
+        new("rhx-disabled", "bool", "false", "Renders the category option disabled"),
     };
 
-    public string BasicCode => @"<rhx-radial-select name=""FoodItem"" rhx-category-name=""Category""
+    public string BasicCode => @"<rhx-radial-select name=""FoodItem"" rhx-category-name=""cat""
                    rhx-default-category=""fruit""
-                   rhx-placeholder=""Choose an item…"" aria-label=""Food category"">
-    <rhx-radial-option rhx-value=""fruit"" rhx-label=""Fruit"" rhx-icon=""heart"" rhx-color=""danger""
-                       hx-get=""/Docs/Components/RadialSelect?handler=Items&cat=fruit"" />
-    <rhx-radial-option rhx-value=""veg"" rhx-label=""Veggies"" rhx-icon=""star"" rhx-color=""success""
-                       hx-get=""/Docs/Components/RadialSelect?handler=Items&cat=veg"" />
-    <rhx-radial-option rhx-value=""meat"" rhx-label=""Meat"" rhx-icon=""grid"" rhx-color=""warning""
-                       hx-get=""/Docs/Components/RadialSelect?handler=Items&cat=meat"" />
-    <rhx-radial-option rhx-value=""drink"" rhx-label=""Drinks"" rhx-icon=""globe"" rhx-color=""brand""
-                       hx-get=""/Docs/Components/RadialSelect?handler=Items&cat=drink"" />
-</rhx-radial-select>";
-
-    public string ColorCycleCode => @"<!-- Omit rhx-color and wedges auto-cycle: brand → success → warning → danger → neutral -->
-<rhx-radial-select name=""Pick"" aria-label=""Auto-colored"">
-    <rhx-radial-option rhx-value=""a"" rhx-label=""One""   rhx-icon=""star""  hx-get=""...?cat=a"" />
-    <rhx-radial-option rhx-value=""b"" rhx-label=""Two""   rhx-icon=""heart"" hx-get=""...?cat=b"" />
-    <rhx-radial-option rhx-value=""c"" rhx-label=""Three"" rhx-icon=""grid""  hx-get=""...?cat=c"" />
+                   hx-get=""/Docs/Components/RadialSelect?handler=Items""
+                   rhx-placeholder=""Choose an item…"" aria-label=""Food"">
+    <rhx-radial-option rhx-value=""fruit"" rhx-label=""Fruit"" />
+    <rhx-radial-option rhx-value=""veg"" rhx-label=""Veggies"" />
+    <rhx-radial-option rhx-value=""meat"" rhx-label=""Meat"" />
+    <rhx-radial-option rhx-value=""drink"" rhx-label=""Drinks"" />
 </rhx-radial-select>";
 
     public void OnGet()
@@ -68,14 +56,18 @@ public class RadialSelectModel : PageModel
         ["drink"] = new[] { ("water", "Water"), ("coffee", "Coffee"), ("juice", "Juice"), ("tea", "Tea") },
     };
 
-    /// <summary>Cascade endpoint: returns the listbox option fragment for a category.</summary>
-    public IActionResult OnGetItems(string? cat)
+    /// <summary>Cascade endpoint: returns the item &lt;option&gt; set for a category, pre-selecting
+    /// <paramref name="selected"/> when it belongs to that category.</summary>
+    public IActionResult OnGetItems(string? cat, string? selected)
     {
         if (cat == null || !Catalog.TryGetValue(cat, out var items))
-            return Content("<div class=\"rhx-radial-select__placeholder\">No items</div>", "text/html");
+            return Content("<option value=\"\">No items</option>", "text/html");
 
         var html = string.Concat(items.Select(i =>
-            $"<div class=\"rhx-radial-select__option\" role=\"option\" data-value=\"{WebUtility.HtmlEncode(i.Value)}\" aria-selected=\"false\" tabindex=\"-1\">{WebUtility.HtmlEncode(i.Text)}</div>"));
+        {
+            var sel = string.Equals(i.Value, selected, StringComparison.Ordinal) ? " selected" : "";
+            return $"<option value=\"{WebUtility.HtmlEncode(i.Value)}\"{sel}>{WebUtility.HtmlEncode(i.Text)}</option>";
+        }));
         return Content(html, "text/html");
     }
 }
