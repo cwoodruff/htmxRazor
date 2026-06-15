@@ -127,20 +127,20 @@ button.rhx-wizard__step-indicator:hover {
 
 /* ── Dark theme ── */
 
-[data-rhx-theme="dark"] .rhx-wizard__step-indicator {
+html:has(.rhx-theme-controller:checked) .rhx-wizard__step-indicator {
     background: var(--rhx-color-neutral-700);
     color: var(--rhx-color-neutral-300);
 }
 
-[data-rhx-theme="dark"] button.rhx-wizard__step-indicator:hover {
+html:has(.rhx-theme-controller:checked) button.rhx-wizard__step-indicator:hover {
     background: var(--rhx-color-neutral-600);
 }
 
-[data-rhx-theme="dark"] .rhx-wizard__step-title {
+html:has(.rhx-theme-controller:checked) .rhx-wizard__step-title {
     color: var(--rhx-color-neutral-200);
 }
 
-[data-rhx-theme="dark"] .rhx-wizard__step-description {
+html:has(.rhx-theme-controller:checked) .rhx-wizard__step-description {
     color: var(--rhx-color-neutral-400);
 }
 

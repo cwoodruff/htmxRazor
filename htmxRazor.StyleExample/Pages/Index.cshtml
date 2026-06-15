@@ -171,7 +171,7 @@
                 <p>Click the palette icon in the header to toggle dark mode. Custom tokens apply to both themes.</p>
             </rhx-card-body>
             <rhx-card-footer>
-                <rhx-button rhx-variant="neutral" rhx-size="small" onclick="RHX.toggleTheme()">Toggle Theme</rhx-button>
+                <rhx-theme-toggle aria-label="Toggle dark mode" />
             </rhx-card-footer>
         </rhx-card>
     </div>
@@ -310,8 +310,9 @@
 
     <rhx-details rhx-summary="Step 5: Support dark mode">
         <p>
-            Add a <code>[data-rhx-theme=&quot;dark&quot;]</code> selector in your custom CSS to override
-            tokens for dark mode. Use <code>RHX.toggleTheme()</code> in JavaScript to switch themes.
+            Dark-mode tokens apply via <code>html:has(.rhx-theme-controller:checked)</code> — pure CSS,
+            no JavaScript. Drop in <code>&lt;rhx-theme-toggle /&gt;</code> to switch themes; the choice
+            is persisted in a cookie and rendered back server-side.
         </p>
     </rhx-details>
 </div>

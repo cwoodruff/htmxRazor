@@ -345,132 +345,132 @@
    ══════════════════════════════════════════════════════════════ */
 
 /* ── Neutral Filled (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--neutral.rhx-button--filled {
+html:has(.rhx-theme-controller:checked) .rhx-button--neutral.rhx-button--filled {
   background: var(--rhx-color-neutral-700);
   border-color: var(--rhx-color-neutral-700);
 }
-[data-rhx-theme="dark"] .rhx-button--neutral.rhx-button--filled:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--neutral.rhx-button--filled:hover {
   background: var(--rhx-color-neutral-600);
   border-color: var(--rhx-color-neutral-600);
 }
-[data-rhx-theme="dark"] .rhx-button--neutral.rhx-button--filled:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--neutral.rhx-button--filled:active {
   background: var(--rhx-color-neutral-500);
   border-color: var(--rhx-color-neutral-500);
 }
 
 /* ── Neutral Outlined (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--neutral.rhx-button--outlined:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--neutral.rhx-button--outlined:hover {
   background: var(--rhx-color-neutral-800);
   border-color: var(--rhx-color-neutral-500);
 }
-[data-rhx-theme="dark"] .rhx-button--neutral.rhx-button--outlined:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--neutral.rhx-button--outlined:active {
   background: var(--rhx-color-neutral-700);
 }
 
 /* ── Brand Outlined (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--brand.rhx-button--outlined {
+html:has(.rhx-theme-controller:checked) .rhx-button--brand.rhx-button--outlined {
   color: var(--rhx-color-brand-400);
 }
-[data-rhx-theme="dark"] .rhx-button--brand.rhx-button--outlined:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--brand.rhx-button--outlined:hover {
   background: var(--rhx-color-brand-950);
 }
-[data-rhx-theme="dark"] .rhx-button--brand.rhx-button--outlined:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--brand.rhx-button--outlined:active {
   background: var(--rhx-color-brand-900);
 }
 
 /* ── Success Outlined (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--success.rhx-button--outlined {
+html:has(.rhx-theme-controller:checked) .rhx-button--success.rhx-button--outlined {
   color: var(--rhx-color-success-400);
 }
-[data-rhx-theme="dark"] .rhx-button--success.rhx-button--outlined:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--success.rhx-button--outlined:hover {
   background: var(--rhx-color-success-950);
 }
-[data-rhx-theme="dark"] .rhx-button--success.rhx-button--outlined:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--success.rhx-button--outlined:active {
   background: var(--rhx-color-success-900);
 }
 
 /* ── Warning Outlined (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--warning.rhx-button--outlined {
+html:has(.rhx-theme-controller:checked) .rhx-button--warning.rhx-button--outlined {
   color: var(--rhx-color-warning-400);
 }
-[data-rhx-theme="dark"] .rhx-button--warning.rhx-button--outlined:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--warning.rhx-button--outlined:hover {
   background: var(--rhx-color-warning-950);
 }
-[data-rhx-theme="dark"] .rhx-button--warning.rhx-button--outlined:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--warning.rhx-button--outlined:active {
   background: var(--rhx-color-warning-900);
 }
 
 /* ── Danger Outlined (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--danger.rhx-button--outlined {
+html:has(.rhx-theme-controller:checked) .rhx-button--danger.rhx-button--outlined {
   color: var(--rhx-color-danger-400);
 }
-[data-rhx-theme="dark"] .rhx-button--danger.rhx-button--outlined:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--danger.rhx-button--outlined:hover {
   background: var(--rhx-color-danger-950);
 }
-[data-rhx-theme="dark"] .rhx-button--danger.rhx-button--outlined:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--danger.rhx-button--outlined:active {
   background: var(--rhx-color-danger-900);
 }
 
 /* ── Neutral Plain (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--neutral.rhx-button--plain:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--neutral.rhx-button--plain:hover {
   background: var(--rhx-color-neutral-800);
 }
-[data-rhx-theme="dark"] .rhx-button--neutral.rhx-button--plain:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--neutral.rhx-button--plain:active {
   background: var(--rhx-color-neutral-700);
 }
 
 /* ── Brand Plain (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--brand.rhx-button--plain {
+html:has(.rhx-theme-controller:checked) .rhx-button--brand.rhx-button--plain {
   color: var(--rhx-color-brand-400);
 }
-[data-rhx-theme="dark"] .rhx-button--brand.rhx-button--plain:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--brand.rhx-button--plain:hover {
   background: var(--rhx-color-brand-950);
 }
-[data-rhx-theme="dark"] .rhx-button--brand.rhx-button--plain:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--brand.rhx-button--plain:active {
   background: var(--rhx-color-brand-900);
 }
 
 /* ── Success Plain (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--success.rhx-button--plain {
+html:has(.rhx-theme-controller:checked) .rhx-button--success.rhx-button--plain {
   color: var(--rhx-color-success-400);
 }
-[data-rhx-theme="dark"] .rhx-button--success.rhx-button--plain:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--success.rhx-button--plain:hover {
   background: var(--rhx-color-success-950);
 }
-[data-rhx-theme="dark"] .rhx-button--success.rhx-button--plain:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--success.rhx-button--plain:active {
   background: var(--rhx-color-success-900);
 }
 
 /* ── Warning Plain (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--warning.rhx-button--plain {
+html:has(.rhx-theme-controller:checked) .rhx-button--warning.rhx-button--plain {
   color: var(--rhx-color-warning-400);
 }
-[data-rhx-theme="dark"] .rhx-button--warning.rhx-button--plain:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--warning.rhx-button--plain:hover {
   background: var(--rhx-color-warning-950);
 }
-[data-rhx-theme="dark"] .rhx-button--warning.rhx-button--plain:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--warning.rhx-button--plain:active {
   background: var(--rhx-color-warning-900);
 }
 
 /* ── Danger Plain (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--danger.rhx-button--plain {
+html:has(.rhx-theme-controller:checked) .rhx-button--danger.rhx-button--plain {
   color: var(--rhx-color-danger-400);
 }
-[data-rhx-theme="dark"] .rhx-button--danger.rhx-button--plain:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--danger.rhx-button--plain:hover {
   background: var(--rhx-color-danger-950);
 }
-[data-rhx-theme="dark"] .rhx-button--danger.rhx-button--plain:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--danger.rhx-button--plain:active {
   background: var(--rhx-color-danger-900);
 }
 
 /* ── Ghost (dark) ── */
-[data-rhx-theme="dark"] .rhx-button--ghost {
+html:has(.rhx-theme-controller:checked) .rhx-button--ghost {
   background: var(--rhx-color-neutral-700);
 }
-[data-rhx-theme="dark"] .rhx-button--ghost:hover {
+html:has(.rhx-theme-controller:checked) .rhx-button--ghost:hover {
   background: var(--rhx-color-neutral-600);
 }
-[data-rhx-theme="dark"] .rhx-button--ghost:active {
+html:has(.rhx-theme-controller:checked) .rhx-button--ghost:active {
   background: var(--rhx-color-neutral-500);
 }
 

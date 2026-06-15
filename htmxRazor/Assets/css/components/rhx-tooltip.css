@@ -74,7 +74,7 @@
 }
 
 /* ── Dark theme: invert tooltip colors ── */
-[data-rhx-theme="dark"] .rhx-tooltip {
+html:has(.rhx-theme-controller:checked) .rhx-tooltip {
   background: var(--rhx-color-neutral-100);
   color: var(--rhx-color-neutral-900);
 }

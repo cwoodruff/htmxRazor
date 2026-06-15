@@ -53,7 +53,13 @@
     });
   }
 
-  if (window.RHX) {
-    window.RHX.register("copy-button", initCopyButtons);
+  // Self-contained init (no rhx-core dependency): on load + after htmx swaps.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () { initCopyButtons(document); });
+  } else {
+    initCopyButtons(document);
   }
+  document.addEventListener("htmx:afterSettle", function (e) {
+    if (e.detail && e.detail.elt) initCopyButtons(e.detail.elt);
+  });
 })();

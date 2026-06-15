@@ -78,12 +78,12 @@
 .rhx-avatar__initials[data-rhx-hash="7"] { background: hsl(180, 50%, 85%); color: hsl(180, 50%, 30%); }
 
 /* ── Dark theme: invert initials color scheme ── */
-[data-rhx-theme="dark"] .rhx-avatar__initials[data-rhx-hash="0"] { background: hsl(210, 60%, 25%); color: hsl(210, 60%, 80%); }
-[data-rhx-theme="dark"] .rhx-avatar__initials[data-rhx-hash="1"] { background: hsl(150, 50%, 25%); color: hsl(150, 50%, 80%); }
-[data-rhx-theme="dark"] .rhx-avatar__initials[data-rhx-hash="2"] { background: hsl(30, 60%, 25%); color: hsl(30, 60%, 80%); }
-[data-rhx-theme="dark"] .rhx-avatar__initials[data-rhx-hash="3"] { background: hsl(330, 50%, 25%); color: hsl(330, 50%, 80%); }
-[data-rhx-theme="dark"] .rhx-avatar__initials[data-rhx-hash="4"] { background: hsl(270, 50%, 25%); color: hsl(270, 50%, 80%); }
-[data-rhx-theme="dark"] .rhx-avatar__initials[data-rhx-hash="5"] { background: hsl(60, 50%, 25%); color: hsl(60, 50%, 80%); }
-[data-rhx-theme="dark"] .rhx-avatar__initials[data-rhx-hash="6"] { background: hsl(0, 50%, 25%); color: hsl(0, 50%, 80%); }
-[data-rhx-theme="dark"] .rhx-avatar__initials[data-rhx-hash="7"] { background: hsl(180, 50%, 25%); color: hsl(180, 50%, 80%); }
+html:has(.rhx-theme-controller:checked) .rhx-avatar__initials[data-rhx-hash="0"] { background: hsl(210, 60%, 25%); color: hsl(210, 60%, 80%); }
+html:has(.rhx-theme-controller:checked) .rhx-avatar__initials[data-rhx-hash="1"] { background: hsl(150, 50%, 25%); color: hsl(150, 50%, 80%); }
+html:has(.rhx-theme-controller:checked) .rhx-avatar__initials[data-rhx-hash="2"] { background: hsl(30, 60%, 25%); color: hsl(30, 60%, 80%); }
+html:has(.rhx-theme-controller:checked) .rhx-avatar__initials[data-rhx-hash="3"] { background: hsl(330, 50%, 25%); color: hsl(330, 50%, 80%); }
+html:has(.rhx-theme-controller:checked) .rhx-avatar__initials[data-rhx-hash="4"] { background: hsl(270, 50%, 25%); color: hsl(270, 50%, 80%); }
+html:has(.rhx-theme-controller:checked) .rhx-avatar__initials[data-rhx-hash="5"] { background: hsl(60, 50%, 25%); color: hsl(60, 50%, 80%); }
+html:has(.rhx-theme-controller:checked) .rhx-avatar__initials[data-rhx-hash="6"] { background: hsl(0, 50%, 25%); color: hsl(0, 50%, 80%); }
+html:has(.rhx-theme-controller:checked) .rhx-avatar__initials[data-rhx-hash="7"] { background: hsl(180, 50%, 25%); color: hsl(180, 50%, 80%); }
 }

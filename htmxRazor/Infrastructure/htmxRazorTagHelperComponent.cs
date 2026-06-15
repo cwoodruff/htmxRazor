@@ -56,10 +56,6 @@ public sealed class htmxRazorTagHelperComponent : TagHelperComponent
                 $"\n    <script src=\"{htmxUrl}\"></script>");
         }
 
-        // Inject htmxRazor core script
-        output.PostContent.AppendHtml(
-            "\n    <script src=\"/_rhx/js/rhx-core.js\" defer></script>\n");
-
         return Task.CompletedTask;
     }
 }

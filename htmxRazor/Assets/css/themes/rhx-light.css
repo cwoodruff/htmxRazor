@@ -1,11 +1,11 @@
 /*
- * htmxRazor Light Theme
- * Light theme is the default — these are explicit overrides
- * for when the theme is toggled via data attribute.
+ * htmxRazor Light Theme (explicit token set, highest layer).
+ * Guarded so it does NOT clobber the dark override (which lives in the lower rhx.tokens layer):
+ * it applies only when the dark toggle is not active.
  */
 
 @layer rhx.theme {
-[data-rhx-theme="light"] {
+:root:not(:has(.rhx-theme-controller:checked)) {
   --rhx-color-bg: var(--rhx-color-neutral-50);
   --rhx-color-surface: #ffffff;
   --rhx-color-surface-raised: #ffffff;

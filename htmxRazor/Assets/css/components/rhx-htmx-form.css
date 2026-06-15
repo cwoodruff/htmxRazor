@@ -33,7 +33,7 @@
 
 /* ── Dark theme ── */
 
-[data-rhx-theme="dark"] .rhx-htmx-form__error-container:not(:empty) {
+html:has(.rhx-theme-controller:checked) .rhx-htmx-form__error-container:not(:empty) {
     background: var(--rhx-color-danger-950);
     border-color: var(--rhx-color-danger-800);
     color: var(--rhx-color-danger-200);

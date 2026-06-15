@@ -1,11 +1,11 @@
 /*
  * htmxRazor Dark Theme
  * Dark theme token overrides.
- * Activated by setting data-rhx-theme="dark" on a parent element (typically <html> or <body>).
+ * Activated (no JavaScript) when a checked .rhx-theme-controller exists — see <rhx-theme-toggle>.
  */
 
 @layer rhx.theme {
-[data-rhx-theme="dark"] {
+html:has(.rhx-theme-controller:checked) {
   --rhx-color-bg: var(--rhx-color-neutral-900);
   --rhx-color-surface: var(--rhx-color-neutral-800);
   --rhx-color-surface-raised: var(--rhx-color-neutral-700);

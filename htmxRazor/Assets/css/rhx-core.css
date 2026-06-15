@@ -102,4 +102,56 @@
 .rhx-container {
   container-type: inline-size;
 }
+
+/* ── Theme toggle (zero-JS dark mode switch) ──
+   The <label> wraps a visually-hidden checkbox (.rhx-theme-controller); dark tokens apply via
+   html:has(.rhx-theme-controller:checked). The track/thumb is a pill switch. */
+.rhx-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.rhx-theme-toggle__track {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 2.75rem;
+  height: 1.5rem;
+  padding: 2px;
+  background: var(--rhx-color-neutral-300);
+  border-radius: 999px;
+  transition: background-color var(--rhx-transition-fast);
+}
+
+.rhx-theme-toggle__thumb {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  background: var(--rhx-color-surface);
+  box-shadow: var(--rhx-shadow-sm);
+  transition: transform var(--rhx-transition-fast);
+}
+
+/* Checked (dark) state — slide the thumb and tint the track. */
+.rhx-theme-controller:checked ~ .rhx-theme-toggle__track {
+  background: var(--rhx-color-brand-500);
+}
+
+.rhx-theme-controller:checked ~ .rhx-theme-toggle__track .rhx-theme-toggle__thumb {
+  transform: translateX(1.25rem);
+}
+
+/* Focus ring on the label's track when the sr-only checkbox is focused. */
+.rhx-theme-controller:focus-visible ~ .rhx-theme-toggle__track {
+  outline: 2px solid var(--rhx-color-brand-500);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rhx-theme-toggle__track,
+  .rhx-theme-toggle__thumb {
+    transition: none;
+  }
+}
 }

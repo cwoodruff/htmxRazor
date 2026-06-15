@@ -107,14 +107,14 @@ app.Run();</code></pre>
 
     <h2>Theming</h2>
     <p>
-        htmxRazor supports light and dark themes via the <code>data-rhx-theme</code> attribute on the
-        <code>&lt;html&gt;</code> element. Toggle between themes using the built-in JavaScript function:
+        htmxRazor supports light and dark themes with <strong>zero JavaScript</strong>. Drop in the
+        <code>&lt;rhx-theme-toggle&gt;</code> control: dark tokens apply via CSS
+        <code>html:has(.rhx-theme-controller:checked)</code>, and the choice is persisted in a cookie
+        (set via htmx) and rendered back server-side on the next request.
     </p>
     <div class="docs-code">
-        <pre><code>&lt;html data-rhx-theme="light"&gt;
-
-&lt;!-- Toggle with JavaScript --&gt;
-&lt;button onclick="RHX.toggleTheme()"&gt;Toggle Theme&lt;/button&gt;</code></pre>
+        <pre><code>&lt;!-- A zero-JS dark-mode switch --&gt;
+&lt;rhx-theme-toggle /&gt;</code></pre>
     </div>
     <p>
         All components use CSS custom properties (design tokens) that automatically adapt to the
