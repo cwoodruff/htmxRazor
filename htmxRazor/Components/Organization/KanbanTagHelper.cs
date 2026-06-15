@@ -38,8 +38,6 @@ public class KanbanTagHelper : htmxRazorTagHelperBase
         var css = CreateCssBuilder();
         ApplyBaseAttributes(output, css);
 
-        output.Attributes.SetAttribute("data-rhx-kanban", "");
-
         AriaAttributeHelper.RoleGroup(output);
 
         RenderHtmxAttributes(output);

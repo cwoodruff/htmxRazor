@@ -61,14 +61,10 @@ public class KanbanColumnTagHelper : htmxRazorTagHelperBase
         var css = CreateCssBuilder();
         ApplyBaseAttributes(output, css);
 
-        output.Attributes.SetAttribute("data-rhx-kanban-column", "");
         output.Attributes.SetAttribute("data-rhx-column-id", ColumnId);
 
         if (MaxCards.HasValue)
             output.Attributes.SetAttribute("data-rhx-max-cards", MaxCards.Value.ToString());
-
-        if (!Droppable)
-            output.Attributes.SetAttribute("data-rhx-no-drop", "");
 
         var childContent = await output.GetChildContentAsync();
 
@@ -82,8 +78,8 @@ public class KanbanColumnTagHelper : htmxRazorTagHelperBase
             output.Content.AppendHtml("</div>");
         }
 
-        // Render body (drop zone)
-        output.Content.AppendHtml("<div class=\"rhx-kanban-column__body\" data-rhx-drop-zone>");
+        // Render body (holds the cards)
+        output.Content.AppendHtml("<div class=\"rhx-kanban-column__body\">");
         output.Content.AppendHtml(childContent);
         output.Content.AppendHtml("</div>");
 

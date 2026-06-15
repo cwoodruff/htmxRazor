@@ -37,12 +37,36 @@ public class KanbanCardTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "data-rhx-kanban-card", "");
         AssertAttribute(output, "data-rhx-card-id", "task-42");
     }
 
     [Fact]
-    public async Task Sets_Draggable_And_Tabindex()
+    public async Task Renders_Htmx_Move_Buttons()
+    {
+        // With an hx verb configured, the card shows ◀/▶ move buttons that carry the card id
+        // and direction in hx-vals (zero JS; no HTML drag-and-drop).
+        var helper = CreateHelper();
+        helper.CardId = "task-1";
+        helper.HxPost = "/Board?handler=Move";
+        helper.HxTarget = "#board";
+        helper.HxSwap = "innerHTML";
+        var context = CreateContext("rhx-kanban-card");
+        var output = CreateOutput("rhx-kanban-card");
+
+        await helper.ProcessAsync(context, output);
+
+        var content = output.Content.GetContent();
+        Assert.Equal(2, System.Text.RegularExpressions.Regex.Matches(content, "rhx-kanban-card__move").Count);
+        Assert.Contains("hx-post=\"/Board?handler=Move\"", content);
+        Assert.Contains("\"cardId\":\"task-1\"", content);
+        Assert.Contains("\"direction\":\"prev\"", content);
+        Assert.Contains("\"direction\":\"next\"", content);
+        // No drag-and-drop attributes.
+        AssertNoAttribute(output, "draggable");
+    }
+
+    [Fact]
+    public async Task No_Move_Buttons_Without_Htmx_Verb()
     {
         var helper = CreateHelper();
         helper.CardId = "task-1";
@@ -51,23 +75,22 @@ public class KanbanCardTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "draggable", "true");
-        AssertAttribute(output, "tabindex", "0");
+        Assert.DoesNotContain("rhx-kanban-card__move", output.Content.GetContent());
     }
 
     [Fact]
-    public async Task Omits_Draggable_When_Disabled()
+    public async Task Draggable_False_Suppresses_Move_Buttons()
     {
         var helper = CreateHelper();
         helper.CardId = "task-1";
         helper.Draggable = false;
+        helper.HxPost = "/Board?handler=Move";
         var context = CreateContext("rhx-kanban-card");
         var output = CreateOutput("rhx-kanban-card");
 
         await helper.ProcessAsync(context, output);
 
-        AssertNoAttribute(output, "draggable");
-        AssertNoAttribute(output, "tabindex");
+        Assert.DoesNotContain("rhx-kanban-card__move", output.Content.GetContent());
     }
 
     [Fact]

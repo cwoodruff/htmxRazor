@@ -58,12 +58,6 @@
   min-height: 4rem;
 }
 
-/* ── Drag-over state ── */
-.rhx-kanban-column--drag-over > .rhx-kanban-column__body {
-  background: var(--rhx-color-brand-subtle);
-  border-radius: 0 0 calc(var(--rhx-radius-lg) - 1px) calc(var(--rhx-radius-lg) - 1px);
-}
-
 /* ── WIP limit exceeded ── */
 .rhx-kanban-column--wip-exceeded {
   border-color: var(--rhx-color-danger-300);
@@ -79,6 +73,9 @@
    ══════════════════════════════════════════════════════════════ */
 
 .rhx-kanban-card {
+  display: flex;
+  align-items: center;
+  gap: var(--rhx-space-sm);
   background: var(--rhx-color-surface-raised);
   border: var(--rhx-border-width) solid var(--rhx-color-border-muted);
   border-radius: var(--rhx-radius-md);
@@ -86,24 +83,50 @@
   font-family: var(--rhx-font-family);
   font-size: var(--rhx-font-size-sm);
   color: var(--rhx-color-text);
-  cursor: grab;
-  transition: box-shadow var(--rhx-transition-fast), opacity var(--rhx-transition-fast);
-  user-select: none;
+  transition: box-shadow var(--rhx-transition-fast);
 }
 
 .rhx-kanban-card:hover {
   box-shadow: var(--rhx-shadow-md);
 }
 
-.rhx-kanban-card:focus-visible {
-  outline: 2px solid var(--rhx-color-focus-ring);
-  outline-offset: 1px;
+.rhx-kanban-card__content {
+  flex: 1;
+  min-width: 0;
 }
 
-/* ── Dragging state ── */
-.rhx-kanban-card--dragging {
-  opacity: 0.4;
-  cursor: grabbing;
+/* ── Move buttons (htmx, no drag-and-drop) ── */
+.rhx-kanban-card__actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.rhx-kanban-card__move {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: var(--rhx-border-width) solid var(--rhx-color-border);
+  border-radius: var(--rhx-radius-sm);
+  background: var(--rhx-color-surface);
+  color: var(--rhx-color-text-muted);
+  font-size: var(--rhx-font-size-xs);
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--rhx-transition-fast), color var(--rhx-transition-fast);
+}
+
+.rhx-kanban-card__move:hover {
+  background: var(--rhx-color-active);
+  color: var(--rhx-color-text);
+}
+
+.rhx-kanban-card__move:focus-visible {
+  outline: 2px solid var(--rhx-color-focus-ring);
+  outline-offset: 1px;
 }
 
 /* ── Card variants ── */

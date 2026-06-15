@@ -9,12 +9,11 @@ public class KanbanModel : PageModel
 {
     public List<ComponentProperty> Properties { get; } = new()
     {
-        new("rhx-column-id", "string", "-", "Unique column identifier (sent with drop POST)"),
+        new("rhx-column-id", "string", "-", "Unique column identifier"),
         new("rhx-title", "string", "-", "Column header display text"),
         new("rhx-max-cards", "int", "-", "Work-in-progress limit (visual indicator when exceeded)"),
-        new("rhx-droppable", "bool", "true", "Whether cards can be dropped into this column"),
-        new("rhx-card-id", "string", "-", "Unique card identifier (sent with drop POST)"),
-        new("rhx-draggable", "bool", "true", "Whether this card can be dragged"),
+        new("rhx-card-id", "string", "-", "Unique card identifier (sent as cardId with the move request)"),
+        new("rhx-draggable", "bool", "true", "Whether to render the htmx move buttons on the card"),
         new("rhx-variant", "string", "-", "Card color variant: brand, success, warning, danger"),
     };
 
@@ -38,11 +37,10 @@ public class KanbanModel : PageModel
     ...
 </rhx-kanban-column>";
 
-    public string ServerCode => @"public IActionResult OnPostMove(
-    string cardId, string sourceColumn,
-    string targetColumn, int position)
+    public string ServerCode => @"// The move buttons send cardId + direction (""prev""/""next"").
+public IActionResult OnPostMove(string cardId, string direction)
 {
-    _service.MoveCard(cardId, targetColumn, position);
+    _service.MoveCard(cardId, direction);   // resolve the adjacent column server-side
     return Partial(""_BoardPartial"", _service.GetTasks());
 }";
 
@@ -73,7 +71,11 @@ public class KanbanModel : PageModel
         };
     }
 
-    public IActionResult OnPostMove(string cardId, string sourceColumn, string targetColumn, int position)
+    private static readonly string[] ColumnOrder = { "todo", "doing", "done" };
+
+    // The htmx move buttons send cardId + direction ("prev"/"next"); the server resolves the
+    // adjacent column and re-renders the board. No drag-and-drop, no client JavaScript.
+    public IActionResult OnPostMove(string cardId, string direction)
     {
         lock (_lock)
         {
@@ -81,24 +83,20 @@ public class KanbanModel : PageModel
             if (task is null)
                 return Partial("_KanbanPartial", Tasks);
 
-            // Remove from old position
+            var fromIndex = Array.IndexOf(ColumnOrder, task.Column);
+            if (fromIndex < 0)
+                return Partial("_KanbanPartial", Tasks);
+
+            var toIndex = Math.Clamp(
+                direction == "prev" ? fromIndex - 1 : fromIndex + 1, 0, ColumnOrder.Length - 1);
+            if (toIndex == fromIndex)
+                return Partial("_KanbanPartial", Tasks);
+
+            var targetColumn = ColumnOrder[toIndex];
+            var append = _tasks.Count(t => t.Column == targetColumn);
+
             _tasks.Remove(task);
-
-            // Shift existing cards in the target column to make room
-            var targetCards = _tasks
-                .Where(t => t.Column == targetColumn)
-                .OrderBy(t => t.Position)
-                .ToList();
-
-            for (var i = 0; i < targetCards.Count; i++)
-            {
-                var newPos = i >= position ? i + 1 : i;
-                var idx = _tasks.IndexOf(targetCards[i]);
-                _tasks[idx] = targetCards[i] with { Position = newPos };
-            }
-
-            // Insert the moved card at the requested position
-            _tasks.Add(task with { Column = targetColumn, Position = position });
+            _tasks.Add(task with { Column = targetColumn, Position = append });
         }
 
         return Partial("_KanbanPartial", Tasks);

@@ -27,15 +27,16 @@ public class KanbanTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Sets_Data_Attribute()
+    public async Task Has_No_Js_Data_Hook()
     {
+        // The board is pure layout now — no JS, so no data-rhx-kanban hook.
         var helper = CreateHelper();
         var context = CreateContext("rhx-kanban");
         var output = CreateOutput("rhx-kanban");
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "data-rhx-kanban", "");
+        AssertNoAttribute(output, "data-rhx-kanban");
     }
 
     [Fact]

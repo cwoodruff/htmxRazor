@@ -5,7 +5,7 @@
     ViewData["Title"] = "Kanban";
     ViewData["ComponentName"] = "Kanban Board";
     ViewData["ComponentTag"] = "rhx-kanban";
-    ViewData["ComponentDescription"] = "Drag-and-drop Kanban board with native HTML Drag and Drop, keyboard navigation, and htmx server persistence.";
+    ViewData["ComponentDescription"] = "Kanban board where cards move between columns via htmx buttons (no drag-and-drop, no JavaScript) with server persistence.";
 }
 
 <section class="docs-component-section">
@@ -14,7 +14,7 @@
     <!-- Interactive Demo -->
     <div class="docs-example">
         <h3>Interactive Board</h3>
-        <p>Drag cards between columns. The "In Progress" column has a WIP limit of 3. Each drop sends a POST to the server with the card ID, source and target columns, and position.</p>
+        <p>Use each card's ◀ / ▶ buttons to move it between columns. The "In Progress" column has a WIP limit of 3. Each move POSTs the card id and direction; the server resolves the target column and re-renders the board via htmx.</p>
         <rhx-tab-group>
             <rhx-tab rhx-panel="demo-preview" rhx-active="true">Preview</rhx-tab>
             <rhx-tab rhx-panel="demo-code">Code</rhx-tab>
@@ -79,23 +79,11 @@
 @await Html.PartialAsync("_PropertyTable", Model.Properties)
 
 <section class="docs-component-section">
-    <h2>Keyboard Navigation</h2>
-    <ul class="docs-a11y-list">
-        <li><strong>Tab</strong> to focus a card.</li>
-        <li><strong>Enter / Space</strong> to grab the focused card.</li>
-        <li><strong>Arrow Left / Right</strong> moves the grabbed card to the previous or next column.</li>
-        <li><strong>Arrow Up / Down</strong> reorders the grabbed card within its column.</li>
-        <li><strong>Enter / Space</strong> again to drop and persist the move to the server.</li>
-        <li><strong>Escape</strong> cancels the grab without persisting.</li>
-    </ul>
-</section>
-
-<section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>Cards are focusable with <code>tabindex="0"</code> and set <code>aria-grabbed</code> when grabbed.</li>
+        <li>Cards move via native <code>&lt;button&gt;</code> controls (◀ / ▶) — keyboard-focusable and operable with Enter/Space, with no JavaScript and no drag-and-drop.</li>
+        <li>Each move button fires the card's htmx request with <code>hx-vals</code> carrying the card id and direction; the server resolves the adjacent column and re-renders the board.</li>
         <li>The board container uses <code>role="group"</code> for semantic grouping.</li>
-        <li>WIP limit exceeded state uses a distinct danger border color.</li>
-        <li>Reduced motion preferences disable card transition animations.</li>
+        <li>WIP-limit-exceeded state uses a distinct danger border color; reduced-motion preferences disable card transitions.</li>
     </ul>
 </section>

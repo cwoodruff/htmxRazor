@@ -37,7 +37,6 @@ public class KanbanColumnTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "data-rhx-kanban-column", "");
         AssertAttribute(output, "data-rhx-column-id", "in-progress");
     }
 
@@ -59,7 +58,7 @@ public class KanbanColumnTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Renders_Drop_Zone_Body()
+    public async Task Renders_Body()
     {
         var helper = CreateHelper();
         helper.ColumnId = "todo";
@@ -70,7 +69,8 @@ public class KanbanColumnTagHelperTests : TagHelperTestBase
 
         var content = output.Content.GetContent();
         Assert.Contains("rhx-kanban-column__body", content);
-        Assert.Contains("data-rhx-drop-zone", content);
+        // No drag-and-drop drop zone anymore.
+        Assert.DoesNotContain("data-rhx-drop-zone", content);
     }
 
     [Fact]
@@ -101,24 +101,12 @@ public class KanbanColumnTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Sets_No_Drop_Attribute_When_Not_Droppable()
+    public async Task No_Drop_Hooks_Rendered()
     {
+        // Drag-and-drop is gone; rhx-droppable is a no-op and emits no data hook.
         var helper = CreateHelper();
         helper.ColumnId = "archive";
         helper.Droppable = false;
-        var context = CreateContext("rhx-kanban-column");
-        var output = CreateOutput("rhx-kanban-column");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-no-drop", "");
-    }
-
-    [Fact]
-    public async Task Omits_No_Drop_When_Droppable()
-    {
-        var helper = CreateHelper();
-        helper.ColumnId = "todo";
         var context = CreateContext("rhx-kanban-column");
         var output = CreateOutput("rhx-kanban-column");
 
