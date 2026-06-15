@@ -10,14 +10,10 @@
 
 /* ── Item ── */
 .rhx-tree__item {
-    /* Structural — no visual styling on the wrapper */
+    /* Structural — branch items are <details>, leaves are <div>. */
 }
 
-.rhx-tree__item:focus {
-    outline: none;
-}
-
-/* ── Item content (clickable row) ── */
+/* ── Item content (clickable row) — a <summary> on branches, a <div> on leaves ── */
 .rhx-tree__item-content {
     display: flex;
     align-items: center;
@@ -28,11 +24,20 @@
     user-select: none;
 }
 
+/* Hide the native <summary> disclosure marker — we draw our own expand icon. */
+summary.rhx-tree__item-content {
+    list-style: none;
+}
+
+summary.rhx-tree__item-content::-webkit-details-marker {
+    display: none;
+}
+
 .rhx-tree__item-content:hover {
     background: var(--rhx-color-hover);
 }
 
-.rhx-tree__item:focus-visible > .rhx-tree__item-content {
+.rhx-tree__item-content:focus-visible {
     outline: 2px solid var(--rhx-color-brand-500);
     outline-offset: -2px;
 }
@@ -58,7 +63,8 @@
     border-color: transparent transparent transparent currentColor;
 }
 
-.rhx-tree__item--expanded > .rhx-tree__item-content > .rhx-tree__expand-icon {
+/* Native <details open> drives the rotation — no JS, no --expanded class. */
+.rhx-tree__item[open] > .rhx-tree__item-content > .rhx-tree__expand-icon {
     transform: rotate(90deg);
 }
 

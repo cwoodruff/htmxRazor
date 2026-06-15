@@ -62,8 +62,6 @@ public class TreeTagHelper : htmxRazorTagHelperBase
         ApplyBaseAttributes(output, css);
 
         output.Attributes.SetAttribute("role", "tree");
-        output.Attributes.SetAttribute("data-rhx-tree", "");
-        output.Attributes.SetAttribute("data-rhx-selection", Selection.ToLowerInvariant());
 
         if (!string.IsNullOrWhiteSpace(AriaLabel))
         {

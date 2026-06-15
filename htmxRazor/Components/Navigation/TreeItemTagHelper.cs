@@ -110,74 +110,59 @@ public class TreeItemTagHelper : htmxRazorTagHelperBase
             hasChildren = false;
         }
 
-        var showExpandIcon = hasChildren || Lazy;
+        // Branch items (with children, or lazy-loaded) use a native <details>; the browser
+        // handles expand/collapse and keyboard with no JS. Lazy children load via htmx on the
+        // native `toggle` event (hx-trigger="toggle once"). Leaf items are a plain element.
+        var isBranch = hasChildren || Lazy;
 
-        // Render outer div
-        output.TagName = "div";
+        output.TagName = isBranch ? "details" : "div";
         output.TagMode = TagMode.StartTagAndEndTag;
 
         var css = new CssClassBuilder("rhx-tree__item")
-            .AddIf("rhx-tree__item--expanded", Expanded)
             .AddIf("rhx-tree__item--selected", Selected)
             .AddIf("rhx-tree__item--disabled", Disabled)
             .AddIf("rhx-tree__item--lazy", Lazy)
-            .AddIf("rhx-tree__item--leaf", !showExpandIcon);
+            .AddIf("rhx-tree__item--leaf", !isBranch);
 
         if (!string.IsNullOrWhiteSpace(CssClass))
             css.Add(CssClass);
 
         output.Attributes.SetAttribute("class", css.Build());
-        output.Attributes.SetAttribute("role", "treeitem");
-        output.Attributes.SetAttribute("tabindex", "-1");
 
-        if (showExpandIcon)
-        {
-            output.Attributes.SetAttribute("aria-expanded", Expanded.ToString().ToLowerInvariant());
-        }
+        if (isBranch && Expanded)
+            output.Attributes.SetAttribute("open", "open");
 
         if (Selected)
-        {
             output.Attributes.SetAttribute("aria-selected", "true");
-        }
 
         if (Disabled)
-        {
             output.Attributes.SetAttribute("aria-disabled", "true");
-        }
-
-        if (Lazy)
-        {
-            output.Attributes.SetAttribute("data-rhx-tree-lazy", "");
-        }
 
         if (!string.IsNullOrWhiteSpace(Id))
-        {
             output.Attributes.SetAttribute("id", Id);
-        }
 
         RenderHtmxAttributes(output);
 
         // Assemble inner content
         output.Content.Clear();
 
-        // Item content (clickable area)
-        output.Content.AppendHtml("<div class=\"rhx-tree__item-content\">");
-
-        if (showExpandIcon)
+        if (isBranch)
         {
+            // <summary> is the focusable, clickable disclosure label.
+            output.Content.AppendHtml("<summary class=\"rhx-tree__item-content\">");
             output.Content.AppendHtml("<span class=\"rhx-tree__expand-icon\" aria-hidden=\"true\"></span>");
-        }
+            output.Content.AppendHtml($"<span class=\"rhx-tree__item-label\">{labelHtml}</span>");
+            output.Content.AppendHtml("</summary>");
 
-        output.Content.AppendHtml($"<span class=\"rhx-tree__item-label\">{labelHtml}</span>");
-        output.Content.AppendHtml("</div>");
-
-        // Children group (only if expandable)
-        if (showExpandIcon)
-        {
-            var hiddenAttr = Expanded ? "" : " hidden";
-            output.Content.AppendHtml(
-                $"<div class=\"rhx-tree__children\" role=\"group\"{hiddenAttr}>");
+            // Native <details> shows/hides this group; no `hidden` attribute needed.
+            output.Content.AppendHtml("<div class=\"rhx-tree__children\" role=\"group\">");
             output.Content.AppendHtml(childrenHtml);
+            output.Content.AppendHtml("</div>");
+        }
+        else
+        {
+            output.Content.AppendHtml("<div class=\"rhx-tree__item-content\">");
+            output.Content.AppendHtml($"<span class=\"rhx-tree__item-label\">{labelHtml}</span>");
             output.Content.AppendHtml("</div>");
         }
     }

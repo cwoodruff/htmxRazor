@@ -163,9 +163,9 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>The tree container uses <code>role="tree"</code> with each node using <code>role="treeitem"</code>.</li>
-        <li>Branch nodes use <code>aria-expanded</code> to indicate whether they are open or closed.</li>
-        <li>Arrow key navigation moves focus between items: Up/Down for siblings, Left to collapse or move to parent, Right to expand or move to first child.</li>
+        <li>Branch nodes are native <code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> elements, so the browser supplies expand/collapse, focus, and Enter/Space toggling — no JavaScript.</li>
+        <li>The <code>&lt;summary&gt;</code> is keyboard-focusable and the disclosure (expanded/collapsed) state is conveyed natively.</li>
         <li>Selected items are marked with <code>aria-selected</code> for screen reader announcement.</li>
+        <li>Lazy branches fetch their children with htmx on the native <code>toggle</code> event (<code>hx-trigger="toggle once"</code>).</li>
     </ul>
 </section>

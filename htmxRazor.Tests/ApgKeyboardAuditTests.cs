@@ -152,24 +152,27 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
         AssertAttribute(output, "aria-label", "File explorer");
     }
 
+    // Tree items are now native <details>/<summary> (branch) and plain elements (leaf).
+    // Disclosure state + keyboard come from the browser, so the audit checks the native
+    // structure (a branch is a <details> with a <summary>) rather than role/aria-expanded.
+
     [Fact]
-    public async Task TreeItem_Branch_Has_Role_Treeitem_And_AriaExpanded()
+    public async Task TreeItem_Branch_Is_Details_With_Summary()
     {
         var helper = new TreeItemTagHelper(CreateUrlHelperFactory());
         helper.ViewContext = CreateViewContext();
         helper.Label = "Documents";
-        helper.Expanded = false;
         var context = CreateContext("rhx-tree-item");
         var output = CreateOutput("rhx-tree-item", childContent: "<div>child</div>");
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "role", "treeitem");
-        AssertAttribute(output, "aria-expanded", "false");
+        Assert.Equal("details", output.TagName);
+        Assert.Contains("<summary", output.Content.GetContent());
     }
 
     [Fact]
-    public async Task TreeItem_Branch_Expanded_Has_AriaExpanded_True()
+    public async Task TreeItem_Branch_Expanded_Sets_Open()
     {
         var helper = new TreeItemTagHelper(CreateUrlHelperFactory());
         helper.ViewContext = CreateViewContext();
@@ -180,11 +183,11 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "aria-expanded", "true");
+        AssertAttribute(output, "open", "open");
     }
 
     [Fact]
-    public async Task TreeItem_Leaf_Has_No_AriaExpanded()
+    public async Task TreeItem_Leaf_Is_Not_Details()
     {
         var helper = new TreeItemTagHelper(CreateUrlHelperFactory());
         helper.ViewContext = CreateViewContext();
@@ -193,8 +196,8 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "role", "treeitem");
-        AssertNoAttribute(output, "aria-expanded");
+        Assert.Equal("div", output.TagName);
+        AssertNoAttribute(output, "open");
     }
 
     [Fact]
@@ -227,16 +230,18 @@ public class ApgKeyboardAuditTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task TreeItem_Has_Tabindex()
+    public async Task TreeItem_Branch_Summary_Is_Natively_Focusable()
     {
+        // The <summary> is keyboard-focusable and toggles on Enter/Space natively — no tabindex.
         var helper = new TreeItemTagHelper(CreateUrlHelperFactory());
         helper.ViewContext = CreateViewContext();
+        helper.Label = "Folder";
         var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "file.txt");
+        var output = CreateOutput("rhx-tree-item", childContent: "<div>child</div>");
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "tabindex", "-1");
+        Assert.Contains("<summary", output.Content.GetContent());
     }
 
     // ══════════════════════════════════════════════

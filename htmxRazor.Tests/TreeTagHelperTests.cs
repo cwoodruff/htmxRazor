@@ -3,12 +3,10 @@ using Xunit;
 
 namespace htmxRazor.Tests;
 
+// rhx-tree is JS-free: branch items are native <details>/<summary>, leaves are plain elements.
+// Expand/collapse + keyboard are the browser's; lazy children load via htmx on the toggle event.
 public class TreeTagHelperTests : TagHelperTestBase
 {
-    // ──────────────────────────────────────────────
-    //  Helpers
-    // ──────────────────────────────────────────────
-
     private TreeTagHelper CreateTreeHelper()
     {
         var helper = new TreeTagHelper(CreateUrlHelperFactory());
@@ -28,7 +26,7 @@ public class TreeTagHelperTests : TagHelperTestBase
     // ══════════════════════════════════════════════
 
     [Fact]
-    public void Tree_Renders_Div()
+    public void Tree_Renders_Div_With_Block_Class_And_Role()
     {
         var helper = CreateTreeHelper();
         var context = CreateContext("rhx-tree");
@@ -37,80 +35,8 @@ public class TreeTagHelperTests : TagHelperTestBase
         helper.Process(context, output);
 
         Assert.Equal("div", output.TagName);
-    }
-
-    [Fact]
-    public void Tree_Has_Block_Class()
-    {
-        var helper = CreateTreeHelper();
-        var context = CreateContext("rhx-tree");
-        var output = CreateOutput("rhx-tree");
-
-        helper.Process(context, output);
-
         Assert.True(HasClass(output, "rhx-tree"));
-    }
-
-    [Fact]
-    public void Tree_Has_Role_Tree()
-    {
-        var helper = CreateTreeHelper();
-        var context = CreateContext("rhx-tree");
-        var output = CreateOutput("rhx-tree");
-
-        helper.Process(context, output);
-
         AssertAttribute(output, "role", "tree");
-    }
-
-    [Fact]
-    public void Tree_Has_Data_Attribute()
-    {
-        var helper = CreateTreeHelper();
-        var context = CreateContext("rhx-tree");
-        var output = CreateOutput("rhx-tree");
-
-        helper.Process(context, output);
-
-        Assert.NotNull(output.Attributes["data-rhx-tree"]);
-    }
-
-    [Fact]
-    public void Tree_Default_Selection_Single()
-    {
-        var helper = CreateTreeHelper();
-        var context = CreateContext("rhx-tree");
-        var output = CreateOutput("rhx-tree");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-selection", "single");
-    }
-
-    [Fact]
-    public void Tree_Multiple_Selection()
-    {
-        var helper = CreateTreeHelper();
-        helper.Selection = "multiple";
-        var context = CreateContext("rhx-tree");
-        var output = CreateOutput("rhx-tree");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-selection", "multiple");
-    }
-
-    [Fact]
-    public void Tree_Leaf_Selection()
-    {
-        var helper = CreateTreeHelper();
-        helper.Selection = "leaf";
-        var context = CreateContext("rhx-tree");
-        var output = CreateOutput("rhx-tree");
-
-        helper.Process(context, output);
-
-        AssertAttribute(output, "data-rhx-selection", "leaf");
     }
 
     [Fact]
@@ -153,59 +79,42 @@ public class TreeTagHelperTests : TagHelperTestBase
     }
 
     // ══════════════════════════════════════════════
-    //  TreeItemTagHelper — Structure
+    //  TreeItemTagHelper — branch vs leaf
     // ══════════════════════════════════════════════
 
     [Fact]
-    public async Task Item_Renders_Div()
+    public async Task Branch_Renders_Details_With_Summary()
     {
         var helper = CreateItemHelper();
         helper.Label = "Documents";
         var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "");
+        var output = CreateOutput("rhx-tree-item", childContent: "<div>child</div>");
+
+        await helper.ProcessAsync(context, output);
+
+        Assert.Equal("details", output.TagName);
+        Assert.True(HasClass(output, "rhx-tree__item"));
+        var content = output.Content.GetContent();
+        Assert.Contains("<summary class=\"rhx-tree__item-content\"", content);
+        Assert.Contains("rhx-tree__expand-icon", content);
+        Assert.False(HasClass(output, "rhx-tree__item--leaf"));
+    }
+
+    [Fact]
+    public async Task Leaf_Renders_Div_No_Details()
+    {
+        var helper = CreateItemHelper();
+        var context = CreateContext("rhx-tree-item");
+        var output = CreateOutput("rhx-tree-item", childContent: "file.txt");
 
         await helper.ProcessAsync(context, output);
 
         Assert.Equal("div", output.TagName);
-    }
-
-    [Fact]
-    public async Task Item_Has_Item_Class()
-    {
-        var helper = CreateItemHelper();
-        helper.Label = "Documents";
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.True(HasClass(output, "rhx-tree__item"));
-    }
-
-    [Fact]
-    public async Task Item_Has_Role_Treeitem()
-    {
-        var helper = CreateItemHelper();
-        helper.Label = "Documents";
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "role", "treeitem");
-    }
-
-    [Fact]
-    public async Task Item_Has_Tabindex_Minus_One()
-    {
-        var helper = CreateItemHelper();
-        helper.Label = "Documents";
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "tabindex", "-1");
+        Assert.True(HasClass(output, "rhx-tree__item--leaf"));
+        var content = output.Content.GetContent();
+        Assert.DoesNotContain("rhx-tree__expand-icon", content);
+        Assert.DoesNotContain("<summary", content);
+        Assert.DoesNotContain("rhx-tree__children", content);
     }
 
     // ══════════════════════════════════════════════
@@ -247,74 +156,19 @@ public class TreeTagHelperTests : TagHelperTestBase
         var helper = CreateItemHelper();
         helper.Label = "Tom & Jerry";
         var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "");
+        var output = CreateOutput("rhx-tree-item", childContent: "<div>child</div>");
 
         await helper.ProcessAsync(context, output);
 
-        var content = output.Content.GetContent();
-        Assert.Contains("Tom &amp; Jerry", content);
+        Assert.Contains("Tom &amp; Jerry", output.Content.GetContent());
     }
 
     // ══════════════════════════════════════════════
-    //  Leaf vs Branch
+    //  Children group
     // ══════════════════════════════════════════════
 
     [Fact]
-    public async Task Leaf_Item_No_Expand_Icon()
-    {
-        var helper = CreateItemHelper();
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "file.txt");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.DoesNotContain("rhx-tree__expand-icon", content);
-        Assert.True(HasClass(output, "rhx-tree__item--leaf"));
-    }
-
-    [Fact]
-    public async Task Leaf_No_AriaExpanded()
-    {
-        var helper = CreateItemHelper();
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "file.txt");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertNoAttribute(output, "aria-expanded");
-    }
-
-    [Fact]
-    public async Task Leaf_No_Children_Div()
-    {
-        var helper = CreateItemHelper();
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "file.txt");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.DoesNotContain("rhx-tree__children", content);
-    }
-
-    [Fact]
-    public async Task Branch_Has_Expand_Icon()
-    {
-        var helper = CreateItemHelper();
-        helper.Label = "Documents";
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "<div>nested child</div>");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-tree__expand-icon", content);
-        Assert.Contains("aria-hidden=\"true\"", content);
-    }
-
-    [Fact]
-    public async Task Branch_Has_Children_Div_With_Role_Group()
+    public async Task Branch_Has_Children_Group()
     {
         var helper = CreateItemHelper();
         helper.Label = "Documents";
@@ -328,25 +182,12 @@ public class TreeTagHelperTests : TagHelperTestBase
         Assert.Contains("role=\"group\"", content);
     }
 
-    [Fact]
-    public async Task Branch_Not_Leaf()
-    {
-        var helper = CreateItemHelper();
-        helper.Label = "Documents";
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "<div>child</div>");
-
-        await helper.ProcessAsync(context, output);
-
-        Assert.False(HasClass(output, "rhx-tree__item--leaf"));
-    }
-
     // ══════════════════════════════════════════════
-    //  Expanded / Collapsed
+    //  Expanded / Collapsed (native <details open>)
     // ══════════════════════════════════════════════
 
     [Fact]
-    public async Task Expanded_Has_AriaExpanded_True()
+    public async Task Expanded_Sets_Open_Attribute()
     {
         var helper = CreateItemHelper();
         helper.Label = "Documents";
@@ -356,12 +197,11 @@ public class TreeTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "aria-expanded", "true");
-        Assert.True(HasClass(output, "rhx-tree__item--expanded"));
+        AssertAttribute(output, "open", "open");
     }
 
     [Fact]
-    public async Task Collapsed_Has_AriaExpanded_False()
+    public async Task Collapsed_Has_No_Open_Attribute()
     {
         var helper = CreateItemHelper();
         helper.Label = "Documents";
@@ -370,38 +210,7 @@ public class TreeTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "aria-expanded", "false");
-        Assert.False(HasClass(output, "rhx-tree__item--expanded"));
-    }
-
-    [Fact]
-    public async Task Collapsed_Children_Hidden()
-    {
-        var helper = CreateItemHelper();
-        helper.Label = "Documents";
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "<div>child</div>");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("hidden", content);
-    }
-
-    [Fact]
-    public async Task Expanded_Children_Not_Hidden()
-    {
-        var helper = CreateItemHelper();
-        helper.Label = "Documents";
-        helper.Expanded = true;
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "<div>child</div>");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        // Children div should NOT have hidden attribute
-        Assert.Contains("role=\"group\">", content);
+        AssertNoAttribute(output, "open");
     }
 
     // ══════════════════════════════════════════════
@@ -450,11 +259,11 @@ public class TreeTagHelperTests : TagHelperTestBase
     }
 
     // ══════════════════════════════════════════════
-    //  Lazy loading
+    //  Lazy loading (native <details> toggle + htmx)
     // ══════════════════════════════════════════════
 
     [Fact]
-    public async Task Lazy_Has_Data_Attribute()
+    public async Task Lazy_Is_A_Branch_With_Children_Group()
     {
         var helper = CreateItemHelper();
         helper.Lazy = true;
@@ -463,60 +272,18 @@ public class TreeTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        Assert.NotNull(output.Attributes["data-rhx-tree-lazy"]);
+        Assert.Equal("details", output.TagName);
         Assert.True(HasClass(output, "rhx-tree__item--lazy"));
-    }
-
-    [Fact]
-    public async Task Lazy_Has_Expand_Icon_Even_Without_Children()
-    {
-        var helper = CreateItemHelper();
-        helper.Lazy = true;
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "Projects");
-
-        await helper.ProcessAsync(context, output);
-
+        Assert.False(HasClass(output, "rhx-tree__item--leaf"));
         var content = output.Content.GetContent();
         Assert.Contains("rhx-tree__expand-icon", content);
-        Assert.False(HasClass(output, "rhx-tree__item--leaf"));
-    }
-
-    [Fact]
-    public async Task Lazy_Has_Children_Div()
-    {
-        var helper = CreateItemHelper();
-        helper.Lazy = true;
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "Projects");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
         Assert.Contains("rhx-tree__children", content);
-        Assert.Contains("role=\"group\"", content);
     }
 
     [Fact]
-    public async Task Lazy_Has_AriaExpanded()
+    public async Task Htmx_Attributes_Rendered_On_Details()
     {
-        var helper = CreateItemHelper();
-        helper.Lazy = true;
-        var context = CreateContext("rhx-tree-item");
-        var output = CreateOutput("rhx-tree-item", childContent: "Projects");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "aria-expanded", "false");
-    }
-
-    // ══════════════════════════════════════════════
-    //  htmx & Custom CSS
-    // ══════════════════════════════════════════════
-
-    [Fact]
-    public async Task Htmx_Attributes_Rendered()
-    {
+        // Lazy children load on the native <details> `toggle` event.
         var helper = CreateItemHelper();
         helper.Lazy = true;
         helper.HxGet = "/api/children/1";
@@ -549,7 +316,7 @@ public class TreeTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Item_Content_Div_Present()
+    public async Task Item_Content_Present()
     {
         var helper = CreateItemHelper();
         var context = CreateContext("rhx-tree-item");
@@ -557,30 +324,6 @@ public class TreeTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        var content = output.Content.GetContent();
-        Assert.Contains("class=\"rhx-tree__item-content\"", content);
+        Assert.Contains("class=\"rhx-tree__item-content\"", output.Content.GetContent());
     }
-
-    // ══════════════════════════════════════════════
-    //  Keyboard Interaction Contract (documentation)
-    // ══════════════════════════════════════════════
-    //
-    // The following keyboard behaviors are implemented in rhx-tree.js:
-    //
-    //   ArrowDown    → Focus next visible item
-    //   ArrowUp      → Focus previous visible item
-    //   ArrowRight   → Expand collapsed, or focus first child
-    //   ArrowLeft    → Collapse expanded, or focus parent
-    //   Home         → Focus first visible item
-    //   End          → Focus last visible item
-    //   Enter/Space  → Select item, toggle expand
-    //
-    // Selection modes:
-    //   single   → One item at a time
-    //   multiple → Toggle selection
-    //   leaf     → Only leaf items selectable
-    //
-    // Lazy loading:
-    //   Expanding a lazy item dispatches a 'toggle' event
-    //   for htmx to intercept via hx-trigger="toggle once"
 }
