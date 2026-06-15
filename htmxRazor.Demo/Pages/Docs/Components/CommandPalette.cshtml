@@ -5,7 +5,7 @@
     ViewData["Title"] = "Command Palette";
     ViewData["ComponentName"] = "Command Palette";
     ViewData["ComponentTag"] = "rhx-command-palette";
-    ViewData["ComponentDescription"] = "A modal search overlay activated via Cmd+K with server-rendered results, keyboard navigation, and htmx integration.";
+    ViewData["ComponentDescription"] = "A native modal <dialog> search overlay opened by an invoker button, with server-rendered results and htmx filtering — no JavaScript.";
 }
 
 <section class="docs-component-section">
@@ -20,7 +20,7 @@
             <rhx-tab-panel rhx-name="basic-preview" rhx-active="true">
                 <div class="docs-preview docs-preview--vertical">
                     <rhx-button rhx-variant="neutral" rhx-appearance="outlined"
-                                onclick="var cp = document.getElementById('basic-cp'); cp.removeAttribute('hidden'); cp.querySelector('input').focus();">
+                                command="show-modal" commandfor="basic-cp">
                         Open Palette
                     </rhx-button>
 
@@ -67,7 +67,7 @@
             <rhx-tab-panel rhx-name="items-preview" rhx-active="true">
                 <div class="docs-preview docs-preview--vertical">
                     <rhx-button rhx-variant="neutral" rhx-appearance="outlined"
-                                onclick="var cp = document.getElementById('items-cp'); cp.removeAttribute('hidden'); cp.querySelector('input').focus();">
+                                command="show-modal" commandfor="items-cp">
                         Open Palette with Item Variations
                     </rhx-button>
 
@@ -110,12 +110,10 @@
             <rhx-tab-panel rhx-name="htmx-preview" rhx-active="true">
                 <div class="docs-preview docs-preview--vertical">
                     <p style="color: var(--rhx-color-text-muted); font-size: var(--rhx-font-size-sm);">
-                        Press <kbd style="font-family: var(--rhx-font-family-mono, monospace); font-size: var(--rhx-font-size-xs); padding: 2px 6px; border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-sm);">&#8984;K</kbd> /
-                        <kbd style="font-family: var(--rhx-font-family-mono, monospace); font-size: var(--rhx-font-size-xs); padding: 2px 6px; border: var(--rhx-border-width) solid var(--rhx-color-border); border-radius: var(--rhx-radius-sm);">Ctrl+K</kbd>
-                        to open, or click the button below.
+                        Click the button to open the palette and search.
                     </p>
                     <rhx-button rhx-variant="brand" rhx-appearance="outlined"
-                                onclick="var cp = document.getElementById('htmx-cp'); cp.removeAttribute('hidden'); cp.querySelector('input').focus();">
+                                command="show-modal" commandfor="htmx-cp">
                         <rhx-icon name="search" rhx-size="small"></rhx-icon>
                         Search Components...
                     </rhx-button>
@@ -159,11 +157,10 @@
 <section class="docs-component-section">
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
-        <li>The palette uses <code>role="dialog"</code> with <code>aria-modal="true"</code> for screen reader announcement.</li>
-        <li>The search input uses <code>role="combobox"</code> with <code>aria-expanded</code> and <code>aria-autocomplete="list"</code>.</li>
-        <li>Results use <code>role="listbox"</code> with items as <code>role="option"</code>.</li>
-        <li>Keyboard: <kbd>&#8984;K</kbd> / <kbd>Ctrl+K</kbd> opens; <kbd>Escape</kbd> closes; Arrow keys navigate; <kbd>Enter</kbd> selects.</li>
-        <li>Groups use <code>role="group"</code> with <code>aria-labelledby</code> referencing the heading.</li>
-        <li>Disabled items have <code>aria-disabled="true"</code> and are skipped during keyboard navigation.</li>
+        <li>Built on a native modal <code>&lt;dialog&gt;</code>, so the backdrop, focus trap, <kbd>Escape</kbd>-to-close, and light-dismiss come from the browser — no JavaScript.</li>
+        <li>Open it with an invoker button: <code>&lt;button command="show-modal" commandfor="palette-id"&gt;</code>. The search input is <code>autofocus</code>ed on open.</li>
+        <li>The search input uses <code>role="combobox"</code> with <code>aria-autocomplete="list"</code>; results filter via htmx as you type.</li>
+        <li>Items navigate as native links (<code>&lt;a href&gt;</code>) or fire actions as native <code>&lt;button&gt;</code>s, so Tab/Enter are native. (The Cmd+K global shortcut and arrow-key roving are dropped.)</li>
+        <li>Groups use <code>role="group"</code> with <code>aria-labelledby</code> referencing the heading; disabled items use <code>aria-disabled</code>.</li>
     </ul>
 </section>

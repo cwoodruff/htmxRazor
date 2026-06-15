@@ -3,24 +3,20 @@
    ══════════════════════════════════════════════ */
 
 @layer rhx.components {
+/* Native modal <dialog>: positioned near the top, transparent chrome (the inner __panel is
+   the visible box); backdrop via the native ::backdrop pseudo-element. */
 .rhx-command-palette {
-    position: fixed;
-    inset: 0;
-    z-index: var(--rhx-z-dialog);
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: 15vh;
+    width: 100%;
+    max-width: 640px;
+    margin: 15vh auto auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--rhx-color-text);
+    font-family: var(--rhx-font-family);
 }
 
-.rhx-command-palette[hidden] {
-    display: none;
-}
-
-/* ── Backdrop ── */
-.rhx-command-palette__backdrop {
-    position: fixed;
-    inset: 0;
+.rhx-command-palette::backdrop {
     background: var(--rhx-color-overlay);
 }
 

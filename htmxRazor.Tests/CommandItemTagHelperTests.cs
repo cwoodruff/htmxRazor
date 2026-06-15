@@ -17,16 +17,18 @@ public class CommandItemTagHelperTests : TagHelperTestBase
     // ══════════════════════════════════════════════
 
     [Fact]
-    public async Task Renders_Div_With_Option_Role()
+    public async Task Renders_Button_When_No_Href()
     {
+        // No href ⇒ a native <button> (htmx-actionable); with href ⇒ an <a>.
         var helper = CreateHelper();
         var context = CreateContext("rhx-command-item");
         var output = CreateOutput("rhx-command-item", childContent: "Home");
 
         await helper.ProcessAsync(context, output);
 
-        Assert.Equal("div", output.TagName);
+        Assert.Equal("button", output.TagName);
         AssertAttribute(output, "role", "option");
+        AssertAttribute(output, "type", "button");
     }
 
     [Fact]
@@ -42,27 +44,18 @@ public class CommandItemTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task AriaSelected_False_By_Default()
+    public async Task Href_Renders_Anchor()
     {
+        // A command item with href navigates natively (no JS) — it's a real <a>.
         var helper = CreateHelper();
+        helper.Href = "/settings";
         var context = CreateContext("rhx-command-item");
-        var output = CreateOutput("rhx-command-item", childContent: "Home");
+        var output = CreateOutput("rhx-command-item", childContent: "Settings");
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "aria-selected", "false");
-    }
-
-    [Fact]
-    public async Task Tabindex_Minus1()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-command-item");
-        var output = CreateOutput("rhx-command-item", childContent: "Home");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "tabindex", "-1");
+        Assert.Equal("a", output.TagName);
+        AssertAttribute(output, "href", "/settings");
     }
 
     // ══════════════════════════════════════════════
@@ -80,19 +73,6 @@ public class CommandItemTagHelperTests : TagHelperTestBase
         await helper.ProcessAsync(context, output);
 
         AssertAttribute(output, "data-rhx-value", "settings");
-    }
-
-    [Fact]
-    public async Task Href_Sets_DataAttribute()
-    {
-        var helper = CreateHelper();
-        helper.Href = "/settings";
-        var context = CreateContext("rhx-command-item");
-        var output = CreateOutput("rhx-command-item", childContent: "Settings");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-href", "/settings");
     }
 
     [Fact]

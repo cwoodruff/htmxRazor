@@ -3,6 +3,9 @@ using Xunit;
 
 namespace htmxRazor.Tests;
 
+// rhx-command-palette is now a native modal <dialog> opened by an invoker button
+// (command="show-modal" commandfor). Backdrop/focus-trap/Escape/light-dismiss are the
+// browser's; results are server-rendered and filtered via htmx. No JavaScript, no Cmd+K.
 public class CommandPaletteTagHelperTests : TagHelperTestBase
 {
     private CommandPaletteTagHelper CreateHelper()
@@ -12,141 +15,79 @@ public class CommandPaletteTagHelperTests : TagHelperTestBase
         return helper;
     }
 
-    // ══════════════════════════════════════════════
-    //  Structure
-    // ══════════════════════════════════════════════
-
-    [Fact]
-    public async Task Renders_Div_Element()
+    private async Task<(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output, string content)> RenderAsync(
+        CommandPaletteTagHelper helper)
     {
-        var helper = CreateHelper();
         var context = CreateContext("rhx-command-palette");
         var output = CreateOutput("rhx-command-palette", childContent: "");
-
         await helper.ProcessAsync(context, output);
-
-        Assert.Equal("div", output.TagName);
+        return (output, output.Content.GetContent());
     }
 
+    // ── Structure ──
+
     [Fact]
-    public async Task Has_Block_Class()
+    public async Task Renders_Native_Dialog_With_Block_Class()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
+        var (output, _) = await RenderAsync(CreateHelper());
+        Assert.Equal("dialog", output.TagName);
         Assert.True(HasClass(output, "rhx-command-palette"));
     }
 
     [Fact]
-    public async Task Hidden_By_Default()
+    public async Task Closed_By_Default()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "hidden", "hidden");
+        // A native <dialog> is closed unless it has the `open` attribute.
+        var (output, _) = await RenderAsync(CreateHelper());
+        AssertNoAttribute(output, "open");
     }
 
     [Fact]
-    public async Task Has_Dialog_Role()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "role", "dialog");
-        AssertAttribute(output, "aria-modal", "true");
-    }
-
-    [Fact]
-    public async Task Has_AriaLabel()
+    public async Task Light_Dismiss_And_AriaLabel()
     {
         var helper = CreateHelper();
         helper.Label = "Quick search";
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
+        var (output, _) = await RenderAsync(helper);
+        AssertAttribute(output, "closedby", "any");
         AssertAttribute(output, "aria-label", "Quick search");
     }
 
     [Fact]
-    public async Task Has_DataAttribute()
+    public async Task Has_Id_For_Invoker_Commandfor()
     {
         var helper = CreateHelper();
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-command-palette", "");
+        helper.Id = "search";
+        var (output, _) = await RenderAsync(helper);
+        AssertAttribute(output, "id", "search");
     }
 
-    [Fact]
-    public async Task Shortcut_DataAttribute()
-    {
-        var helper = CreateHelper();
-        helper.Shortcut = "mod+k";
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        AssertAttribute(output, "data-rhx-shortcut", "mod+k");
-    }
-
-    // ══════════════════════════════════════════════
-    //  Inner content
-    // ══════════════════════════════════════════════
+    // ── Inner content ──
 
     [Fact]
-    public async Task Contains_Backdrop()
+    public async Task Contains_Panel_No_Backdrop_Div()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-command-palette__backdrop", content);
-    }
-
-    [Fact]
-    public async Task Contains_Panel()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var (_, content) = await RenderAsync(CreateHelper());
         Assert.Contains("rhx-command-palette__panel", content);
+        // Native ::backdrop replaces the old backdrop element.
+        Assert.DoesNotContain("rhx-command-palette__backdrop", content);
     }
 
     [Fact]
-    public async Task Contains_Input_With_Combobox_Role()
+    public async Task Input_Is_Autofocus_Combobox()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var (_, content) = await RenderAsync(CreateHelper());
         Assert.Contains("role=\"combobox\"", content);
-        Assert.Contains("aria-expanded=\"false\"", content);
         Assert.Contains("aria-autocomplete=\"list\"", content);
         Assert.Contains("autocomplete=\"off\"", content);
+        Assert.Contains("autofocus", content);
+    }
+
+    [Fact]
+    public async Task No_Shortcut_Kbd()
+    {
+        // The Cmd+K shortcut is dropped, so there is no shortcut hint.
+        var (_, content) = await RenderAsync(CreateHelper());
+        Assert.DoesNotContain("rhx-command-palette__shortcut", content);
     }
 
     [Fact]
@@ -154,12 +95,7 @@ public class CommandPaletteTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.Placeholder = "Find anything...";
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var (_, content) = await RenderAsync(helper);
         Assert.Contains("placeholder=\"Find anything...\"", content);
     }
 
@@ -168,12 +104,7 @@ public class CommandPaletteTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.Id = "cp";
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var (_, content) = await RenderAsync(helper);
         Assert.Contains("role=\"listbox\"", content);
         Assert.Contains("id=\"cp-results\"", content);
     }
@@ -183,12 +114,7 @@ public class CommandPaletteTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.Id = "search";
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var (_, content) = await RenderAsync(helper);
         Assert.Contains("aria-controls=\"search-results\"", content);
     }
 
@@ -197,12 +123,7 @@ public class CommandPaletteTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.EmptyMessage = "Nothing here";
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var (_, content) = await RenderAsync(helper);
         Assert.Contains("Nothing here", content);
         Assert.Contains("rhx-command-palette__empty", content);
     }
@@ -210,45 +131,18 @@ public class CommandPaletteTagHelperTests : TagHelperTestBase
     [Fact]
     public async Task Contains_Search_Icon()
     {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var (_, content) = await RenderAsync(CreateHelper());
         Assert.Contains("rhx-command-palette__search-icon", content);
     }
 
-    [Fact]
-    public async Task Contains_Shortcut_Kbd()
-    {
-        var helper = CreateHelper();
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
-        Assert.Contains("rhx-command-palette__shortcut", content);
-        Assert.Contains("<kbd", content);
-    }
-
-    // ══════════════════════════════════════════════
-    //  htmx forwarding
-    // ══════════════════════════════════════════════
+    // ── htmx forwarding ──
 
     [Fact]
     public async Task HxGet_Forwarded_To_Input()
     {
         var helper = CreateHelper();
         helper.HxGet = "/api/search";
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var (_, content) = await RenderAsync(helper);
         Assert.Contains("hx-get=\"/api/search\"", content);
     }
 
@@ -257,12 +151,7 @@ public class CommandPaletteTagHelperTests : TagHelperTestBase
     {
         var helper = CreateHelper();
         helper.Debounce = 500;
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var (_, content) = await RenderAsync(helper);
         Assert.Contains("hx-trigger=\"input changed delay:500ms\"", content);
     }
 
@@ -272,12 +161,7 @@ public class CommandPaletteTagHelperTests : TagHelperTestBase
         var helper = CreateHelper();
         helper.HxGet = "/search";
         helper.Id = "mycp";
-        var context = CreateContext("rhx-command-palette");
-        var output = CreateOutput("rhx-command-palette", childContent: "");
-
-        await helper.ProcessAsync(context, output);
-
-        var content = output.Content.GetContent();
+        var (_, content) = await RenderAsync(helper);
         Assert.Contains("hx-target=\"#mycp-results\"", content);
     }
 }

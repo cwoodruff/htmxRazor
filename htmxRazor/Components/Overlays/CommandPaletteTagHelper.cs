@@ -57,28 +57,27 @@ public class CommandPaletteTagHelper : htmxRazorTagHelperBase
     {
         var childContent = await output.GetChildContentAsync();
 
-        output.TagName = "div";
+        // Native modal <dialog>: the browser provides the backdrop, focus trap,
+        // Escape-to-close, and (via closedby) light-dismiss — no JavaScript. Open it with an
+        // invoker button: <button command="show-modal" commandfor="{id}">. (The Cmd+K global
+        // shortcut is dropped; rhx-shortcut is retained for source compatibility only.)
+        output.TagName = "dialog";
         output.TagMode = TagMode.StartTagAndEndTag;
-
-        var css = CreateCssBuilder();
-        ApplyBaseAttributes(output, css);
 
         var paletteId = Id ?? $"rhx-cp-{context.UniqueId}";
         var resultsId = $"{paletteId}-results";
         var inputId = $"{paletteId}-input";
 
-        output.Attributes.SetAttribute("data-rhx-command-palette", "");
-        output.Attributes.SetAttribute("data-rhx-shortcut", Shortcut);
-        output.Attributes.SetAttribute("role", "dialog");
-        output.Attributes.SetAttribute("aria-modal", "true");
+        var css = CreateCssBuilder();
+        ApplyBaseAttributes(output, css);
+        output.Attributes.SetAttribute("id", paletteId);
         output.Attributes.SetAttribute("aria-label", Label);
-        output.Attributes.SetAttribute("hidden", "hidden");
+        output.Attributes.SetAttribute("closedby", "any");
+
+        RenderHtmxAttributes(output);
 
         // Build inner HTML
         output.Content.Clear();
-
-        // Backdrop
-        output.Content.AppendHtml($"<div class=\"{GetElementClass("backdrop")}\"></div>");
 
         // Panel
         output.Content.AppendHtml($"<div class=\"{GetElementClass("panel")}\">");
@@ -104,6 +103,7 @@ public class CommandPaletteTagHelper : htmxRazorTagHelperBase
             $" aria-controls=\"{Enc(resultsId)}\"" +
             " aria-autocomplete=\"list\"" +
             " autocomplete=\"off\"" +
+            " autofocus" +   // native <dialog> focuses this on show-modal
             $" placeholder=\"{Enc(Placeholder)}\"");
 
         // Forward htmx attributes to the input
@@ -124,11 +124,6 @@ public class CommandPaletteTagHelper : htmxRazorTagHelperBase
 
         output.Content.AppendHtml($" name=\"q\"");
         output.Content.AppendHtml(" />");
-
-        // Shortcut hint
-        var shortcutDisplay = Shortcut.Replace("mod+", "\u2318").ToUpperInvariant();
-        output.Content.AppendHtml(
-            $"<kbd class=\"{GetElementClass("shortcut")}\">{Enc(shortcutDisplay)}</kbd>");
 
         output.Content.AppendHtml("</div>"); // close search
 

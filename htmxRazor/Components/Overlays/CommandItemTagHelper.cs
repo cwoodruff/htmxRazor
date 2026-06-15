@@ -58,7 +58,10 @@ public class CommandItemTagHelper : htmxRazorTagHelperBase
     {
         var childContent = await output.GetChildContentAsync();
 
-        output.TagName = "div";
+        // A command item navigates (native <a href>) or fires an action (native <button> + htmx).
+        // No JavaScript: clicking a link navigates; keyboard focus/activation are native.
+        var isLink = !string.IsNullOrWhiteSpace(Href);
+        output.TagName = isLink ? "a" : "button";
         output.TagMode = TagMode.StartTagAndEndTag;
 
         var css = new CssClassBuilder(GetElementClass("item"))
@@ -69,13 +72,19 @@ public class CommandItemTagHelper : htmxRazorTagHelperBase
 
         output.Attributes.SetAttribute("class", css.Build());
         output.Attributes.SetAttribute("role", "option");
-        output.Attributes.SetAttribute("aria-selected", "false");
-        output.Attributes.SetAttribute("tabindex", "-1");
+
+        if (isLink)
+        {
+            output.Attributes.SetAttribute("href", Href!);
+        }
+        else
+        {
+            output.Attributes.SetAttribute("type", "button");
+            if (Disabled) output.Attributes.SetAttribute("disabled", "disabled");
+        }
 
         if (!string.IsNullOrWhiteSpace(Value))
             output.Attributes.SetAttribute("data-rhx-value", Value);
-        if (!string.IsNullOrWhiteSpace(Href))
-            output.Attributes.SetAttribute("data-rhx-href", Href);
         if (Disabled)
             output.Attributes.SetAttribute("aria-disabled", "true");
 
