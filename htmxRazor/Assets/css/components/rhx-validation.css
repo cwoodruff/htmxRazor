@@ -20,6 +20,38 @@
   color: var(--rhx-color-danger-600);
 }
 
+/* ── Native client-side validation (:user-invalid, no JavaScript) ──
+   The browser flags a control invalid only after the user has interacted with it,
+   so these mirror the server-driven --error border for instant pre-submit feedback.
+   Server validation (ModelState → --error modifier + rhx-validation-message) remains
+   authoritative; this is the zero-JS client layer. */
+.rhx-input__native:user-invalid,
+.rhx-textarea__native:user-invalid,
+.rhx-number-input__native:user-invalid,
+.rhx-select__control:user-invalid,
+.rhx-combobox__control:user-invalid,
+.rhx-date-picker__control:user-invalid,
+.rhx-time-picker__control:user-invalid,
+.rhx-datetime-picker__control:user-invalid,
+.rhx-color-picker__control:user-invalid,
+.rhx-file-input__control:user-invalid {
+  border-color: var(--rhx-color-danger-500);
+}
+
+.rhx-input__native:user-invalid:focus-visible,
+.rhx-textarea__native:user-invalid:focus-visible,
+.rhx-number-input__native:user-invalid:focus-visible,
+.rhx-select__control:user-invalid:focus-visible,
+.rhx-combobox__control:user-invalid:focus-visible,
+.rhx-date-picker__control:user-invalid:focus-visible,
+.rhx-time-picker__control:user-invalid:focus-visible,
+.rhx-datetime-picker__control:user-invalid:focus-visible,
+.rhx-color-picker__control:user-invalid:focus-visible,
+.rhx-file-input__control:user-invalid:focus-visible {
+  outline-color: var(--rhx-color-danger-500);
+  box-shadow: 0 0 0 1px var(--rhx-color-danger-500);
+}
+
 /* ── Validation Summary List (inside callout) ── */
 .rhx-validation-summary__list {
   margin: 0;

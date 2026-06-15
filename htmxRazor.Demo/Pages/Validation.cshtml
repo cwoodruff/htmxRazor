@@ -68,9 +68,9 @@
 <div class="demo-section">
     <h2>Client-Side Validation</h2>
 
-    <div class="demo-label">HTML5 constraint validation with data-rhx-validate — validates before submit</div>
+    <div class="demo-label">Native HTML5 constraint validation — the browser blocks submit, shows its own messages, and <code>:user-invalid</code> styles invalid fields. No library JavaScript.</div>
 
-    <form id="client-form" data-rhx-validate style="display: flex; flex-direction: column; gap: var(--rhx-space-lg); max-width: 32rem;">
+    <form id="client-form" style="display: flex; flex-direction: column; gap: var(--rhx-space-lg); max-width: 32rem;">
 
         <rhx-input rhx-label="Required Name" name="client-name"
                    rhx-placeholder="Enter your name" rhx-required="true" />
@@ -94,15 +94,15 @@
     </form>
 
     <script>
+        // Self-contained demo helper using only the native Constraint Validation API
+        // (reportValidity shows the browser's own bubbles) — no htmxRazor library JS.
         document.getElementById('client-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            // Check validity directly — the rhx-validation handler shows field errors,
-            // and this handler shows the overall result message.
             var result = document.getElementById('client-form-result');
-            if (this.checkValidity()) {
+            if (this.reportValidity()) {
                 result.innerHTML = '<span style="color: var(--rhx-color-success-600); font-weight: var(--rhx-font-weight-medium);">&#10003; Form is valid!</span>';
             } else {
-                result.innerHTML = '<span style="color: var(--rhx-color-danger-600); font-weight: var(--rhx-font-weight-medium);">&#10008; Please fix the errors above.</span>';
+                result.innerHTML = '';
             }
         });
     </script>
