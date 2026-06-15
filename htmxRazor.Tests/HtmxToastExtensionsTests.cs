@@ -59,10 +59,11 @@ public class HtmxToastExtensionsTests
 
         var result = page.HxToastOob("Item deleted", "danger");
 
-        Assert.Contains("<rhx-toast", result.Content);
-        Assert.Contains("rhx-variant=\"danger\"", result.Content);
+        // Fully-rendered toast markup (no <rhx-toast> tag helper to process client-side).
+        Assert.Contains("class=\"rhx-toast rhx-toast--danger\"", result.Content);
         Assert.Contains("Item deleted", result.Content);
         Assert.Contains("hx-swap-oob=\"beforeend:#rhx-toasts\"", result.Content);
+        Assert.Contains("rhx-toast__content", result.Content);
     }
 
     [Fact]

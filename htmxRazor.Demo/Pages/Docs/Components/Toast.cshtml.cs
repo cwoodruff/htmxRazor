@@ -77,27 +77,17 @@ public IActionResult OnPostDelete()
         };
     }
 
-    public IActionResult OnPostShowSuccess()
-    {
-        Response.HxToast("Item saved successfully!", "success");
-        return Content("", "text/html");
-    }
+    // Each handler returns a fully-rendered toast as an htmx out-of-band swap (zero JS):
+    // htmx places it into #rhx-toasts; CSS handles auto-dismiss and the close control.
+    public IActionResult OnPostShowSuccess() =>
+        this.HxToastOob("Item saved successfully!", "success");
 
-    public IActionResult OnPostShowError()
-    {
-        Response.HxToast("An error occurred while processing your request.", "danger");
-        return Content("", "text/html");
-    }
+    public IActionResult OnPostShowError() =>
+        this.HxToastOob("An error occurred while processing your request.", "danger");
 
-    public IActionResult OnPostShowWarning()
-    {
-        Response.HxToast("Your session expires in 5 minutes.", "warning", duration: 8000);
-        return Content("", "text/html");
-    }
+    public IActionResult OnPostShowWarning() =>
+        this.HxToastOob("Your session expires in 5 minutes.", "warning", duration: 8000);
 
-    public IActionResult OnPostShowBrand()
-    {
-        Response.HxToast("New feature available! Check it out.", "brand");
-        return Content("", "text/html");
-    }
+    public IActionResult OnPostShowBrand() =>
+        this.HxToastOob("New feature available! Check it out.", "brand");
 }

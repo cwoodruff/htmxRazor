@@ -66,10 +66,16 @@ public class ToastTagHelper : htmxRazorTagHelperBase
 
         ApplyBaseAttributes(output, css);
 
-        output.Attributes.SetAttribute("data-rhx-toast", "");
-
-        if (Duration.HasValue)
-            output.Attributes.SetAttribute("data-rhx-duration", Duration.Value.ToString());
+        // Auto-dismiss: fade out after the duration via a delayed CSS animation (no JS).
+        // 0 disables it; when unspecified, default to 5s (the old container default).
+        var duration = Duration ?? 5000;
+        if (duration > 0)
+        {
+            var anim = $"animation: rhx-toast-auto-dismiss 300ms ease {duration}ms forwards";
+            var existing = output.Attributes["style"]?.Value?.ToString();
+            output.Attributes.SetAttribute("style",
+                string.IsNullOrWhiteSpace(existing) ? anim : existing!.TrimEnd(';', ' ') + "; " + anim);
+        }
 
         // Build inner content
         var childContent = await output.GetChildContentAsync();
@@ -84,18 +90,24 @@ public class ToastTagHelper : htmxRazorTagHelperBase
         output.Content.AppendHtml(childContent);
         output.Content.AppendHtml("</div>");
 
-        // Close button
+        // Close control — a focusable checkbox + label; CSS (:has(:checked)) hides the toast.
+        // No JavaScript: dismissing is a pure CSS state toggle.
         if (Closable)
         {
+            var dismissId = "rhx-toast-dismiss-" + context.UniqueId;
             output.Content.AppendHtml(
-                $"<button class=\"{GetElementClass("close")}\" type=\"button\" aria-label=\"Close\">" +
+                $"<input type=\"checkbox\" id=\"{Enc(dismissId)}\" class=\"{GetElementClass("dismiss")} rhx-sr-only\" aria-label=\"Close\" />");
+            output.Content.AppendHtml(
+                $"<label class=\"{GetElementClass("close")}\" for=\"{Enc(dismissId)}\" title=\"Close\" aria-hidden=\"true\">" +
                 "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">" +
                 "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"></line>" +
-                "</svg></button>");
+                "</svg></label>");
         }
 
         RenderHtmxAttributes(output);
     }
+
+    private static string Enc(string? value) => WebUtility.HtmlEncode(value ?? "") ?? "";
 
     // ──────────────────────────────────────────────
     //  Icon resolution

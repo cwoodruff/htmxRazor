@@ -37,36 +37,34 @@
     <!-- Live Demo: Trigger Toasts -->
     <div class="docs-example">
         <h3>Trigger Toasts from Server</h3>
-        <p>Click the buttons to trigger toasts via <code>Response.HxToast()</code> from the server.</p>
+        <p>Click the buttons to push toasts from the server via <code>this.HxToastOob()</code> — an htmx out-of-band swap, no JavaScript.</p>
         <rhx-tab-group>
             <rhx-tab rhx-panel="trigger-preview" rhx-active="true">Preview</rhx-tab>
             <rhx-tab rhx-panel="trigger-code">Code</rhx-tab>
             <rhx-tab-panel rhx-name="trigger-preview" rhx-active="true">
                 <div class="docs-preview">
-                    <div id="toast-demo-target" style="display:none;"></div>
+                    @* Main swap goes to this throwaway sink; the response's OOB element routes
+                       itself to #rhx-toasts. (A target makes htmx process the response reliably.) *@
+                    <div id="toast-demo-sink" hidden></div>
                     <div style="display:flex; gap:var(--rhx-space-sm); flex-wrap:wrap;">
                         <rhx-button rhx-variant="success"
                                     hx-post="/Docs/Components/Toast?handler=ShowSuccess"
-                                    hx-target="#toast-demo-target"
-                                    hx-swap="innerHTML">
+                                    hx-target="#toast-demo-sink" hx-swap="innerHTML">
                             Success Toast
                         </rhx-button>
                         <rhx-button rhx-variant="danger"
                                     hx-post="/Docs/Components/Toast?handler=ShowError"
-                                    hx-target="#toast-demo-target"
-                                    hx-swap="innerHTML">
+                                    hx-target="#toast-demo-sink" hx-swap="innerHTML">
                             Error Toast
                         </rhx-button>
                         <rhx-button rhx-variant="warning"
                                     hx-post="/Docs/Components/Toast?handler=ShowWarning"
-                                    hx-target="#toast-demo-target"
-                                    hx-swap="innerHTML">
+                                    hx-target="#toast-demo-sink" hx-swap="innerHTML">
                             Warning Toast
                         </rhx-button>
                         <rhx-button rhx-variant="brand"
                                     hx-post="/Docs/Components/Toast?handler=ShowBrand"
-                                    hx-target="#toast-demo-target"
-                                    hx-swap="innerHTML">
+                                    hx-target="#toast-demo-sink" hx-swap="innerHTML">
                             Brand Toast
                         </rhx-button>
                     </div>
@@ -106,7 +104,7 @@
     <!-- Server-Side Usage -->
     <div class="docs-example">
         <h3>Server-Side: Event Trigger</h3>
-        <p>The recommended approach. Sets <code>HX-Trigger-After-Settle</code> header; JavaScript creates the toast.</p>
+        <p>Sets an <code>HX-Trigger-After-Settle</code> header for apps that wire up their own listener. For zero-JavaScript, prefer the OOB swap below.</p>
         <rhx-tab-group>
             <rhx-tab rhx-panel="server-code" rhx-active="true">C# Code</rhx-tab>
             <rhx-tab-panel rhx-name="server-code" rhx-active="true">
@@ -151,9 +149,8 @@
     <h2>Accessibility</h2>
     <ul class="docs-a11y-list">
         <li>Toast container uses <code>role="status"</code> with <code>aria-live="polite"</code> so new toasts are announced without interrupting.</li>
-        <li>Close button has <code>aria-label="Close"</code> for screen readers.</li>
+        <li>The close control is a focusable checkbox with <code>aria-label="Close"</code>; CSS (<code>:has(:checked)</code>) hides the toast — no JavaScript.</li>
         <li>Icons are marked <code>aria-hidden="true"</code> since variant meaning is conveyed through text content.</li>
-        <li>Auto-dismiss pauses on hover so users have time to read.</li>
-        <li>Animations respect <code>prefers-reduced-motion</code>.</li>
+        <li>Auto-dismiss is a delayed CSS animation; animations respect <code>prefers-reduced-motion</code>.</li>
     </ul>
 </section>

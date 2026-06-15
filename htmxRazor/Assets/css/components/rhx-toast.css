@@ -50,6 +50,12 @@
   animation: rhx-toast-out var(--rhx-transition-normal) ease-in forwards;
 }
 
+/* ── Dismiss (CSS only) — the close control is a checkbox; checking it hides the toast ── */
+.rhx-toast:has(.rhx-toast__dismiss:checked) {
+  opacity: 0;
+  display: none;
+}
+
 /* ── Variant colors ── */
 
 .rhx-toast--neutral  { border-left-color: var(--rhx-color-neutral-400); }
@@ -99,7 +105,8 @@
   color: var(--rhx-color-text);
 }
 
-.rhx-toast__close:focus-visible {
+/* The visible close affordance is a <label>; focus lives on the adjacent sr-only checkbox. */
+.rhx-toast__dismiss:focus-visible + .rhx-toast__close {
   outline: 2px solid var(--rhx-color-brand-500);
   outline-offset: 2px;
 }
@@ -125,6 +132,14 @@
   to {
     opacity: 0;
     transform: translateY(-0.5rem);
+  }
+}
+
+/* Auto-dismiss (rhx-duration) — delayed fade, no JS. */
+@keyframes rhx-toast-auto-dismiss {
+  to {
+    opacity: 0;
+    visibility: hidden;
   }
 }
 

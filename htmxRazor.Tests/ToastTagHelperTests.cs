@@ -165,20 +165,24 @@ public class ToastTagHelperTests : TagHelperTestBase
     }
 
     [Fact]
-    public async Task Toast_Has_Data_Attribute()
+    public async Task Toast_Renders_Close_Dismiss_Control()
     {
+        // JS-free dismiss: a sr-only checkbox + label that CSS :has(:checked) hides.
         var helper = CreateToastHelper();
         var context = CreateContext("rhx-toast");
         var output = CreateOutput("rhx-toast", childContent: "Hello");
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "data-rhx-toast", "");
+        var content = output.Content.GetContent();
+        Assert.Contains("rhx-toast__dismiss", content);
+        Assert.Contains("type=\"checkbox\"", content);
     }
 
     [Fact]
-    public async Task Toast_Renders_Duration_Data_Attribute()
+    public async Task Toast_Duration_Sets_Auto_Dismiss_Animation()
     {
+        // Auto-dismiss is a delayed CSS animation (no JS, no data attribute).
         var helper = CreateToastHelper();
         helper.Duration = 3000;
         var context = CreateContext("rhx-toast");
@@ -186,19 +190,23 @@ public class ToastTagHelperTests : TagHelperTestBase
 
         await helper.ProcessAsync(context, output);
 
-        AssertAttribute(output, "data-rhx-duration", "3000");
+        var style = output.Attributes["style"]?.Value?.ToString() ?? "";
+        Assert.Contains("rhx-toast-auto-dismiss", style);
+        Assert.Contains("3000ms", style);
     }
 
     [Fact]
-    public async Task Toast_No_Duration_By_Default()
+    public async Task Toast_Duration_Zero_Disables_Auto_Dismiss()
     {
         var helper = CreateToastHelper();
+        helper.Duration = 0;
         var context = CreateContext("rhx-toast");
         var output = CreateOutput("rhx-toast", childContent: "Hello");
 
         await helper.ProcessAsync(context, output);
 
-        AssertNoAttribute(output, "data-rhx-duration");
+        var style = output.Attributes["style"]?.Value?.ToString() ?? "";
+        Assert.DoesNotContain("rhx-toast-auto-dismiss", style);
     }
 
     [Fact]
