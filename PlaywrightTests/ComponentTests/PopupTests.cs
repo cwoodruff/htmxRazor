@@ -70,9 +70,14 @@ public sealed class PopupTests(DemoAppFactory app) : ComponentTestBase(app)
         Assert.NotNull(anchorBox);
         Assert.NotNull(popupBox);
 
-        // bottom-start placement: popup should sit near anchor bottom
+        // bottom-start placement: popup sits below the anchor...
         var verticalDelta = Math.Abs(popupBox!.Y - (anchorBox!.Y + anchorBox.Height));
         Assert.InRange(verticalDelta, 0, 60);
+
+        // ...and its left edge aligns with the anchor's left edge (start alignment),
+        // rather than being pushed off to the side.
+        var horizontalDelta = Math.Abs(popupBox.X - anchorBox.X);
+        Assert.InRange(horizontalDelta, 0, 24);
     }
 
     [Theory, MemberData(nameof(Browsers))]

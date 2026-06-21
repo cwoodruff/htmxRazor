@@ -20,21 +20,26 @@
    * @returns {string}
    */
   RHX.placementToPositionArea = function (placement) {
+    // Map to position-area values. A bare side keyword (e.g. "bottom") centers
+    // the floating element on that side with content-driven size. Alignment uses
+    // span-* so the element's leading/trailing edge aligns to the anchor's edge
+    // and grows outward — "bottom left"-style corner tiles would push it off to
+    // the side instead of aligning edges.
     var map = {
-      "top": "top center",
-      "top-start": "top left",
-      "top-end": "top right",
-      "bottom": "bottom center",
-      "bottom-start": "bottom left",
-      "bottom-end": "bottom right",
-      "left": "left center",
-      "left-start": "top left",
-      "left-end": "bottom left",
-      "right": "right center",
-      "right-start": "top right",
-      "right-end": "bottom right"
+      "top": "top",
+      "top-start": "top span-right",
+      "top-end": "top span-left",
+      "bottom": "bottom",
+      "bottom-start": "bottom span-right",
+      "bottom-end": "bottom span-left",
+      "left": "left",
+      "left-start": "left span-bottom",
+      "left-end": "left span-top",
+      "right": "right",
+      "right-start": "right span-bottom",
+      "right-end": "right span-top"
     };
-    return map[placement] || "bottom center";
+    return map[placement] || "bottom";
   };
 
   /**
