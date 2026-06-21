@@ -27,11 +27,16 @@ public sealed class htmxRazorTagHelperComponent : TagHelperComponent
         // Establish CSS cascade layer order FIRST, at the very top of <head> (PreContent),
         // before any component stylesheet the host app may have linked. A cascade layer's
         // priority is fixed by where its name FIRST appears; if a component file
-        // (@layer rhx.components) is parsed before this statement, rhx.components registers
+        // (@layer rhx.components) is parsed before this declaration, rhx.components registers
         // ahead of rhx.reset and loses precedence — letting the reset's `button { font: inherit }`
         // clobber the component button font (issue #13). Unlayered host styles still win.
+        //
+        // The @layer declaration lives in an external stylesheet (rhx-layers.css) rather than
+        // an inline <style> so the library is Content-Security-Policy friendly (style-src 'self'),
+        // requiring no 'unsafe-inline'. A <link> in PreContent still appears before host styles
+        // in document order, which is what determines cascade layer order.
         output.PreContent.AppendHtml(
-            "\n    <style>@layer rhx.reset, rhx.tokens, rhx.core, rhx.utilities, rhx.components, rhx.theme;</style>");
+            "\n    <link rel=\"stylesheet\" href=\"/_rhx/css/rhx-layers.css\">");
 
         // Inject htmxRazor stylesheet
         output.PostContent.AppendHtml(
