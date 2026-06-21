@@ -7,7 +7,7 @@
     <!-- NuGet Package Metadata -->
     <IsPackable>true</IsPackable>
     <PackageId>htmxRazor</PackageId>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
     <Authors>Chris Woodruff</Authors>
     <Company>htmxRazor</Company>
     <Description>Server-rendered UI components for ASP.NET Core with first-class htmx integration. 80+ Tag Helper components across 11 categories — buttons, forms, data tables, navigation, overlays, feedback, and more — all styled with CSS custom properties and fully accessible.</Description>
@@ -42,8 +42,8 @@
   <ItemGroup>
     <PackageReference Include="Htmx" Version="1.12.0" />
     <PackageReference Include="Htmx.TagHelpers" Version="1.12.0" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.5" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.201" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.9" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

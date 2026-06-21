@@ -30,6 +30,28 @@
   z-index: -1;
 }
 
+/* Arrow placement clipping — hide the inner border edge so the arrow
+   reads as a connected tail rather than a detached diamond. */
+.rhx-popup[data-rhx-current-placement^="bottom"] > .rhx-popup__arrow {
+  border-bottom: none;
+  border-right: none;
+}
+
+.rhx-popup[data-rhx-current-placement^="top"] > .rhx-popup__arrow {
+  border-top: none;
+  border-left: none;
+}
+
+.rhx-popup[data-rhx-current-placement^="left"] > .rhx-popup__arrow {
+  border-left: none;
+  border-bottom: none;
+}
+
+.rhx-popup[data-rhx-current-placement^="right"] > .rhx-popup__arrow {
+  border-right: none;
+  border-top: none;
+}
+
 /* ══════════════════════════════════════════════════════════════
    FIXED STRATEGY
    ══════════════════════════════════════════════════════════════ */
