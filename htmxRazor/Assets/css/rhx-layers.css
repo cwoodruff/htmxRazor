@@ -1,0 +1,16 @@
+/* ================================================================
+   htmxRazor cascade layer order
+
+   Establishes the canonical @layer order BEFORE any component
+   stylesheet. A cascade layer's priority is fixed by where its name
+   FIRST appears, so this declaration must be linked at the very top
+   of <head> (ahead of host-app component styles). See issue #13.
+
+   This lives in an external file — rather than an inline <style> —
+   so the library works under a strict Content-Security-Policy
+   (style-src 'self') without requiring 'unsafe-inline'.
+
+   Unlayered host styles still win over all of these layers.
+   ================================================================ */
+
+@layer rhx.reset, rhx.tokens, rhx.core, rhx.utilities, rhx.components, rhx.theme;
