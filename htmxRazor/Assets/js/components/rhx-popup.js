@@ -25,17 +25,53 @@
       var placement = popup.getAttribute("data-rhx-placement") || "bottom-start";
       var distance = parseInt(popup.getAttribute("data-rhx-distance") || "4", 10);
 
-      // Use CSS Anchor Positioning when supported
+      // Use CSS Anchor Positioning when supported (apply once, CSS handles the rest)
       if (useCssAnchoring && !cssAnchoringApplied) {
         window.RHX.applyCssAnchorPositioning(anchor, popup, {
           placement: placement,
           distance: distance
         });
         cssAnchoringApplied = true;
-        return;
       }
 
-      if (useCssAnchoring) return; // CSS handles repositioning automatically
+      // In CSS anchor mode, position the arrow after the browser lays out the popup
+      if (useCssAnchoring) {
+        popup.setAttribute("data-rhx-current-placement", placement);
+        if (arrowEl) {
+          // Use requestAnimationFrame to read geometry after CSS positions the popup
+          requestAnimationFrame(function () {
+            var anchorRect = anchor.getBoundingClientRect();
+            var popupRect = popup.getBoundingClientRect();
+            var side = placement.split("-")[0];
+            if (side === "top" || side === "bottom") {
+              // Position arrow horizontally to align with anchor center
+              var cx = anchorRect.left + anchorRect.width / 2 - popupRect.left - 5;
+              arrowEl.style.left = Math.max(8, Math.min(cx, popupRect.width - 18)) + "px";
+              // Position arrow vertically outside the popup
+              if (side === "top") {
+                // Popup above anchor, arrow at bottom pointing down
+                arrowEl.style.top = (popupRect.height - 5) + "px";
+              } else {
+                // Popup below anchor, arrow at top pointing up
+                arrowEl.style.top = "-5px";
+              }
+            } else {
+              // Position arrow vertically to align with anchor center
+              var cy = anchorRect.top + anchorRect.height / 2 - popupRect.top - 5;
+              arrowEl.style.top = Math.max(8, Math.min(cy, popupRect.height - 18)) + "px";
+              // Position arrow horizontally outside the popup
+              if (side === "left") {
+                // Popup left of anchor, arrow at right pointing right
+                arrowEl.style.left = (popupRect.width - 5) + "px";
+              } else {
+                // Popup right of anchor, arrow at left pointing left
+                arrowEl.style.left = "-5px";
+              }
+            }
+          });
+        }
+        return; // CSS handles repositioning automatically
+      }
 
       // Fallback: JS positioning
       if (!window.RHX || !window.RHX.positionElement) return;
