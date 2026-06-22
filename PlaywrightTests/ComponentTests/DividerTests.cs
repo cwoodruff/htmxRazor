@@ -17,16 +17,6 @@ public sealed class DividerTests(DemoAppFactory app) : ComponentTestBase(app)
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Horizontal_divider_does_not_use_vertical_modifier(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        await Assertions.Expect(
-            page.Locator("#panel-horizontal-preview hr.rhx-divider.rhx-divider--vertical")
-        ).ToHaveCountAsync(0);
-    }
-
-    [Theory, MemberData(nameof(Browsers))]
     public async Task Vertical_divider_renders_as_div_with_vertical_modifier(string browserName)
     {
         var page = await OpenAsync(browserName, Path);

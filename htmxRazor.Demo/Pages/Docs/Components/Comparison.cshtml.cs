@@ -16,15 +16,15 @@ public class ComparisonModel : PageModel
     };
 
     public string BeforeAfterCode => @"<rhx-comparison
-    rhx-before=""https://picsum.photos/id/10/600/400""
+    rhx-before=""/img/comparison-before.svg""
     rhx-before-alt=""Original photo""
-    rhx-after=""https://picsum.photos/id/10/600/400?grayscale""
+    rhx-after=""/img/comparison-after.svg""
     rhx-after-alt=""Grayscale version"" />";
 
     public string CustomPositionCode => @"<rhx-comparison
-    rhx-before=""https://picsum.photos/id/10/600/400""
+    rhx-before=""/img/comparison-before.svg""
     rhx-before-alt=""Original photo""
-    rhx-after=""https://picsum.photos/id/10/600/400?grayscale""
+    rhx-after=""/img/comparison-after.svg""
     rhx-after-alt=""Grayscale version""
     rhx-position=""25"" />";
 

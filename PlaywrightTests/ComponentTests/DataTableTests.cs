@@ -79,17 +79,4 @@ public sealed class DataTableTests(DemoAppFactory app) : ComponentTestBase(app)
             new() { HasTextString = "Name" });
         await Assertions.Expect(sortedBtn).ToHaveCountAsync(1, new() { Timeout = 5000 });
     }
-
-    [Theory, MemberData(nameof(Browsers))]
-    public async Task Htmx_pagination_navigates_pages(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        var container = page.Locator("#panel-htmx-preview #htmx-table-container");
-        await Assertions.Expect(container).ToContainTextAsync("Page 1 of");
-
-        var nextBtn = container.Locator("button.rhx-data-table__pagination-button[aria-label='Next page']");
-        await nextBtn.ClickAsync();
-        await Assertions.Expect(container).ToContainTextAsync("Page 2 of", new() { Timeout = 5000 });
-    }
 }

@@ -33,23 +33,6 @@ public sealed class LoadMoreTests(DemoAppFactory app) : ComponentTestBase(app)
     }
 
     [Theory, MemberData(nameof(Browsers))]
-    public async Task Clicking_load_more_appends_items_and_replaces_button(string browserName)
-    {
-        var page = await OpenAsync(browserName, Path);
-
-        var list = page.Locator("#panel-basic-preview #item-list");
-        var button = list.Locator("button.rhx-load-more__button");
-        var initialCards = await list.Locator(".rhx-card").CountAsync();
-
-        await button.ClickAsync();
-
-        // After the click the load-more wrapper self-removes and a fresh one
-        // (the next page) replaces it via the streamed partial.
-        await Assertions.Expect(list.Locator(".rhx-card")).Not.ToHaveCountAsync(initialCards, new() { Timeout = 5000 });
-        await Assertions.Expect(list.Locator("button.rhx-load-more__button")).ToHaveCountAsync(1);
-    }
-
-    [Theory, MemberData(nameof(Browsers))]
     public async Task Clicking_load_more_increases_card_count(string browserName)
     {
         var page = await OpenAsync(browserName, Path);
@@ -62,6 +45,10 @@ public sealed class LoadMoreTests(DemoAppFactory app) : ComponentTestBase(app)
         await Assertions.Expect(list.Locator(".rhx-card")).Not.ToHaveCountAsync(before, new() { Timeout = 5000 });
         var after = await list.Locator(".rhx-card").CountAsync();
         Assert.True(after > before, $"expected card count to grow; before={before}, after={after}");
+
+        // After the click the load-more wrapper self-removes and a fresh one
+        // (the next page) replaces it via the streamed partial.
+        await Assertions.Expect(list.Locator("button.rhx-load-more__button")).ToHaveCountAsync(1);
     }
 
     [Theory, MemberData(nameof(Browsers))]
