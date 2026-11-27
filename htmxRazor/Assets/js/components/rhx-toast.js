@@ -60,10 +60,14 @@
 
   function enforceMaxToasts(container) {
     var max = parseInt(container.getAttribute("data-rhx-max"), 10) || 5;
-    var toasts = container.querySelectorAll("[data-rhx-toast]");
-    while (toasts.length > max) {
-      dismissToast(toasts[0]);
-      toasts = container.querySelectorAll("[data-rhx-toast]");
+    // A dismissed toast stays in the document until its closing
+    // animation ends, so count the ones still standing and dismiss the
+    // oldest of them once each.
+    var standing = Array.prototype.filter.call(
+      container.querySelectorAll("[data-rhx-toast]"),
+      function (toast) { return !toast._rhxDismissing; });
+    for (var i = 0; i < standing.length - max; i++) {
+      dismissToast(standing[i]);
     }
   }
 
