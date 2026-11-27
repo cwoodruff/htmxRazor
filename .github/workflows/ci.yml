@@ -54,7 +54,7 @@ jobs:
   # Playwright end-to-end tests on Chromium only — fast PR/push feedback.
   # The full chromium+firefox+webkit matrix runs nightly (e2e-nightly.yml).
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
